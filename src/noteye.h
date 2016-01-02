@@ -1,6 +1,6 @@
 // Necklace of the Eye v8.2
 // roguelike frontend
-// Copyright (C) 2010-2014 Zeno Rogue, see 'noteye.h' for details
+// Copyright (C) 2010-2016 Zeno Rogue, see 'noteye.h' for details
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

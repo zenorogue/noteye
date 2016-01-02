@@ -575,6 +575,7 @@ function drawBackgroundAndMap()
     V.drawtile(D.output, Lightfloor, D.rscreen)
     V.drawtile(D.output, xtileobj(scrget(S, 0, 0), 0,0), rectCS(D.rscreen.ctr, V(D.rscreen.size.y, D.rscreen.size.y)))
     V.drawtile(D.output, tileshade(0), D.rscreen)
+    V.drawtile(D.output, tileshade(0), D.rscreen)
     return axTransparent
   elseif string.find(curscr, "Welcome") 
     or string.find(curscr1, "Select your race") 
@@ -584,6 +585,7 @@ function drawBackgroundAndMap()
     or (mode == modeMini and not mapon)
   then
     V.drawtile(D.output, HydraTitleTile, D.rscreen)
+    V.drawtile(D.output, tileshade(0), D.rscreen)
     V.drawtile(D.output, tileshade(0), D.rscreen)
     return axTransparent
   elseif not mapon then
@@ -1700,6 +1702,7 @@ function noteyesleep(t)
       playsoundfromfile(sounddir.."hydra-new/"..v.sound..".ogg", v.vol)
       end
     end
+  shareupdate()
   end
 
 rungame(cmdline)

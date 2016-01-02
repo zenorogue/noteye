@@ -64,6 +64,8 @@ function setfacedir(dir)
 
 function setmode(nmode)
   mode = nmode
+  maptocopy = true
+  videomode_changed = true
   broadcast(sendmode)
   broadcast(nflush)
   end

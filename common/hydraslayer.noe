@@ -3,7 +3,7 @@
 
 -- open log file disabled in Hydra Slayer
 
-print("Hydra Slayer v"..hydraver.." (C) 2010-2012 Zeno Rogue");
+print("Hydra Slayer v"..hydraver.." (C) 2010-2016 Zeno Rogue");
 
 logopen("hydra.log")
 game_to_launch = "hydra"

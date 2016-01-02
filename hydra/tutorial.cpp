@@ -159,7 +159,7 @@ const char* tutorialTexts[13] = {
   "stun the hydra heads so they are unable to attack, but you will need "
   "to cut them with a blade to actually defeat them; on the good side, "
   "they are usually larger than blades, and will never cause hydras to "
-  "grow more heads.\n",
+  "grow more heads).\n",
   
   "There are more types of weapons available. The most successful slayers "
   "will be even able to find rare artifact weapons, with very special "

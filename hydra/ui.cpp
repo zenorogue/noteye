@@ -1769,8 +1769,9 @@ void mainloop() {
           
           if(P.flags & dfTutorial) {
             clearGame();
+            P.flags &= ~dfTutorial;
             initGame();
-            return;
+            break;
             }
           
           twin = NULL;

@@ -1,5 +1,5 @@
 // Hydra Slayer roguelike
-// Copyright (C) 2010-2014 Zeno Rogue
+// Copyright (C) 2010-2016 Zeno Rogue
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,7 +28,18 @@
 
 void achievement(const char *buf);
 
-#ifndef ANDROID
+#ifdef ANDROID
+#define SHARE
+#endif
+
+#ifdef STEAM
+#include "../steam/hydrasteam.cpp"
+#endif
+
+#ifndef SHARE
+void shareClose() { }
+void shareUpdate() { }
+
 void highscore(int kind, int val) { }
 void share(const string& s) { }
 
@@ -45,11 +56,9 @@ void shareFixed(const string &s) {
 void shareS(const string& verb, const string &s) {
   shform(s, verb, verb+"s", verb);
   }    
-
-
 #endif
 
-int loglines    = 10; // last messages in the log file
+int loglines     = 10; // last messages in the log file
 string savename  = "hydra.sav";
 string backname  = "hydra-bak.sav";
 string logname   = "hydralog.txt";
@@ -1400,6 +1409,8 @@ int main(int argc, char **argv) {
   clearGame();
   quitgame = false;
   endwin();
+
+  shareClose();
 
   return 0;
   }

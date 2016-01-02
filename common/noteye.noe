@@ -1,5 +1,5 @@
 -- Necklace of the Eye v8.2 roguelike frontend, the main script
--- Copyright (C) 2010-2015 Zeno Rogue
+-- Copyright (C) 2010-2016 Zeno Rogue
 
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ function fullversion()
   end
 
 if not hidenoteyelicense and not havetxt then
-  print(fullversion().." (C) 2010-2014 Zeno Rogue")
+  print(fullversion().." (C) 2010-2016 Zeno Rogue")
   print("Homepage: http://www.roguetemple.com/z/noteye.php")
   print("NotEye is distributed under GNU General Public License version 3 or later")
   print("It comes with absolutely no warranty; see the file COPYING for details")

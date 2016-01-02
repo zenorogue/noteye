@@ -1,5 +1,5 @@
 // Hydra Slayer: math puzzle roguelike
-// Copyright (C) 2010-2011 Zeno Rogue, see 'hydra.cpp' for details
+// Copyright (C) 2010-2016 Zeno Rogue, see 'hydra.cpp' for details
 
 #define LEVELS   12
 #define LEVELS2  50
@@ -691,7 +691,8 @@ const char* helpinfo[HELPLEN] = {
 "- go to the nearest non-explored space through mushrooms,\r"
 "- go to the stairway down.",
 
-"\boArt, game design, sound effects, texts, and programming by Zeno Rogue, 2010-2012.\n"
+"\boArt, game design, texts, and programming by Zeno Rogue, 2010-2016.\n"
+"\boSounds effects by Brett Cornwall <brett (at) brettcornwall.com>, under the Creative Commons BY-SA 4.0 license.\n"
 //"\bjHydra Slayer uses the following music from Rogue Bard:\n"
 //"* \"The naive Bard\" by Bushy (a cover by Mingos)\n"
 //"* \"Azog's March\" by jice\n"
