@@ -399,6 +399,6 @@ else
   profstart("total")
   noteyemain()
   profend("total")
-  profinfo()
+  --profinfo()
   end
 

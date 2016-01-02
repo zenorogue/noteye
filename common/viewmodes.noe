@@ -734,18 +734,18 @@ drawmap[modeTiles] = function()
   TileCut = V.renewscreen(TileCut, D.tileext.size)
   
   scrset(MAP, 999, 999, 0)
-  profstart("xtile")
+  --profstart("xtile")
   V.scrcopy(MAP, mcf+D.tileext.top, TileCut, 0, D.tileext.size, xtile)
-  profend("xtile")
+  --profend("xtile")
   
   local tcs2 = tcs + (D.tileext.top - 0.5) * D.tilesize
   local tcs3 = tcs2 + D.tileext.size * D.tilesize
   
-  profstart("scrx")
+  --profstart("scrx")
   for k,v in pairs(tilelayers) do
     V.drawscreenx(D.output, TileCut, tcs2, D.tilesize, getlayerX(v))
     end
-  profend("scrx")
+  --profend("scrx")
   return getAxCommon()
   end
 
@@ -929,21 +929,21 @@ function drawAscii(ax)
   if not ax then
     V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, TMAP_COPY)
   else
-    profstart("ax1")
+    --profstart("ax1")
     if ax[1] then V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, ax[1]) end
-    profend("ax1")
+    --profend("ax1")
 
-    profstart("ax2")
+    --profstart("ax2")
     if ax[2] then
       V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, ax[2])
       end
-    profend("ax2")
+    --profend("ax2")
 
-    profstart("ax3")
+    --profstart("ax3")
     if ax[3] then
       V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, ax[3])
       end
-    profend("ax3")
+    --profend("ax3")
 
     end
   

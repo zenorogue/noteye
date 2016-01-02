@@ -656,9 +656,9 @@ function drawAscii(ax)
 
     drawtile(D.output, sh, X, Y+22*fontsize.y, ssx, fontsize.y*3)
     
-    profstart("drat")
+    --profstart("drat")
     drat(axTransparentUgly)
-    profend("drat")
+    --profend("drat")
   
   else
     drat(ax)
@@ -1166,7 +1166,7 @@ function hex_drawdisplayMini()
     }
   
   for x=0,map.size.x-1 do for y=0,map.size.y-1 do if ((x+y)%2 == inhexr) then
-    drawtile(D.output, oldhydra and xhex(scrget(MAP, x, y)) or yhex(hydramap(x, y)),
+    drawtile(D.output, oldhydra and xhex(scrget(MAP, x, y)) or yhex(hydramap(x, y, mode)),
       screen.top.x + x * fontsize.x - fontsize.x/2, 
       screen.top.y + y * fontsize.y - fontsize.y/4, 
       fontsize.x * 3, fontsize.y * 1.5
@@ -1174,7 +1174,7 @@ function hex_drawdisplayMini()
     end end end
     
   for x=0,map.size.x-1 do for y=0,map.size.y-1 do if ((x+y)%2 == inhexr) then
-    drawtile(D.output, oldhydra and xtileobj(scrget(MAP, x, y)) or ytileobj(hydramap(x, y),x,y),
+    drawtile(D.output, oldhydra and xtileobj(scrget(MAP, x, y)) or ytileobj(hydramap(x, y, mode),x,y),
       screen.top.x + x * fontsize.x, 
       screen.top.y + y * fontsize.y, 
       fontsize.x * 2, fontsize.y
@@ -1208,7 +1208,7 @@ function hex_drawdisplayTiles()
   for dx=dx0,dx1 do for dy=dy0,dy1 do if((dx+dy+mcf.x+mcf.y)%2 == 0) then
     drawtile(Gfx, 
       oldhydra and xhex(scrget(MAP, mcf.x+dx, mcf.y+dy)) 
-      or yhex(hydramap(mcf.x+dx, mcf.y+dy)),
+      or yhex(hydramap(mcf.x+dx, mcf.y+dy, mode)),
       tcs.x + (dx-1.5) * tilesize.x, tcs.y + (dy-.75) * tilesize.y, tilesize.x*3, tilesize.y*1.5)
     end end end
 
@@ -1216,7 +1216,7 @@ function hex_drawdisplayTiles()
     drawtile(Gfx, 
       oldhydra
       and xtileobj(scrget(MAP, mcf.x+dx, mcf.y+dy), mcf.x+dx, mcf.y+dy)
-      or ytileobj(hydramap(mcf.x+dx, mcf.y+dy), mcf.x+dx, mcf.y+dy),
+      or ytileobj(hydramap(mcf.x+dx, mcf.y+dy, mode), mcf.x+dx, mcf.y+dy),
       tcs.x + (dx-1) * tilesize.x, tcs.y + (dy-.5) * tilesize.y, tilesize.x*2, tilesize.y)
     end end end
   
@@ -1260,7 +1260,7 @@ function hex_drawdisplayISO()
   for dy=dy0,dy1 do for dx=dx0,dx1 do if((dx+dy+mcf.x+mcf.y)%2 == inhexr) then
     local sg = 
       oldhydra and scrget(MAP, mcf.x+dx, mcf.y+dy)
-      or hydramap(mcf.x+dx, mcf.y+dy)
+      or hydramap(mcf.x+dx, mcf.y+dy, mode)
     drawtile(Gfx, yiso(sg),
       tcs.x + (dx-1) * tilesize.x, tcs.y + (dy-2) * tilesize.y, tilesize.x*3, tilesize.y*3)
     drawtile(Gfx, ytileobj(sg, mcf.x+dx, mcf.y+dy),
