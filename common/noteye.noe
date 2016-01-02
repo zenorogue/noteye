@@ -14,6 +14,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+scriptpatch = " S0"
+
 noteye_support_address = 
   noteye_support_address or 
   "Please report this error to Zeno Rogue <zeno@attnam.com>\n"
@@ -84,8 +86,12 @@ configfileformat = configfileformat or (userdir.."config-GAMENAME.noe")
 
 havemain = true
 
+function fullversion()
+  return "Necklace of the Eye version "..noteyeversion..noteyepatch..scriptpatch
+  end
+
 if not hidenoteyelicense and not havetxt then
-  print("Necklace of the Eye v"..noteyeversion.." (C) 2010-2014 Zeno Rogue")
+  print(fullversion().." (C) 2010-2014 Zeno Rogue")
   print("Homepage: http://www.roguetemple.com/z/noteye.php")
   print("NotEye is distributed under GNU General Public License version 3 or later")
   print("It comes with absolutely no warranty; see the file COPYING for details")
@@ -108,7 +114,7 @@ function starttcod(name)
 
 function createmainscr()
   
-  setmainwindowtitle("Necklace of the Eye v"..noteyeversion) 
+  setmainwindowtitle("Necklace of the Eye v"..fullversion()) 
 
   scrfill(IMG, 0, 0, 80, 25, 0)
   

@@ -135,7 +135,7 @@ function mainhdr()
   menuy = 3
   title = 
     hydraonly and "Hydra Slayer "..hydraver
-    or "Necklace of the Eye "..noteyeversion.." - "..gamename
+    or fullversion().." - "..gamename
   scrwrite(IMG, 1, 1, title, Font, vgaget(10))
     
   scrwrite(IMG, 1, 23, (gamename ~= "auto") and "press \veENTER\vp to resume playing" or "press \veENTER\vp to return to the main menu", Font, vgaget(7))
@@ -485,7 +485,7 @@ function moremenus()
   end
 
 aboutNoteye = 
-  "Necklace of the Eye "..noteyeversion.."\n"..
+  fullversion().."\n"..
   "(C) Zeno Rogue, 2010-2014\n"..
   "\vfhttp://roguetemple.com/z/noteye.php\vp\n\n"..
   "Necklace of the Eye (NotEye for short) is a roguelike framework. It can be\n"..

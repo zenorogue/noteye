@@ -797,9 +797,11 @@ function checkmouse(ev)
   if string.find(getline(0), "Inventory") then
     mousesendstext("i", "Left click to use, right click for information")
     local ch = gch(scrget(S, 51, my))
-    if ch ~= "Y" and ch ~= " " and KEYS[ch] then
+    -- print("my = "..my.." ch = "..tostring(ch))
+    if ch ~= "Y" and ch ~= "I" and ch ~= " " and KEYS[ch] then
       clickmouse = function (ev)
-        mousesendstext(ch)
+        nsendtext(ch)
+        if ev.button == 1 then nsendtext("y") end
         end
       end
     return
@@ -808,15 +810,11 @@ function checkmouse(ev)
   if string.find(getline(23), "(y/n)") then
     mousemsg = "Left click for YES, right click for NO"
     clickmouse = function (ev)
-      ev.type = evKeyDown
-      ev.mod = 0
-
       if ev.button > 1 then
-        assignkeychr(ev, "n")
+        nsendtext("n")
       else
-        assignkeychr(ev, "y")
+        nsendtext("y")
         end
-      nsendkey(ev)
       end
     return
     end
@@ -944,7 +942,7 @@ function checkmouse(ev)
     end
   
   if mx >= 50 and my < 10 then
-    clickmouse = function () nsendtext(string.subs("1234567890", my+1, 1)) end
+    clickmouse = function () nsendtext(string.sub("1234567890", my+1, my+1)) end
     mousemsg = "Click to change your weapon (digits)"
     return
     end

@@ -22,8 +22,10 @@
 #ifndef _NOTEYE_H
 #define _NOTEYE_H
 
-#define NOTEYEVERSION "8.2"
-#define NOTEYEVER 0x820
+#define NOTEYEVERSION "8.3"
+#define NOTEYEVER 0x830
+#define NOTEYEPATCH 0
+#define NOTEYEPATCHSTR " L0"
 
 #include <stdio.h>
 #include <unistd.h>

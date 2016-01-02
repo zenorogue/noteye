@@ -471,6 +471,8 @@ void initLua() {
   
   noteye_globalstr("noteyeversion", NOTEYEVERSION);
   noteye_globalint("NOTEYEVER", NOTEYEVER);
+  noteye_globalstr("noteyepatch", NOTEYEPATCHSTR);
+  noteye_globalstr("NOTEYEPATCH", NOTEYEPATCH);
   noteye_globalint("nepScreen", nepScreen);
   noteye_globalint("nepWait",   nepWait);
   noteye_globalint("nepKeyNew", nepKeyNew);
