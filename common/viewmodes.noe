@@ -1535,17 +1535,18 @@ function applymodeconfig(delta)
   delta = delta / 1000
   if shiftpressed() then delta = delta * 5 end
   if ctrlpressed() then delta = delta / 5 end
-  tppDistance = 
-    tppDistance + delta * (getkeystate(SDLSCAN.KP_2) + getkeystate(SDLSCAN.DOWN) - getkeystate(SDLSCAN.KP_8) - getkeystate(SDLSCAN.UP))
+  
+  local nd = (getkeystate(SDLSCAN.KP_2) + getkeystate(SDLSCAN.DOWN) - getkeystate(SDLSCAN.KP_8) - getkeystate(SDLSCAN.UP))
+  if nd ~= 0 then picknumber("tppDistance", tppDistance + delta * nd) end
   local d = (getkeystate(SDLSCAN.KP_6) + getkeystate(SDLSCAN.RIGHT) - getkeystate(SDLSCAN.KP_4) - getkeystate(SDLSCAN.LEFT))
   if d ~= 0 then
-    tppAutoFacing = false
-    tppFacing = tppFacing + 10 * delta * d
+    pickbool("tppAutoFacing", false)
+    picknumber("tppFacing", tppFacing + 10 * delta * d)
     end
-  tppAngle = 
-    tppAngle + 10 * delta * (getkeystate(SDLSCAN.KP_9) + getkeystate(SDLSCAN.PAGEUP) - getkeystate(SDLSCAN.KP_3) - getkeystate(SDLSCAN.PAGEDOWN))
-  tppZoom =
-    tppZoom * math.exp(delta * (getkeystate(SDLSCAN.KP_PLUS) + getkeystate(SDLSCAN.EQUALS) - getkeystate(SDLSCAN.KP_MINUS) - getkeystate(SDLSCAN.MINUS)))
+  local na = (getkeystate(SDLSCAN.KP_9) + getkeystate(SDLSCAN.PAGEUP) - getkeystate(SDLSCAN.KP_3) - getkeystate(SDLSCAN.PAGEDOWN))
+  if na ~= 0 then picknumber("tppAngle", tppAngle + 10 * delta * na) end
+  local nz = (getkeystate(SDLSCAN.KP_PLUS) + getkeystate(SDLSCAN.EQUALS) - getkeystate(SDLSCAN.KP_MINUS) - getkeystate(SDLSCAN.MINUS))
+  if nz ~= 0 then picknumber("tppZoom", tppZoom * math.exp(delta * nz)) end
   end
 
 tppPresets = {}
