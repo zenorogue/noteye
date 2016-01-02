@@ -1,0 +1,100 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+# TopDog 7DRL
+
+dofile(commondir.."generic-tile.noe")
+
+-- the original TopDog has 44x50; the 'x' size has been changed to look better in fpp/iso modes
+conssize = {x = 80, y = 50}
+tdshift = (conssize.x - 44) / 2
+
+mapregion = {x0=1, y0=7, x1=43, y1=49}
+
+function drawdisplayMini()
+  if mapon then
+    scrcopy(MAP, 0, 0, IMG, mapregion.x0+tdshift, mapregion.y0, mapsize.x, mapsize.y, xtile)
+    end
+  drawdisplayASCII()
+  end
+
+ldrawdisplayMed = drawdisplayMed
+
+function drawdisplayMed()
+  mapregion.x0 = mapregion.x0 + tdshift
+  ldrawdisplayMed()
+  mapregion.x0 = mapregion.x0 - tdshift
+  end
+
+function copymap()
+
+  -- copy from the process map
+  local fil = 0
+  
+  if mode == modeASCII or mode == modeMini or mode == modeMed then
+    fil = tilefill(0)
+    end
+  
+  scrfill(IMG, 0, 0, 80, 50, fil)
+  scrcopy(S, 0, 0, IMG, tdshift,0, 44, 50, TFUN_COPY)
+
+  findpc()
+  
+  if mapon then
+    -- yeah, there he is!
+    playerpos = V(ncursor.x-mapregion.x0, ncursor.y-mapregion.y0)
+    scrset(IMG, 999, 999, 0) -- 0 outside the map
+    scrcopy(S, mapregion.x0, mapregion.y0, MAP, 0,0, mapsize.x, mapsize.y, TFUN_COPY)
+
+    if mode ~= modeASCII then scrfill(IMG, mapregion.x0+tdshift, mapregion.y0, mapsize.x, mapsize.y, 0) end
+    
+    readgmessages()
+  else
+    mapon = false
+    end
+  end
+
+function shadowfloor() 
+  return floorcolid(0x404040, 4)
+  end
+  
+function xtileaux2(ch, co, av, ba)
+
+  if ch == " " then 
+    return tilefill(0)
+  elseif av == 0 then 
+    return tilefill(0)
+  elseif av == 255 then
+    return tilefill(0)
+  elseif ch == ":" then
+    return floorcol(co, 0)
+  elseif av == 176 then
+    return floorcol(co, 1)
+  elseif ch == "~" then
+    return lavacol(co)
+  elseif ch == "O" then
+    return tspatm(floorcolid(co, 4), rb, spFlat + spFloor + spIItem, ch)
+  elseif ch == "-" or av == 5 or av == 6 then
+    return tspatm(floorcolid(co,4), rb, spFlat + spMonst + spIItem, ch)
+  elseif av == 15 then
+    return tspatm(floorcolid(co,4), rb, spFlat + spItem + spIItem, ch)
+  elseif ch == (".") or av == 250 or av == 249 then
+    return floorcolid(co, 4)
+  elseif ch == ("#") or (av >= 176 and av <= 178) then
+    return wallcol(co, 6)
+  elseif ch == ("[") then
+    return wallcollid(co, 9)
+  elseif (ch >= ("a") and ch <= ("z")) or (ch >= ("A") and ch <= ("Z")) then
+    return tspat(rb, ssMon, ch)
+  else 
+    return tspat(rb, ssItem, ch)
+    end
+  end
+
+setwindowtitle("TopDog")
+
+dirkeys = keytabs.numpad
+
+defaultmodep(modeTiles, 3)
+rungame("whatever")
+

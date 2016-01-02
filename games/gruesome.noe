@@ -1,0 +1,42 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+dofile(commondir.."generic-tile.noe")
+
+mapregion = {x0=0, y0=2, x1=80, y1=23}
+minipos = {x=1, y=0}
+
+-- Gruesome is better without a cusor
+drawcursor = false
+
+-- Gruesome wants to input directions as VI keys
+dirkeys = keytabs.vidot
+
+function ispc(C)
+  return gch(C) == " "
+  end
+
+function findpc()
+  if string.find(getline(1), "Welcome to Gruesome") or pcursor.size == 0 then 
+    mapon = false 
+    return
+    end
+  
+  -- maybe player is under the cursor
+  if pcat(pcursor) then 
+    ncursor = pcursor
+    end
+
+  mapon = pcat(ncursor)
+  end
+
+function xtileaux2(ch, co, av, ba)
+ 
+  if ch == "@" then
+    return tspatm(floorcol(0xFFFFFFFF), rb, spFlat + spMonst + spIItem, ch)
+    end
+  end
+
+defaultmodep(modeTiles, 1)
+setwindowtitle("Gruesome")
+rungame(caller3("Gruesome", "gruesome"))

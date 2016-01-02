@@ -52,8 +52,19 @@ void shareS(const string& verb, const string &s) {
 int loglines    = 10; // last messages in the log file
 string savename  = "hydra.sav";
 string backname  = "hydra-bak.sav";
-const char *logname   = (char*) "hydralog.txt";
-const char *scorename = (char*) "hydrascores.sav";
+string logname   = "hydralog.txt";
+string scorename = "hydrascores.sav";
+
+void hydraUserdir(const string& userdir) {
+  static bool addUserdir = true;
+  if(addUserdir) {
+    savename = userdir + "/" + savename;
+    backname = userdir + "/" + backname;
+    logname = userdir + "/" + logname; 
+    scorename = userdir + "/" + scorename;
+    addUserdir = false;
+    }
+  }
 
 int twindiff() { 
   return P.active[IT_PFAST] - P.twinspd;

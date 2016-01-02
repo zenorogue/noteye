@@ -1,0 +1,25 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+dofile(commondir.."generic-tile.noe")
+mapregion = {x0=0, y0=0, x1=33, y1=17}
+minipos = {x=1, y=1}
+mapextent = 0
+tilesize = {x=16, y=16}
+
+-- we always redraw the screen since the tiles do not cover everything in this config
+needfill = true
+
+-- Crawl has the PC at (16,8), always
+function findpc()
+  if ispc(scrget(S, 16,8)) then
+    ncursor = V(16, 8)
+    end
+
+  mapon = pcat(ncursor)
+  end
+
+defaultmodep(modeMed, 3)
+
+setwindowtitle("Dungeon Crawl")
+rungame(caller3("Dungeon Crawl", "crawl"))

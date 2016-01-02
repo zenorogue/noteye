@@ -1,0 +1,89 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+dofile(commondir.."generic-tile.noe")
+
+mapregion = {x0=0, y0=1, x1=80, y1=22}
+minipos = {x=1, y=0}
+
+dirkeys = keytabs.vidot
+
+function ispc(C)
+  return gch(C) == "@" or av(gch(C)) == 1
+  end
+
+function findpc()
+  mapon = false
+  
+  -- maybe player is under the cursor (BSD rogue)
+  if pcat(pcursor) then 
+    ncursor = pcursor
+    mapon = true
+
+  -- if not (Epyx rogue)
+  else 
+    for x=mapregion.x0,mapregion.x1-1 do
+    for y=mapregion.y0,mapregion.y1-1 do
+      if av(gch(scrget(S, x,y))) == 1 then
+        ncursor = V(x,y)
+        mapon = true
+        end
+      end end
+    end
+  end
+
+function shadowfloor()
+  return floorcol(0x909060)
+  end
+  
+function xtileaux2(ch, co, av, uu, ba)
+
+  if ch == "@" or av == 1 then
+    return tspat(rlat, ssMon, 22, 9)
+  elseif (ch == "+" or av == 206) and co == vgaget(6) then
+    return tspatm(wallcol(0x803000), vaporatc(0xA05000), spFlat + spWall + spIWall, 12, 0)
+  elseif (ch == "-" or ch == "|") and co == vgaget(6) then
+    return tspatm(wallcol(0x803000), vaporatc(0), spFlat + spWall + spIWall, 12, 0)
+  elseif ch == "|" or ch == "-" then return wallcol(0x803000)
+  elseif ch == "#" or (av >= 176 and av <= 178) then return floorcol(0x808080)
+  elseif ch == "." or av > 250 then return floorcol(0xC0C040)
+  elseif ch == "!" or av == 173 then return tspat(rlrec, ssItem, 30, 19)
+  elseif ch == "?" or av == 13  then return tspat(rlrec, ssItem, 1, 21)
+  elseif ch == "<" then return tspat(rlrec, ssMon, 39, 25)
+  elseif ch == ">" then return tspat(rlrec, ssFloorv, 38, 25)
+  elseif ch == "(" then return tspat(rlrec, ssItem, 46, 18)
+  elseif ch == ")" or av == 24  then return tspat(rlrec, ssItem, 15, 23)
+  elseif ch == "]" or av == 8   then return tspat(rlrec, ssItem, 38, 2)
+  elseif ch == "%" or av == 5   then return tspat(rlrec, ssItem, 18, 17)
+  elseif ch == "," or av == 12  then return tspat(rlrec, ssItem, 5, 1)
+  elseif ch == "=" or av == 9   then return tspat(rlrec, ssItem, 21, 20)
+  elseif ch == "*" or av == 15  then return tspat(rlat, ssItem, 13, 18)
+  elseif ch == "/" or av == 231 then return tspat(rlrec, ssItem, 39, 21)
+  elseif ch == "^" or av == 4   then return tspat(rlrec, ssItem, 42, 7)
+    end
+  end
+
+local lxminimap = xminimap
+
+function xminimap(C)
+  if minimode == modeASCII then return lxminimap(C) end
+  b = 0
+  local ch = gch(C)
+  local av = av(ch)
+  
+  if ch == " " then b = 0
+  elseif ispc(C) then b = 0xFFFFFF
+  elseif (ch == "." or av > 250) then b = 0x603030
+  elseif (ch == "#" or (av >= 176 and av <= 178)) then b = 0x904040
+  elseif ch == "-" or ch == "|" or (av >= 160 and av <= 224) then b = 0xC06060
+  elseif (ch >= "A" and ch <= "Z") then b = 0x2F08000
+  elseif ch == "%" or av == 240 then b = 0xFF00FF
+  else b = 0x00FF00
+  end
+  
+  return tilefill(b)
+  end
+  
+setwindowtitle("NetHack")
+defaultmodep(modeTiles, 3)
+rungame(caller3("NetHack", "nethack"))

@@ -1,0 +1,59 @@
+  ./elements:
+C acid.wav
+C ash.wav
+C bone.wav
+C chaos.wav
+C fire.wav
+C frozen.wav
+C gold.wav
+C poison.wav
+C silver.wav
+C storm.wav
+  
+  ./hydras:
+C alien.wav
+C hydra-shadow.wav
+C hydra-vulture.wav
+C hydra.wav
+  
+  ./other:
+C broomOfSpeed.wav
+L downstairs.wav
+L fingernailGrows.wav
+L fullOfLife.wav
+  menu.wav
+L mushroomGrows.wav
+L mushroomMovesInFrontOfYou.wav
+L pickup-potion.wav
+L pickup-powder.wav
+L pickup-scroll.wav
+L reflectedByAncientForce.wav
+L stealsYourWeapon.wav
+L tada.wav
+L teleport.wav
+L wakesUp.wav
+L wallCrush.wav
+L weaponDrivesYouMad.wav
+  
+  ./weapons:
+C switchToBow.wav
+C switchToShield.wav
+C switchToShuriken.wav
+C switchToSpear.wav
+C switchToStaff.wav
+C switchToSword.wav
+
+L bowAttack-miss.wav
+L dropWeapon.wav
+
+C bowAttack-hit.wav
+C shield.wav
+C shurikenAttack.wav
+C spearAttack-small.wav
+C staffAttack-heavy.wav
+C staffAttack-medium.wav
+C staffAttack-small.wav
+C stone.wav
+C swordAttack-heavy.wav
+C swordAttack-medium.wav
+C swordAttack-small.wav

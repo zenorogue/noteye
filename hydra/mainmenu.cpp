@@ -332,7 +332,7 @@ void editString(string& s, string title = "Enter the name: ") {
 void recordToHall() {
   if(P.flags & dfsInvalid) return;
   P.version = VERSION;
-  savefile = fopen(scorename, "ab");
+  savefile = fopen(scorename.c_str(), "ab");
   error = !savefile;
   if(error) return;
   save(P);
@@ -367,7 +367,7 @@ bool pisort(const playerinfo& p1, const playerinfo& p2) {
   }
 
 void viewHall(bool current) {
-  savefile = fopen(scorename, "rb");
+  savefile = fopen(scorename.c_str(), "rb");
   if(!savefile) return;
   vector<playerinfo> pi;
   error = false;
@@ -821,7 +821,7 @@ void mainmenu() {
         createLog(c == 's' || c == 'S');
         addCurrentInfoToLog();
         initScreen();
-        FILE *f = fopen(logname, "wt");
+        FILE *f = fopen(logname.c_str(), "wt");
         if(f) {
           for(int i=0; i<size(glog); i++) {
             fprintf(f, "%s", glog[i].c_str());
@@ -830,10 +830,10 @@ void mainmenu() {
             #endif
             }
           fclose(f);
-          printf("Log saved to '%s'.\n", logname);
+          printf("Log saved to '%s'.\n", logname.c_str());
           }
         #ifndef ANDROID
-        else printf("Error while saving log to '%s'.\n", logname);
+        else printf("Error while saving log to '%s'.\n", logname.c_str());
         #endif
         if(c == 's' || c == 'S') {
           saveGame();
@@ -849,9 +849,9 @@ void mainmenu() {
           recordToHall();
           #ifndef ANDROID
           if(error) 
-            printf("Error while writing to '%s'.\n", scorename);
+            printf("Error while writing to '%s'.\n", scorename.c_str());
           else if(!debugon())
-            printf("Added character to '%s'.\n", scorename);
+            printf("Added character to '%s'.\n", scorename.c_str());
           #endif
           }
         

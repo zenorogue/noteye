@@ -1,0 +1,237 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+dofile(commondir.."generic-tile.noe")
+
+mapextent = 0
+mapregion = {x0=0, y0=0, x1=67, y1=17}
+minipos = {x=0, y=0}
+
+-- list the wall tiles
+
+WallTile = {}
+
+for uu=0,4 do
+  WallTile[uu] = tilespatial(tilerecolor(WT[6][uu], 0x803000), spFlat + spWall + spIWall + spICeil)
+  end
+
+-- white at sign
+function ispc(C)
+  return gch(C) == "@" and gco(C) == vgaget(15)
+  end
+
+-- the algorithm of detecting PC and dialogs is as follows:
+-- look for the white at sign -> this is the player
+-- however, if a red background is found, then it means that we are in a menu
+-- and thus we are not on map
+
+function findpc()
+  mapon = false
+  local menuon = false
+    
+  for x=mapregion.x0,mapregion.x1-1 do
+  for y=mapregion.y0,mapregion.y1-1 do
+    if ispc(scrget(S, x,y)) then
+      ncursor = V(x,y)
+      mapon = true
+    elseif gba(scrget(S, x, y)) == vgaget(4) then
+      menuon = true
+      end
+    end end
+  
+  if menuon then mapon = false end
+  
+  end
+
+-- center the tile mode on the map center
+local lsettilectr = settilectr
+
+function settilectr()
+  if inmini then
+    lsettilectr()
+  else
+    tilectr = screen.top + V(33,9) * fontsize
+    end
+  end
+
+function shadowfloor() 
+  return floorcol(0x808080)
+  end
+
+function xtileaux2(ch, co, av, ba)
+
+  -- the PC (only in non-FPP)
+  if ch == "@" and co == vgaget(15) and mode ~= modeFPP then return tspat(rlat, ssMon, 22, 9)
+  elseif ch == "@" and co == vgaget(15) and mode == modeFPP then return floorcol(co)
+
+-- terrain features
+
+  elseif ch == "_" then return tspat(rlrec, ssMon, 35, 6)
+  elseif ch == "|" and co == vgaget(6) then return tspat(rlrec, ssWall, 43, 6)
+  elseif ch == "/" and co == vgaget(6) then return tspat(rlrec, ssWall, 12, 7)
+  elseif ch == "|" then return tspat(rlrec, ssMon, 13, 7)
+  elseif ch == "^" and (co == vgaget(7) or co == vgaget(8)) then return tspat(rlrec, ssWall, 19, 25)
+  elseif ch == "^" and (co == vgaget(3)) then return tspat(rlat, ssFloorv, 42, 7) --arrow trap
+  elseif ch == "^" and (co == vgaget(5)) then return tspat(rlrec, ssWall, 41, 7) -- teleport
+  elseif ch == "^" and (co == vgaget(6)) then return tspat(rlrec, ssFloorv, 12, 25) --pit
+  elseif ch == "^" and (co == vgaget(12)) then return tspat(rlrec, ssFloorv, 14, 25) --spiked pit
+  elseif ch == "~" then return lavacol(co)
+  elseif ch == "." then return floorcol(co)
+  elseif ch == "&" and co == vgaget(2) then return tspat(rlat, ssMon, 43, 25)
+  elseif ch == "&" then return tspat(rlrec, ssMon, 43, 25)
+  elseif ch == "{" and co == vgaget(1) then return tspat(rlat, ssMon, 42, 26)
+  elseif ch == "{" and co == vgaget(7) then return tspat(rlat, ssMon, 45, 26)
+  elseif ch == "{" then return tspat(rlrec, ssMon, 42, 26)
+  elseif ch == "\"" then return floorcol(co)
+  elseif ch == "O" and co == vgaget(7) then return tspat(rlrec, ssFloor, 16, 7)
+  elseif ch == "O" and co == vgaget(15) then return tspat(rlat, ssMon, 15, 7)
+  elseif ch == "<" and (co == vgaget(15)) then return tspat(rlat, ssMon, 39, 25)
+  elseif ch == ">" and (co == vgaget(15)) then return tspat(rlat, ssFloorv, 38, 25)
+  elseif ch == "I" and (co == vgaget( 7)) then return tspat(rlat, ssWall, 0, 17)
+  elseif ch == "I" and (co == vgaget(15)) then return tspat(rlat, ssMon, 7, 7)
+  elseif ch == "^" then return tspat(rlrec, ssItem, 40, 7) -- could use more colors
+
+-- shops
+  elseif ch == "M" and (co == vgaget(15)) then return tspat(rlat, ssWall, 7, 7)
+  elseif ch == "B" and (co == vgaget(15)) then return tspat(rlat, ssWall, 5, 7)
+  elseif ch == "B" and (co == vgaget( 7)) then return tspat(rlat, ssWall, 5, 7)
+  elseif ch == "T" and (co == vgaget( 7)) then return tspat(rlat, ssWall, 4, 7)
+  elseif ch == "L" and (co == vgaget( 7)) then return tspat(rlat, ssWall, 3, 7)
+  elseif ch == "H" and (co == vgaget( 7)) then return tspat(rlat, ssWall, 6, 7)
+  elseif ch == "S" and (co == vgaget( 7)) then return tspat(rlat, ssWall, 2, 7)
+
+-- items
+  elseif ch == "!" then return tspat(rlrec, ssItem, 30, 19)
+  elseif ch == "?" then return tspat(rlrec, ssItem, 1, 21)
+
+  elseif ch == "(" and (co == vgaget( 6)) then return tspat(rlat, ssItem, 26, 22) -- wooden
+  elseif ch == "(" and (co == vgaget(15)) then return tspat(rlat, ssItem, 28, 23) -- special
+  elseif ch == "(" then return tspat(rlrec, ssItem, 14, 23)
+
+  elseif ch == "[" and (co == vgaget( 6)) then return tspat(rlat, ssItem, 13, 2)
+  elseif ch == "[" and (co == vgaget(15)) then return tspat(rlat, ssItem, 37, 2)
+  elseif ch == "[" then return tspat(rlrec, ssItem, 37, 2)
+
+  elseif ch == "]" and (co == vgaget( 7)) then return tspat(rlat, ssItem, 16, 19)  -- bag
+  elseif ch == "]" then return tspat(rlrec, ssItem, 46, 18)  -- other containers
+
+  elseif ch == "'" then return tspat(rlrec, ssItem, 43, 13)
+  elseif ch == "=" then return tspat(rlrec, ssItem, 21, 20)
+  elseif ch == "*" then return tspat(rlrec, ssItem, 17, 18)
+  elseif ch == "+" then return tspat(rlrec, ssItem, 43, 4)  -- could use more book icons from rltiles
+  elseif ch == "$" then return tspat(rlrec, ssItem, 13, 18)
+  elseif ch == "/" then return tspat(rlrec, ssItem, 39, 21)
+  elseif ch == "\\" then return tspat(rlrec, ssItem, 27, 25)
+
+-- monsters
+  elseif ch == "a" and co == vgaget( 2) then return tspat(rlat, ssMon, 42, 9) -- "assassin b ug"
+  elseif ch == "D" and co == vgaget( 6) then return tspat(rlat, ssMon, 3, 12) -- "bronze dragon"
+  elseif ch == "B" and co == vgaget( 6) then return tspat(rlat, ssMon, 12, 49) -- "bugbear"
+  elseif ch == "C" and co == vgaget( 6) then return tspat(rlat, ssMon, 0, 10) -- "centaur")
+  elseif ch == "c" and co == vgaget(14) then return tspat(rlat, ssMon, 35, 11) -- giant centipede
+  elseif ch == "&" and co == vgaget(12) then return tspat(rlat, ssMon, 20, 8) -- demon I
+  elseif ch == "&" and co == vgaget(12) then return tspat(rlat, ssMon, 21, 8)
+  elseif ch == "&" and co == vgaget(12) then return tspat(rlat, ssMon, 22, 8)
+  elseif ch == "&" and co == vgaget(12) then return tspat(rlat, ssMon, 23, 8)
+  elseif ch == "&" and co == vgaget(12) then return tspat(rlat, ssMon, 24, 8)
+  elseif ch == "&" and co == vgaget(12) then return tspat(rlat, ssMon, 25, 8)
+  elseif ch == "&" and co == vgaget(12) then return tspat(rlat, ssMon, 26, 8)
+  elseif ch == "&" and co == vgaget( 4) then return tspat(rlat, ssMon, 41, 8) -- demon prince
+  elseif ch == "q" and co == vgaget(15) then return tspat(rlat, ssMon, 28, 9) -- disenchantress
+  elseif ch == "e" and co == vgaget(15) then return tspat(rlat, ssMon, 13, 10) -- "elf"
+  elseif ch == "E" and co == vgaget( 1) then return tspat(rlat, ssMon, 22, 12) -- floating eye
+  elseif ch == "f" and co == vgaget( 7) then return tspat(rlat, ssMon, 22, 30) -- ?? "forvalaka"
+  elseif ch == "g" and co == vgaget( 3) then return tspat(rlat, ssMon, 39, 29) -- gel. cube
+  elseif ch == "A" and co == vgaget( 6) then return tspat(rlat, ssMon, 37, 29) -- "giant ant"
+  elseif ch == "b" and co == vgaget( 4) then return tspat(rlat, ssMon, 4, 32)
+  elseif ch == "g" and co == vgaget( 6) then return tspat(rlat, ssMon, 30, 10)
+  elseif ch == "G" and co == vgaget( 4) then return tspat(rlat, ssMon, 32, 10)
+  elseif ch == "D" and co == vgaget(10) then return tspat(rlat, ssMon, 14, 12) -- "green dragon"
+  elseif ch == "u" and co == vgaget( 2) then return tspat(rlat, ssMon, 7, 13)
+  elseif ch == "h" and co == vgaget(12) then return tspat(rlat, ssMon, 48, 29) -- hell hound"
+  elseif ch == "H" and co == vgaget( 6) then return tspat(rlat, ssMon, 31, 10)
+  elseif ch == "i" and co == vgaget(11) then return tspat(rlrec, ssMon, 42, 10)
+  elseif ch == "J" and co == vgaget( 6) then return tspat(rlat, ssMon, 38, 10)
+  elseif ch == "j" and co == vgaget( 2) then return tspat(rlat, ssMon, 49, 9)
+  elseif ch == "k" and co == vgaget( 6) then return tspat(rlat, ssMon, 37, 12) -- "kobold")
+  elseif ch == "l" and co == vgaget( 4) then return tspat(rlat, ssMon, 37, 13) -- ?? "lama nobe"
+  elseif ch == "L" and co == vgaget( 2) then return tspat(rlat, ssMon, 26, 9) -- "leprechaun"
+  elseif ch == "m" and co == vgaget(15) then return tspat(rlat, ssMon, 35, 13) -- "metamorph"
+  elseif ch == "M" and co == vgaget( 6) then return tspat(rlat, ssMon, 8, 8) -- "mimic"
+  elseif ch == "n" and co == vgaget( 4) then return tspat(rlat, ssMon, 14, 9) -- nymph
+  elseif ch == "O" and co == vgaget( 4) then return tspat(rlat, ssMon, 7, 11) -- orc
+  elseif ch == "o" and co == vgaget( 6) then return tspat(rlat, ssMon, 24, 11) -- "osquip"
+  elseif ch == "D" and co == vgaget(15) then return tspat(rlat, ssMon, 28, 32) -- "platinum dragon"
+  elseif ch == "p" and co == vgaget(15) then return tspat(rlat, ssMon, 46, 11) -- "poltergeist"
+  elseif ch == "P" and co == vgaget( 5) then return tspat(rlrec, ssMon, 33, 11)
+  elseif ch == "Q" and co == vgaget( 1) then return tspat(rlat, ssMon, 34, 30) -- "quasit"
+  elseif ch == "D" and co == vgaget(12) then return tspat(rlat, ssMon, 16, 12) -- "red dragon"
+  elseif ch == "r" and co == vgaget( 6) then return tspat(rlat, ssMon, 13, 49) -- rothe
+  elseif ch == "R" and co == vgaget( 6) then return tspat(rlat, ssMon, 38, 33) -- "rust monster"
+  elseif ch == "s" and co == vgaget( 2) then return tspat(rlat, ssMon, 25, 27)
+  elseif ch == "D" and co == vgaget( 7) then return tspat(rlat, ssMon, 10, 12) -- "silver dragon"
+  elseif ch == "S" and co == vgaget(10) then return tspat(rlat, ssMon, 14, 13) -- "snake"
+  elseif ch == "N" and co == vgaget( 5) then return tspat(rlat, ssMon, 1, 13) -- "spirit naga"
+  elseif ch == "I" and co == vgaget( 7) then return tspat(rlat, ssMon, 10, 8) -- "invisible stalker"
+  elseif ch == "t" and co == vgaget( 6) then return tspat(rlat, ssMon, 29, 9) -- troglo
+  elseif ch == "T" and co == vgaget( 6) then return tspat(rlat, ssMon, 19, 13) -- "troll"
+  elseif ch == "U" and co == vgaget(14) then return tspat(rlat, ssMon, 47, 33) -- "umber hulk"
+  elseif ch == "V" and co == vgaget( 4) then return tspat(rlat, ssMon, 24, 13) -- "vampire"
+  elseif ch == "F" and co == vgaget( 5) then return tspat(rlat, ssMon, 41, 32) -- "violet fungus"
+  elseif ch == "v" and co == vgaget( 3) then return tspat(rlat, ssMon, 30, 11) -- "vortex"
+  elseif ch == "w" and co == vgaget( 9) then return tspat(rlat, ssMon, 32, 8) -- "water lord"
+  elseif ch == "d" and co == vgaget(15) then return tspat(rlat, ssMon, 29, 32) -- "white dragon"
+  elseif ch == "W" and co == vgaget( 7) then return tspat(rlat, ssMon, 28, 13) -- "wraith"
+  elseif ch == "X" and co == vgaget( 6) then return tspat(rlat, ssMon, 25, 31) -- ?? "xorn"
+  elseif ch == "x" and co == vgaget( 7) then return tspat(rlat, ssMon, 44, 34) -- "xvart"
+  elseif ch == "y" and co == vgaget(14) then return tspat(rlat, ssMon, 42, 32)
+  elseif ch == "Y" and co == vgaget(15) then return tspat(rlat, ssMon, 40, 13) -- "yeti"
+  elseif ch == "z" and co == vgaget( 3) then return tspat(rlat, ssMon, 19, 31) -- "ziller"
+  elseif ch == "Z" and co == vgaget( 7) then return tspat(rlat, ssMon, 42, 8) -- "zombie"
+  elseif ch == "@" and co == vgaget( 6) then return tspat(rlat, ssMon, 36, 28)
+    end
+  end
+
+local lxminimap = xminimap
+
+function xminimap(C)
+  if minimode == modeASCII then return lxminimap(C) end
+
+  b = 0
+  local ch = gch(C)
+  local av = av(ch)  
+
+  if ch == " " then b = 0
+  elseif ispc(C) then b = 0xFFFFFF
+  elseif ch == "." then b = 0x303030
+  elseif ch == "#" then b = 0xC06060
+  elseif (ch >= "A" and ch <= "Z") then b = 0xFF0000
+  elseif ch == ">" or ch == "<" then b = 0xFF00FF
+  elseif ch == "^" then b = 0x008FFF
+  else b = 0x00FF00
+  end
+  
+  return tilefill(b)
+  end
+
+do local drat = drawAsciiTransparent
+function drawAsciiTransparent()
+        
+  if not mapon then
+    return
+    end
+      
+  -- NLarn draws frames, we do not want them
+  scrfill(IMG, 0, 0, 68, 18, 0)
+
+  -- darken the screen outside of the ASCII map area
+  drawtile(D.output, tileshade(0), 67*fontsize.x, 0, 13*fontsize.x, scrsize.y)
+  drawtile(D.output, tileshade(0), 0, 17*fontsize.y, 67*fontsize.x, 8*fontsize.y)
+
+  drat()
+  end
+end
+
+setwindowtitle("NLarn")
+defaultmodep(modeTiles, 5)
+rungame(caller3("nlarn", "nlarn"))

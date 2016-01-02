@@ -15,6 +15,7 @@ static char **gargv;
 extern int hydraMain(int argc, char ** argv);
 extern int drawMapLua(lua_State *L, int x, int y);
 extern void helpAbout(int x, int y);
+extern void hydraUserdir(const std::string& userdir);
 
 extern int lh_getSounds(lua_State *L);
 
@@ -23,9 +24,16 @@ int lh_hydramain(lua_State *L) {
 
   InternalProcess *P = luaO(1, InternalProcess);
   noteye_setinternal(P, L, 2);
+
   P->exitcode = hydraMain(gargc, gargv);
   P->isActive = false;
 
+  return 0;
+  }
+
+int lh_hydrauserdir(lua_State *L) {
+  checkArg(L, 1, "hydrauserdir");
+  hydraUserdir(luaStr(1));
   return 0;
   }
 
@@ -92,6 +100,7 @@ int main(int argc, char **argv) {
   noteye_globalfun("hydraDIRS", lh_hydraDIRS);
   noteye_globalfun("hydrainfo", lh_hydrainfo);
   noteye_globalfun("hydramain", lh_hydramain);
+  noteye_globalfun("hydrauserdir", lh_hydrauserdir);
   noteye_globalfun("hydrasounds", lh_getSounds);
   noteye_globalfun("sethydrabox", lh_sethydrabox);
   noteye_globalfun("animatehydras", lh_animatehydras);

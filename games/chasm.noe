@@ -1,0 +1,84 @@
+-- Drakefire Chasm
+
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+minipos = {x=1, y=0}
+dofile(commondir.."generic-tile.noe")
+
+function ispc(C)
+  return (gco(C) ~= 0xFF0000) and (gco(C) ~= 0x545454) and (gco(C) ~= 0xFFFFFF) and (gco(C) ~= 0xC0C0C0) and
+    (gco(C) ~= 0xD3D3D3) and (gba(C) == 0) and (gch(C) == "D" or gch(C) == "W")
+  end
+
+function shadowfloor() 
+  return floorcol(0xC05020)
+  end
+
+function xtileaux2(ch, co, av, ba)
+
+  if ba == 0x400000 then 
+    local r = xtileaux(ch,co,av,global_uu,0)
+    return tspatm(r, vaporatc(0xF0F000), ssMon, 0,0)
+  elseif ch == "D" then
+    return tspat(vaporrec, ssMon, 14,4)
+  elseif ch == "W" then
+    return tspat(vaporrec, ssMon, 15,4)
+  elseif ch == "r" then
+    return tspat(vaporrec, ssMon, 4, 5)
+  elseif ch == "b" then
+    return tspat(vaporrec, ssMon, 12,5)
+  elseif ch == "g" then
+    return tspat(vaporrec, ssMon, 0,5)
+  elseif ch == "@" then
+    return tspat(vaporrec, ssMon, 10, 4)
+  elseif ch == "=" then
+    return lavacol(co)
+  elseif ch == "$" then
+    return tspat(vaporrec, ssItem, 9, 4)
+  elseif ch == "%" then
+    return tspatm(floorcol(0x800000), rb, spFlat + spFloor + spIFloor, ch)
+  elseif ch == "*" then
+    return tspat(vaporrec, ssItem, 0, 0)
+  elseif ch == "#" then
+    return wallcol(colormix(co,0))
+  elseif ch == "X" then
+    return tspat(vaporrec, ssItem, 5, 14)
+  elseif ch == "<" then
+    return tspat(vaporrec, ssItem, 14, 0)
+  elseif ch == "-" or ch == "|" or ch == "/" or ch == "\\" then
+    return tspat(vaporrec, ssMon, 0, 14)
+    end
+  end
+
+local lxminimap = xminimap
+
+function xminimap(C)
+  if minimode == modeASCII then return lxminimap(C) end
+
+  b = 0
+  local ch = gch(C)
+  local av = av(ch)
+  
+  if ch == " " then b = 0
+  elseif ispc(C) then b = 0xFFFFFF
+  elseif ch == "." then b = 0x603030
+  elseif ch == "#" then b = 0xC06060
+  elseif (ch >= "A" and ch <= "Z") or (ch >= "a" and ch <= "z") or (ch == "@") then b = 0x2F08000
+  elseif ch == "=" then b = 0x800000
+  elseif ch == "%" then b = 0xFFC0C0
+  elseif ch == "$" then b = 0xFFD700
+  elseif ch == "*" then b = 0xFFD700
+  elseif ch == (">") or ch == ("<") then b = 0xFF00FF
+  else b = 0x0000FF
+  end
+  
+  return tilefill(b)
+  end
+
+mapregion = {x0=0, y0=2, x1=80, y1=22}
+
+setwindowtitle("Drakefire Chasm")
+defaultmodep(modeTiles, 3)
+rungame(0)
+

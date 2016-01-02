@@ -129,31 +129,17 @@ SDL_Surface *gfxreal;
 
 bool hadGL = false;
 
-FILE *f = fopen("noteyedebug.txt", "wt");
-
 void Window::close() {
-  fprintf(f, "disableGL\n");
-  fflush(f);
   if(flags & SDL_WINDOW_OPENGL) disableGL(this);
   else if(usetex) disableSDL(this);
-  fprintf(f, "freesurface\n");
-  fflush(f);
   if(s) SDL_FreeSurface(s);
   s = NULL;
-  fprintf(f, "destroy textures\n");
-  fflush(f);
   if(tex) SDL_DestroyTexture(tex);
   tex = NULL;
-  fprintf(f, "destroy renderer\n");
-  fflush(f);
   if(ren) SDL_DestroyRenderer(ren);
   ren = NULL;
-  fprintf(f, "destroy window\n");
-  fflush(f);
   if(win) SDL_DestroyWindow(win);
   win = NULL;
-  fprintf(f, "close done\n");
-  fflush(f);
   }
 
 bool Window::useSurfaceSize(int x, int y) {
@@ -182,23 +168,16 @@ bool Window::useSurfaceSize(int x, int y) {
 
 bool Window::open(int x, int y, int newflags, int newrenflags, int px, int py) {
 
-  fprintf(f, "open %d,%d,%d,%d,%d,%d\n", x,y,newflags, newrenflags,px,py);
-  fflush(f);
-
   if(win && (flags ^ SDL_WINDOW_FULLSCREEN) == newflags && x == sx && y == sy) {
     SDL_SetWindowFullscreen(win, newflags & SDL_WINDOW_FULLSCREEN);
     flags ^= SDL_WINDOW_FULLSCREEN;
     }
 
   if(win && flags != newflags) {
-  fprintf(f, "close\n", x,y,newflags, newrenflags,px,py);
-  fflush(f);
     close();
     }
   
   if(win && (x != sx || y != sy)) {
-  fprintf(f, "setwindowsize\n", x,y,newflags, newrenflags,px,py);
-  fflush(f);
     sx = x; sy = y;
     SDL_SetWindowSize(win, x, y); // to do check
 #ifdef OPENGL
@@ -210,14 +189,10 @@ bool Window::open(int x, int y, int newflags, int newrenflags, int px, int py) {
     }
 
   if(win && (px != SDL_WINDOWPOS_UNDEFINED || py != SDL_WINDOWPOS_UNDEFINED)) {
-  fprintf(f, "setwindowpos\n", x,y,newflags, newrenflags,px,py);
-  fflush(f);
     SDL_SetWindowPosition(win, px, py); // to do check
     }
 
   if(!win) {
-  fprintf(f, "createwin\n", x,y,newflags, newrenflags,px,py);
-  fflush(f);
     flags = newflags; sx = x; sy = y;
     
     win = SDL_CreateWindow(title.c_str(), px, py, sx, sy, flags);
@@ -230,8 +205,6 @@ bool Window::open(int x, int y, int newflags, int newrenflags, int px, int py) {
   #endif
     }
 
-  fprintf(f, "moar\n", x,y,newflags, newrenflags,px,py);
-  fflush(f);
   if(ren && renflags != newrenflags) {
     if(usetex) disableSDL(this);
     SDL_DestroyTexture(tex);

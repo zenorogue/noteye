@@ -1,0 +1,32 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+minipos = {x=1, y=0.1}
+mapregion = {x0=0, y0=2, x1=80, y1=22}
+
+dofile(commondir.."generic-tile.noe")
+
+function xtileaux2(ch, co, av, ba)
+
+  if ch == "/" and (co == vgaget(6) or co == vgaget(4)) then
+    return tspatc(rb, spFlat + spFloor + spCeil + spIFloor, ch)
+  elseif ch == "+" and (co == vgaget(6) or co == vgaget(4)) then
+    return tspatm(wallcol(co), rb, ssWall, ch)
+  elseif ch == "=" then
+    return lavacol(co)
+  elseif ch == "%" then
+    return tspatc(rb, spFloor + spIItem, ch)
+  elseif ch == "0" or ch == "!" then
+    return tspat(rb, ssMon, ch)
+    end
+  end
+
+-- DoomRL has its own music
+disablemusic()
+
+dirkeys = keytabs.arrow
+
+defaultmodep(modeFPP, 7)
+setwindowtitle("Doom: the Roguelike")
+rungame(caller3("DoomRL", "doomrl"))
+

@@ -1,0 +1,16 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+# generic LIBTCOD
+
+dofile(commondir.."generic-tile.noe")
+
+function sendmouse(ev)
+  pixeltoproc(ev)
+  netsendmouse(ev)
+  end
+
+defaultmodep(modeTiles, 1)
+rungame(0)
+
+setwindowtitle("LibTCOD roguelike")

@@ -1,0 +1,39 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+mapregion = {x0=0, y0=0, x1=80, y1=19}
+minipos = {x=1, y=0}
+
+-- we save the VGA palette
+savevga = {}
+for i=1,15 do savevga[i] = vgaget(i) end
+
+-- set the official Frozen Depth colors
+setpalette(palettes.frozen, 7)
+
+-- Frozen Depths needs a cusor
+drawcursor = true
+
+-- Frozen Depths wants to input directions as numbers
+dirkeys = keytabs.number
+
+-- do not find the PC on the help screen!
+lfindpc = findpc
+
+function findpc()
+  if string.find(getline(0), "Help Screen") then 
+    mapon = false 
+    return
+    end
+  
+  return lfindpc()
+end
+
+
+dofile(commondir.."generic-tile.noe")
+defaultmodep(modeTiles, 1)
+setwindowtitle("Frozen Depths")
+rungame(caller3("Frozen Depths", "fdepths"))
+
+-- we restore the original VGA palette
+for i=1,15 do vgaset(i, savevga[i]) end

@@ -1,0 +1,332 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+loadfont("BrogueFont5", 16, 16, fontadj.brogue)
+
+haveTiles = file_exists("gfx/font-10_anim.png")
+
+if haveTiles then
+  loadfont("font-10_anim", 16, 48, fontadj.brogue)
+  MF = Fonts["font-10_anim"]
+  MF.alias2 = imagealias(MF.png, "fonts/font-10_anim.png")
+  WallUp = addtile(MF.png, 48, 48, 16, 12, transAlpha)
+  WallDown = addtile(MF.png, 48, 60, 16, 12, transAlpha)
+else
+  localmessage("hint: use Oryx's tile version of Brogue, and")
+  localmessage("copy font-10_anim.png to 'gfx' in NotEye")
+  localmessage("http://brogue.createforumhosting.com/graphical-tiles-test-t579.html")
+  MF = Fonts["BrogueFont5"]
+  end
+
+dofile(commondir.."generic-tile.noe")
+conssize = V(100, 34)
+map = rectXY(21, 3, 100, 32)
+minipos = V(1, 0.95)
+
+lprepareconsole = prepareconsole
+function prepareconsole()
+  map = rectXY(21, 3, conssize.x, conssize.y-2)
+  lprepareconsole()
+  MAP2 = renewscreen(MAP2, map.size.x, map.size.y)
+  end
+
+function settilectr()
+  tilectr = screen.top + screen.size * V(3/5, 1/2)
+  end
+
+--addtomenu(mainmenu, ".", writechoice("switch BRogue font"),
+--  function() 
+--    switchfont()
+--    end
+--  )
+
+do local oldxtileaux = xtileaux
+
+function deunic(av)
+  if av == 183 then av = 250 -- "." -- floor
+  elseif av == 128+1 then av = avf(":") -- chasm
+  elseif av == 128+2 then av = 127
+  elseif av == 128+3 then av = avf("^")
+  elseif av == 128+4 then av = avf("&") -- foliage
+  elseif av == 128+5 then av = 12 -- "," -- amu
+  elseif av == 128+6 then av = 13 -- "?" -- scroll
+  elseif av == 128+7 then av = 9  -- "=" -- ring
+  elseif av == 128+8 then av = 24 -- "(" -- weapon
+  elseif av == 128+9 then av = 11 -- "0" -- gem/turret
+  elseif av == 128+10 then av = avf(":") -- missing
+  elseif av == 128+11 then av = avf("+")
+  elseif av == 128+12 then av = avf("$")
+    end
+  return av
+  end
+
+-- brogue still uses old ugly functions...
+
+function xtileaux(ch, co, av, ba)
+
+  local uu = global_uu
+
+  local function recco(x) return tilerecolor(x, co) end
+  local function recba(x) return tilerecolor(x, ba) end
+  local function rgf(x) return fget(MF.font, x) end
+  local function rgfav(x) return haveTiles and fgetav(MF.font, x) or fgetav(MF.font, x%256) end
+  
+  local function floorroof(fco, rco)
+    return 
+      tilemerge(
+        tilespatial(tilerecolor(WT[10][uu], fco), spFlat + spFloor + spIFloor),
+        tilespatial(tilerecolor(WT[4][uu], rco), spCeil)
+        )    
+    end
+
+  local function floorcol(fco)
+    return floorroof(fco, fco)
+    end
+
+  local function lavacol(fba, fco)
+    return 
+      tilemerge(
+        tilespatial(tilerecolor(WT[4][uu], fba), spFlat + spFloor + spIFloor),
+        tilespatial(tilerecolor(WT[4][uu], colormix(fco, 0)), spCeil)
+        )
+    end
+  
+  local av2 = av
+  if av2 >= 256 and av2 <= 511 then av2 = av2 - 256 end
+  
+  if av < 0 or (co == ba and ba == 0) or av2 == 32 or av == 512+32 then return 
+    tilespatial(tilefill(0), spFlat + spFloor + spIFloor)
+    
+  elseif av2 == 35 or av2 == 177 then
+    return 
+      haveTiles and tilemerge(
+        tilespatial(tilefill(ba), spICeil + spIWall + spWall + spFlat + spWallTop + spWallBot),
+        recco(tilemerge3(
+          tilespatial(rgfav(177), spICeil + spWallTop + spWallBot),
+          tilespatial(WallDown, spIWall + spWall),
+          tilespatial(rgfav(av), spFlat)
+          ))
+        )
+      or tilespatial(recba(WT[6][uu]), spFlat + spWall + spIWall + spICeil + spWallTop + spWallBot)
+  elseif av2 == 128+9 then av = 11 -- "0" -- gem/turret
+    return tilemerge(tilespatial(recba(WT[6][uu]), spFlat + spWall + spIWall + spICeil + spWallTop + spWallBot),
+      tilespatial(recco(rgfav(av)), spFlat + spWall + spIWall + spICeil + spWallTop + spWallBot))
+  elseif av2 == 183 then
+    return tilemerge(floorcol(ba), tilespatial(recco(rgfav(av)), spFlat + spFloor + spIFloor))
+  elseif ch == "+" then
+    return tilespatial(tilemerge(recba(WT[6][uu]), recco(rgfav(av))), spFlat + spWall + spIWall + spICeil + spWallTop + spWallBot)
+  elseif av2 == 229 or av2 == 150 or av2 == 227 then
+    return tilespatial(tilemerge(recba(WT[6][uu]), recco(rgfav(av))), spFlat + spWall + spIWall + spICeil + spWallTop + spWallBot)
+  elseif ch == "=" then
+    return tilemerge(floorcol(ba), tilespatial(recco(rgfav(av)), spFlat + spFloor + spIFloor))
+  elseif av2 == 250 then
+    return tilemerge(floorcol(ba), tilespatial(recco(rgfav(av)), spFlat + spFloor + spIFloor))
+  elseif ch == "\"" or av2 == 128+4 or av2 == 128+3 or av2 == 128+5 or av2 == 128+11 or av2 == 128+12 or av2 == 128+6 or av2 == 128+7 
+    or av2 == 128+8 then
+    return tilemerge(floorcol(ba), adjTppMonster(recco(rgfav(av))))
+  elseif av2 == 128+1 or av2 == 128+2 then
+    return tilemerge(floorroof(ba,co), tilespatial(recco(rgfav(av)), spFlat + spFloor + spIFloor))
+  elseif (av2 >= 64 and av2 <= 90) or (av2 >= 97 and av2 <= 122) then
+    return tilemerge(floorcol(ba), adjTppMonster(recco(rgfav(av))))
+  elseif av2 == 126 and haveTiles then
+    return tilemerge(floorcol(ba), tilespatial(recco(rgfav(av)), spFlat + spFloor + spIFloor))
+  elseif ch == "~" then
+    return lavacol(ba, co)
+  else
+    return tilemerge(floorcol(ba), adjTppMonster(recco(rgfav(av))))
+    end
+  end
+end
+
+local lxminimap = xminimap
+
+function xminimap(C)
+  if minimode == modeASCII then return lxminimap(C) end
+  b = 0
+  local ch = gch(C)
+  local av = av(ch)
+  
+  if ispc(C) then b = 0xFFFFFF
+  elseif ch == (">") or ch == ("<") then b = 0xFF00FF
+  else b = gba(C)
+  end
+  
+  return tilefill(b)
+  end
+
+function lettercheck(x)
+  local av,co,ba = gavcoba(x)
+  if av >= 512 and av ~= 512+32 then 
+    mapon = false; 
+    return x 
+    end
+  return 0
+  end
+  
+function stripfont(x)
+  if x==0 then return 0 end
+  local av,co,ba = gavcoba(x)
+  if usingTiles then
+    if av > 0 and av < 512 and haveTiles then 
+      return x
+    elseif av >= 512 then
+      av = av - 512
+      end
+    end
+  av = deunic(av)
+  local ret = tileavcobaf(av, co, ba, Font)
+  return ret
+  end
+
+IMGswitch = renewscreen(IMGswitch, conssize.x, conssize.y)
+
+do local ldrawdisplay = drawdisplay
+function drawdisplay()
+  if not string.match(curfont, "Brogue") then
+    profstart("fontswitch")
+    scrcopy(IMG, 0, 0, IMGswitch, 0,0, conssize.x, conssize.y, stripfont)
+    profend("fontswitch")
+    IMGorig = IMG
+    IMG = IMGswitch
+    ldrawdisplay()
+    IMG = IMGorig
+  else
+    ldrawdisplay()
+    end
+  end
+end
+
+function addbb(x)
+  return tilemerge( tilefill(0x404040), x)
+  end
+
+function sendmouse(ev)
+  -- handle the buttons
+  V.be(ev)
+  mousepos = ev
+  local evx = ev.x
+  local evy = ev.y
+  local ex = evx / fontsize.x
+  local ey = evy / fontsize.y
+  if not itemcnt then itemcnt = 0 end
+  if not invst then invst = 0 end
+  if not ylast then ylast = 0 end
+  if (ex < map.top.x or ey < map.top.y or ey >= map.bot.y) then
+    ev.x = ex
+    ev.y = ey
+  else
+    pixeltoproc(ev)
+    end
+  netsendmouse(ev)
+  ev.x = evx
+  ev.y = evy
+  end
+
+function isinv(tile)
+  local ch = gch(tile)
+  return gco(tile) > 0 and (ch == ")" or ch == "}")
+  end
+
+function nonemp(tile)
+  return gchv(tile) ~= 32 and gba(tile) ~= gco(tile)
+  end
+
+lcopymap = copymap
+function copymap()
+  lcopymap()
+  itemcnt = 0
+  usingTiles = gchv(scrget(S, 1, 0)) > 128
+  if usingTiles then
+    StreamSetFont = 0
+    end
+  if pcursor then pcursor.x = -1 end
+  if mapon and mode ~= modeASCII and mode ~= modeMini and usingTiles then
+    scrcopy(
+      S,map.top.x,map.top.y,
+      IMG, map.top.x,map.top.y, 
+      map.size.x, map.size.y, lettercheck
+      )
+    end
+  end
+
+msgbox = {x0=21, x1=100, y0=0,y1=3}
+
+dofile(commondir.."hydra-ogg.noe")
+loadsounds()
+
+function gotgmessage(s)
+  function mac(pat, snd, vol)
+    if string.match(s, pat) and snd and snd > 0 then
+      playsound(snd, vol)
+      return true
+      end
+    return false
+    end
+
+  lost= mac("rough stone", SndPickup, 50)
+  or mac("now have", SndPickup, 50)
+  or mac("pack is too full", SndSmash4, 50)
+  or mac("launches a sticky", SndChaos, 50)
+  or mac("splits in two", SndSilver, 50)
+  or mac("begin to hallucinate", SndChaos, 50)
+  or mac("scalding poison fills", SndPoison, 50)
+  or mac("trembles and time freezes", SndPoison, 50)
+  or mac("is frozen in place", SndIce, 50)
+  or mac("emits a flash of light", SndGold, 50)
+  or mac("slows down", SndPoison, 50)
+  or mac("confused", SndPoison, 50)  
+  or mac("pieces of gold", SndGold, 50)  
+  or mac("paralyzed", SndPoison, 50)  
+  or mac("pulses, and the damage is shared", SndPoison, 50)
+  or mac("hear something get destroyed", SndDeath, 50)
+  or mac("now familiar enough", SndTada, 50)
+  or mac("feel a sense of loss", SndDeath, 50)
+  or mac("casts a ", SndMystery, 50)
+  or mac("fire", SndFire, 50)
+  or mac("flame", SndFire, 50)
+  or mac("pressure plate", SndPickup, 50)
+  or mac("stuck fast", SndChaos, 50)
+  or mac("stench of rot", SndBone, 50)
+  or mac("lichen's grasping", SndPoison, 50)
+  or mac("profusely", SndBone, 50)
+  or mac("faithful ally", SndTada, 50)
+  or mac("bound to your will", SndTada, 50)
+  or mac("struggle", SndChaos, 50)
+  or mac("seizes", SndChaos, 50)
+  or mac("holding your legs", SndChaos, 50)
+  or mac("deflect", SndMystery, 50)
+  or mac("flask shatters", SndSplash, 50)
+  or mac("cleansing light", SndMystery, 50)
+  or mac("surge of energy", SndMystery, 50)
+  or mac("protective golden", SndMystery, 50)
+  or mac("piercing shriek", SndMystery, 50)
+  or mac("fabric of space", SndMystery, 50)
+  or mac("brilliant flash", SndMystery, 50)
+  or mac("numbing torrent", SndMystery, 50)
+  or mac("has a map", SndMystery, 50)
+  or mac("turquoise light", SndMystery, 50)
+  or mac("newfound strength", SndTada, 50)
+  or mac("weakens", SndSplash, 50)
+  or mac("the fallen", SndTada, 50)
+  or mac("stole", SndWoof, 50)
+  or mac("floats away", SndSplash, 50)
+  or mac("tasted delicious", SndDrink, 50)
+  or mac("yummy mango", SndDrink, 50)
+  or mac("come to level", SndTada, 50)
+  or mac("to be cursed", SndMystery, 50)
+  or mac("are hungry", SndWoof, 50)
+  or mac("with hunger", SndWoof, 50)
+  or mac("appears", SndMystery, 50)
+  or mac("combat in the distance", SndSmash3, 50)
+  or mac("die", SndDeath, 50)
+  or mac("death", SndDeath, 50)
+  or mac("hit", SndSmash3, 50)
+  or mac("miss", SndSmash4, 50)
+  or mac("defeated", SndDeath, 50)
+  or mac("dispatch", SndDeath, 50)
+  end
+
+setwindowtitle("Brogue")
+defaultmodep(modeTiles, 6)
+
+rungame("whatever")

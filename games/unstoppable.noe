@@ -1,0 +1,94 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+dofile(commondir.."generic-tile.noe")
+
+mapregion = {x0=0, y0=2, x1=66, y1=24}
+minipos = {x=1, y=0}
+
+-- Unstoppable wants to input directions as VI keys
+dirkeys = keytabs.vidot
+
+-- PC is blue, rogue AI is red
+
+function ispc(C)
+  return gch(C) == "@" and gco(C) == vgaget(9)
+  end
+
+-- do not find PC on help screens
+
+lfindpc = findpc
+
+function findpc()
+  lfindpc()
+  end
+
+-- we should rotate fire keys in Unstoppable
+
+lrotatekey_all = rotatekey_all
+
+-- preprocess and send the direction key to the game/server
+function rotatekey_all(ev)
+
+  if dorotate(ev) then
+    for x=0,7 do 
+       if iskey(ev, keytabs.left[x]) and not modshiftpressed(ev.mod) then
+         consumetext(ev)
+         dirkeys = keytabs.left
+         local t = rotatekey_dir(ev, x, 8)
+         dirkeys = keytabs.vidot
+         return t
+         end
+       end
+    end
+         
+  return lrotatekey_all(ev)
+  end
+
+-- loop the map in the graphical modes
+
+ldrawdisplay = drawdisplay
+
+function drawdisplay()
+  if mapon and (mode == modeTiles or mode == modeISO or mode == modeFPP or mode == modeTPP) then
+    renewscreen(MAP, map.size.x*3, map.size.y*3)
+    renewscreen(Tiles, map.size.x*3, map.size.y*3)
+    scrcopy(MAP, 0, 0, MAP, map.size.x*1, 0, map.size.x, map.size.y, TFUN_COPY)
+    scrcopy(MAP, 0, 0, MAP, map.size.x*2, 0, map.size.x, map.size.y, TFUN_COPY)
+    scrcopy(MAP, 0, 0, MAP, 0, map.size.y*1, map.size.x*3, map.size.y, TFUN_COPY)
+    scrcopy(MAP, 0, 0, MAP, 0, map.size.y*2, map.size.x*3, map.size.y, TFUN_COPY)
+
+    playerpos.x = playerpos.x + map.size.x
+    playerpos.y = playerpos.y + map.size.y
+    map.size.x = map.size.x*3
+    map.size.y = map.size.y*3
+    
+    ldrawdisplay()
+
+    map.size.x = map.size.x/3
+    map.size.y = map.size.y/3
+    playerpos.x = playerpos.x - map.size.x
+    playerpos.y = playerpos.y - map.size.y
+  
+  elseif (mode == modeMini or mode == modeMed) then
+    renewscreen(MAP, map.size.x*3, map.size.y*3)
+    scrcopy(MAP, 0, 0, MAP, map.size.x*1, 0, map.size.x, map.size.y, TFUN_COPY)
+    scrcopy(MAP, 0, 0, MAP, map.size.x*2, 0, map.size.x, map.size.y, TFUN_COPY)
+    scrcopy(MAP, 0, 0, MAP, 0, map.size.y*1, map.size.x*3, map.size.y, TFUN_COPY)
+    scrcopy(MAP, 0, 0, MAP, 0, map.size.y*2, map.size.x*3, map.size.y, TFUN_COPY)
+
+    scrcopy(MAP, playerpos.x + map.size.x/2, playerpos.y + map.size.y/2, MAP, 0, 0, map.size.x, map.size.y, TFUN_COPY)
+    lplayerpos = playerpos
+    playerpos = {x = map.size.x/2, y = map.size.y/2}
+    ldrawdisplay()
+    playerpos = lplayerpos
+
+  else
+    ldrawdisplay()
+    end
+  
+  end
+  
+defaultmodep(modeTiles, 1)
+setwindowtitle("Unstoppable")
+rungame(caller3("Unstoppable", "unstoppable"))

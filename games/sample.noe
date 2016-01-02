@@ -1,0 +1,155 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+-- dirkeys = numberkeys
+
+-- Java exports only one function "jni", we need to 
+-- link "monsterid" to this function (parameter "1" is added,
+-- to identify monsterid, if we ever need to use more functions)
+
+if not noteyeloaded then
+  if getcrashval() == 1 then
+    noteyecrash = true
+    end
+  setcrashval(1)
+  threaded = true
+  print("Sample Roguelike!")
+  game_to_launch = "sample"
+  dofile ((noteyedir or "") .. "common/noteye.noe")
+  return
+  end
+
+if jni then
+  print "jni activated"
+  function getmapinfo()
+    return jni(1)
+    end
+  end
+
+conssize = V(80, 25)
+
+dofile(commondir.."generic-tile.noe")
+dofile(commondir.."dawnlike.noe")
+
+-- add a config option to use DawnLike in the Options menu
+
+usedawnlike = true
+
+local oldd = findbykey(graphmenu, "d")
+if oldd then oldd.key = addnoshift(oldd.key) end
+
+addtomenu(graphmenu, addshift(KEYS.d), writechoicef(
+  function() 
+    return "use the dawnlike tileset: \ve"..boolyesno(usedawnlike)
+    end),
+  function()
+    pickbool("usedawnlike", not usedawnlike)
+    end
+  )
+
+map = rectXY(0,2,80,22)
+minipos = V(1, 0.1)
+
+setwindowtitle("Sample libnoteye Roguelike")
+defaultmodep(modeASCII, 1)
+
+lnoteyesleep = noteyesleep
+
+-- test if it works with other errors by renaming yxtile to xtile:
+
+crashonpc = false
+
+tilelayers = {0,1}
+
+function getfloorat(x, y)
+  if gch(scrget(MAP, x, y)) == "#" then return 0 end
+  return 21
+  end
+
+function iswallat(x, y)
+  return gch(scrget(MAP, x, y)) == "#" 
+  end
+
+
+function xtileaux2(ch, co, av, ba)
+
+  if usedawnlike and ch == "#" then
+    local pic = dawnwall(0, 3)
+    return pic
+  elseif usedawnlike then
+    local pic = dawnfloor()
+    local d = dawnmons[ch]
+    if d then
+      local mpic = dawnmonster(d[1], d[2], d[3])
+      local mon = (mapinfo[global_y+2] or {})[global_x]
+      local t = mon and mon.id or 0
+      pic = tilemerge(pic, tilelayer(applymoveshift(mpic, t), 1))
+      end
+    return pic
+
+  elseif ch == "@" or (ch >= "a" and ch <= "z") or (ch >= "A" and ch <= "Z") then
+  
+    createbord()
+
+    if crashonpc then return 0/nil end
+    -- for monsters, we use the "monsterid" information
+    -- to do "applymoveshift"
+    local floor = floorcol(vgaget(8))
+    local pic = tilespatial(tilerecolor(fget(FontB, ch), co), spFlat + spMonst + spIItem)
+
+    local mi = (mapinfo[global_y+2] or {})[global_x]
+    pic = applymoveshift(pic, (mi and mi.id and mi.id) or 0)
+    
+    return tilemerge(floor, tilelayer(pic, 1))
+    end
+  end
+
+-- call 'getmapinfo' to get the map info
+-- we also broadcast/receive this mapinfo when streaming,
+-- so the monsters are animated in recordings too
+
+mapinfo = {}
+
+local lcopymap = copymap
+function copymap()
+  lcopymap()
+  end
+
+function copygamedata()
+  if getmapinfo then
+    mapinfo = getmapinfo()
+    if maptocopy then broadcast(sendmapinfo) end
+    end
+  end
+
+function sendmapinfo(X)
+  nwriteint(X, nepMapInfo)
+  nwriteobj(X, mapinfo)
+  end
+
+local lhandlenep = nhandlenep
+function nhandlenep(X, rscr, rtime, nep)
+  if nep == nepMapInfo then
+    mapinfo = nreadobj(X)
+    broadcast(sendmapinfo)
+  else lhandlenep(X, rscr, rtime, nep)
+    end
+  end
+
+-- cause an error on F8
+
+lhandlespecialkeys = handlespecialkeys
+function handlespecialkeys(ev)
+  if iskey(ev, KEYS.F8) then 
+    return (1/nil)
+  elseif iskey(ev, KEYS.F7) and ev.type == evKeyDown then 
+    print("add crash")
+    crashonpc = not crashonpc
+    return true
+    end
+  lhandlespecialkeys(ev)
+  end
+
+if calltest then calltest(5,7) end
+
+rungame("whatever")

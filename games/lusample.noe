@@ -1,0 +1,215 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+-- in this sample, a whole game is written in Lua (in the NotEye script)
+-- it can be activated with Shift+L in the main menu
+
+-- dirkeys = numberkeys
+
+math.randomseed(os.time())
+
+conssize = V(80, 25)
+tilelayers = {0,1}
+
+dofile(commondir.."generic-tile.noe")
+dofile(commondir.."dawnlike.noe")
+
+-- add a config option to use DawnLike in the Options menu
+
+usedawnlike = true
+
+local oldd = findbykey(graphmenu, "d")
+if oldd then oldd.key = addnoshift(oldd.key) end
+
+addtomenu(graphmenu, "D", writechoicef(
+  function() 
+    return "use the dawnlike tileset: \ve"..boolyesno(usedawnlike)
+    end),
+  function()
+    pickbool("usedawnlike", not usedawnlike)
+    end
+  )
+
+map = rectXY(0,2,80,22)
+minipos = V(1, 0.1)
+
+setwindowtitle("LUSAMPLE")
+defaultmodep(modeASCII, 1)
+
+function lgput(v, chr, fore, back)
+  scrset(S, v.x, v.y, tilemerge(tilefill(back), tilerecolor(fget(Font, chr), fore)))
+  end
+
+-- required by the Dawnlike tileset
+function getfloorat(x, y)
+  if gamemap[y+2] and gamemap[y+2][x] == "." then return 19 end
+  return 0
+  end
+
+function iswallat(x, y)
+  return gamemap[y+2] and gamemap[y+2][x] == "#"
+  end
+
+function xtileaux2(ch, co, av, ba)
+
+  if usedawnlike and ch == "#" then
+    local pic = dawnwall(0, 1)
+    return pic
+  elseif usedawnlike then
+    local pic = dawnfloor()
+    local d = dawnmons[ch]
+    if d then
+      local mpic = dawnmonster(d[1], d[2], d[3])
+      local mon = whoishere[global_y+2][global_x]
+      if not mon then
+        print("no monster, ch = "..ch)
+        return pic
+        end
+      pic = tilemerge(pic, tilelayer(applymoveshift(mpic, mon.id), 1))
+      end
+    return pic
+  elseif ch == "@" or (ch >= "a" and ch <= "z") or (ch >= "A" and ch <= "Z") then
+    createbord()
+    local floor = floorcol(vgaget(2))
+    local pic = tilespatial(tilerecolor(fget(FontB, ch), co), spFlat + spMonst + spIItem)
+    local mon = whoishere[global_y+2][global_x]
+    pic = applymoveshift(pic, mon.id)
+    return tilemerge(floor, tilelayer(pic, 1))
+    end
+  end
+
+
+whoishere = { }
+
+for y = 0,22 do
+  whoishere[y] = {}
+  end
+
+function addmon(mon)
+  whoishere[mon.at.y][mon.at.x] = mon
+  end
+
+function removemon(mon)
+  whoishere[mon.at.y][mon.at.x] = nil
+  end
+
+function newmonster(v,char,id)
+  local mon = { at = v, ch = char, id = id }
+  addmon(mon)
+  return mon
+  end
+
+function movemonster(mon, v)
+  whoishere[mon.at.y][mon.at.x] = nil
+  mon.at = v
+  addmon(mon)
+  return mon
+  end
+
+function movemonsters()
+  for k,mon in pairs(monsters) do
+    local nx = mon.at.x
+    local ny = mon.at.y
+    if nx > player.at.x then nx = nx - 1 end
+    if nx < player.at.x then nx = nx + 1 end
+    if ny > player.at.y then ny = ny - 1 end
+    if ny < player.at.y then ny = ny + 1 end
+    if gamemap[ny][nx] == "#" then
+      -- do nothing (should move to some other place, but...)
+    elseif whoishere[ny][nx] == nil then
+      movemonster(mon, V(nx, ny))
+    elseif whoishere[ny][nx] == player then
+      print("game over")
+      print("killed by "..mon.ch)
+      stoploop = true
+      end
+    end
+  end
+
+player = newmonster(V(5, 5), "@", 0)
+
+monsters = { }
+
+ids = 0
+
+function closetoplayer(lxy)
+  local pat = player.at  
+  return lxy.x >= pat.x-3 and lxy.x <= pat.x+3 and lxy.y >= pat.y-3 and lxy.y <= pat.y+3
+  end
+
+function createenemy()
+  local lxy = player.at
+  while whoishere[lxy.y][lxy.x] or closetoplayer(lxy) do
+    lxy = V(math.random(10,70), math.random(3,20))
+    end
+  ids = ids+1
+  monsters[ids] = newmonster(lxy, string.char(math.random(65, 90)), ids)
+  end
+
+createenemy()
+createenemy()
+
+gamemap = {}
+
+for y=2,21 do
+  gamemap[y] = {}
+  for x=0,79 do
+    gamemap[y][x] = "#"
+    end
+  end
+
+for y=3,20 do
+  for x=1,78 do
+    gamemap[y][x] = "."
+    end
+  end
+
+function luagame()
+  while not stoploop do
+
+    for x=0,79 do
+      for y=2,21 do
+        local c = gamemap[y][x]
+        if c == "#" then
+          lgput(V(x, y), "#", vgaget(12), vgaget(0))
+        else
+          lgput(V(x, y), ".", vgaget(2), vgaget(0))
+          end
+        end
+      end
+
+    lgput(player.at, "@", vgaget(14), vgaget(0))
+    
+    for k,v in pairs(monsters) do
+      lgput(v.at, v.ch, vgaget(9), vgaget(0))
+      end
+    
+    luag.cursor = V.copy(player.at)
+    luag.cursor.size = 1
+    luag.refresh()
+    local ev = luag.getch()
+    if ev then
+      if ev.char == "q" then
+        stoploop = true
+      elseif ev.char == "." or (ev.dxy and ev.dxy.x == 0 and ev.dxy.y == 0) then
+        movemonsters()
+      elseif ev.dxy then
+        local newloc = player.at + ev.dxy
+        local mon = whoishere[newloc.y][newloc.x]
+        if mon then
+          createenemy()
+          if math.random(100) < 75 then createenemy() end
+          gamemap[newloc.y][newloc.x] = "#"
+          removemon(mon)
+          monsters[mon.id] = nil
+        else
+          movemonster(player, newloc)
+          end
+        movemonsters()
+        end
+      end
+    end
+  end
+
+rungame("luagame")
+luagame = nil

@@ -1,0 +1,20 @@
+-- which version of NotEye is this noe-file compatible with
+gamenoteyever = 0x750
+
+dofile(commondir.."generic-tile.noe")
+
+mapregion = {x0=0, y0=3, x1=67, y1=24}
+minipos = {x=1, y=0}
+
+-- Toby the Trapper wants to input directions as VI keys
+dirkeys = keytabs.vidot
+
+function xtileaux2(ch, co, av, ba) 
+  if ch == "^" then
+    return tspatm(floorcol(co), rb, spFlat + spFloor + spIFloor, ch)
+    end
+  end
+
+defaultmodep(modeTiles, 1)
+setwindowtitle("Toby the Trapper")
+rungame(caller3("Toby the Trapper", "trapper"))
