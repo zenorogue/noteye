@@ -1,7 +1,7 @@
 all: ../hydra.exe ../noteye.exe
 
-CFLAGS=-g
 #CFLAGS=-g
+CFLAGS=-O3
 DEF=-DHYDRA -DWINDOWS -DOPENGL
 
 noteye-ho.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp windows.cpp opengl.cpp

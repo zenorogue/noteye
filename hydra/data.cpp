@@ -695,7 +695,7 @@ const char* helpinfo[HELPLEN] = {
 //"\bjHydra Slayer uses the following music from Rogue Bard:\n"
 //"* \"The naive Bard\" by Bushy (a cover by Mingos)\n"
 //"* \"Azog's March\" by jice\n"
-"See more at http://roguebard.eptalys.net\n"
+//"See more at http://roguebard.eptalys.net\n"
 "\biThanks to Ancient, Xecutor, JLC, sbluen, cephalopid, Legend, and "
 "CommentLurker for their bug reports, suggestions, and other help!\n\n"
 "\boAnd thanks to you for playing!"

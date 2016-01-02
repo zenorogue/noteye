@@ -1017,6 +1017,8 @@ function handlemousewindows(ev)
   return false
   end
 
+function havetrailer = false
+
 function invoke_trailer()
   if trailer and trailer.phase == 3 then
     trailer = {at = getticks(), phase = 4}
@@ -1032,10 +1034,10 @@ function invoke_trailer()
 function handlemouse2(ev)
   mousepos = V.be(ev)
   
-  -- if ctrlpressed() and ev.type == evMouseDown then
-  --   invoke_trailer()
-  --   return
-  --   end
+  if havetrailer and ctrlpressed() and ev.type == evMouseDown then
+    invoke_trailer()
+    return
+    end
 
   if ctrlpressed() then
     lsendmouse(ev)
