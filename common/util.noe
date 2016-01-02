@@ -229,8 +229,9 @@ end
 
 function profinfo()
   logprint2("profile results:\n")
+  local total = profiling["total"] / 100
   for k,v in pairs(profiling) do
-    logprint2(k.."="..v.." ("..profilingq[k]..")\n")
+    logprint2(string.format("%7.3f (%5d) %s", v/total, profilingq[k], k))
     end
   logprint2("\n")
   end

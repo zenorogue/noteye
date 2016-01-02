@@ -396,6 +396,9 @@ loadgameconfig()
 if runfile and not game_to_launch then
   dofile(runfile)
 else
+  profstart("total")
   noteyemain()
+  profend("total")
+  profinfo()
   end
 

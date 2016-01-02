@@ -401,6 +401,17 @@ til = newimage(32,32)
 for x=0,31 do for y=0,31 do setpixel(til,x,y,0x3000003 * (x+y)) end end
 til = addtile(til, 0, 0, 32, 32, transAlpha)
 
+shadtable = {}
+
+for shad=0,15 do
+  local ytf = 0
+  if bAND(shad, 1) > 0 then ytf = tilemerge(ytf, ShadowE) end
+  if bAND(shad, 2) > 0 then ytf = tilemerge(ytf, ShadowW) end
+  if bAND(shad, 4) > 0 then ytf = tilemerge(ytf, ShadowS) end
+  if bAND(shad, 8) > 0 then ytf = tilemerge(ytf, ShadowN) end
+  shadtable[shad] = ytf
+  end
+
 function xtile(C,x,y)
   if oldhydra then return xtileold(C,x,y) end
   global_x = x
@@ -408,7 +419,7 @@ function xtile(C,x,y)
   
   if inhex and (mode == modeFPP or mode == modeTPP) then
     if (x+y)%2 == 1-inhexr then return 0 end
-    local M = hydramap(x,y)
+    local M = hydramap(x,y,mode)
     local R0 = 
       oldhydra and xhex(C) or yhex(M)
     local R = R0
@@ -434,11 +445,12 @@ function xtile(C,x,y)
     R = tilemerge(R, oldhydra and xtileobj(C) or ytileobj(M,x,y))
     return R
     end
-    
-  local M = hydramap(x,y)
+  
+  local M = hydramap(x,y,mode)
   if M.out == 1 then
     return OutOfMap
     end
+  if M.cached then return M.cached end
   local ytf = ytilefloor(M)
   uu = (x+3*y) % 5
   checker = 0
@@ -457,11 +469,14 @@ function xtile(C,x,y)
   if (not M.seen) and ytf ~= Unseen then 
     ytf = tilerecolor(ytf, 0x202020)
     end
-  if bAND(M.shadow, 1) > 0 then ytf = tilemerge(ytf, ShadowE) end
-  if bAND(M.shadow, 2) > 0 then ytf = tilemerge(ytf, ShadowW) end
-  if bAND(M.shadow, 4) > 0 then ytf = tilemerge(ytf, ShadowS) end
-  if bAND(M.shadow, 8) > 0 then ytf = tilemerge(ytf, ShadowN) end
-  return tilemerge(ytf, ytileobj(M,x,y))
+  --if bAND(M.shadow, 1) > 0 then ytf = tilemerge(ytf, ShadowE) end
+  --if bAND(M.shadow, 2) > 0 then ytf = tilemerge(ytf, ShadowW) end
+  --if bAND(M.shadow, 4) > 0 then ytf = tilemerge(ytf, ShadowS) end
+  --if bAND(M.shadow, 8) > 0 then ytf = tilemerge(ytf, ShadowN) end
+  ytf = tilemerge(ytf, shadtable[bAND(M.shadow, 15)])
+  ytf = tilemerge(ytf, ytileobj(M,x,y))
+  if M.cacheid then hydracache(M.cacheid, ytf) end
+  return ytf
   end
 
 function xminimap(C)
@@ -599,6 +614,8 @@ function drawBackgroundAndMap()
 
 GermaniaOne = newttfont("games/GermaniaOne-Regular.ttf")
 
+axTransparentUgly = {nil, nil, tmap_transorshade}
+
 do local drat = drawAscii
 function drawAscii(ax)
 
@@ -619,6 +636,7 @@ function drawAscii(ax)
       -- drawtile(D.output, tileshade(0), 50*fontsize.x, scrsize.y-3*24, scrsize.x-3*52-50*8, 344-(scrsize.y-3*24))
     
     elseif mode == modeFPP or mode == modeTPP then
+      cursor = nil
       ysize = 1
       while gch(scrget(IMG, 0, ysize)) ~= " " and av(gch(scrget(IMG, 0, ysize))) ~= 0 do
         ysize = ysize + 1
@@ -638,7 +656,9 @@ function drawAscii(ax)
 
     drawtile(D.output, sh, X, Y+22*fontsize.y, ssx, fontsize.y*3)
     
-    drat(axTransparent)
+    profstart("drat")
+    drat(axTransparentUgly)
+    profend("drat")
   
   else
     drat(ax)
@@ -1293,7 +1313,7 @@ addHexVariant(modeISO, hex_drawdisplayISO)
 
 local ldrawdisplay = drawdisplay
 function drawdisplay()
-
+  delayed_videomode()
   local twincolor = gco(scrget(IMG, 52, 0))
   if twincolor ~= lasttwincolor then
     local tmp = moveanimations.player

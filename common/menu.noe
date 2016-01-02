@@ -599,7 +599,9 @@ function addindent()
 function noteye_pcall(where, level, dft, f, ...)
   -- logprint2(addindent().."where = "..where)
   indent = indent + 2
+  profstart(where)
   local status, value = pcall(f, unpack(arg))
+  profend(where)
   indent = indent - 2
   -- logprint2(addindent().."completed = "..where)
   if status then 

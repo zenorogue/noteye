@@ -280,9 +280,11 @@ function setvideomodex()
     D.xscreen = rectS(D.xscrsize)
   
     clrscr()
-
+    
     D.screen = rectTS((D.xscreen.size-D.rscrsize) * D.reloffset, D.scrsize)
     D.rscreen = rectTS((D.xscreen.size-D.rscrsize) * D.reloffset, D.rscrsize)
+
+    print("set screen = "..tostring(screen))
   
   elseif hadgfx then
     closevideomode()
@@ -673,6 +675,7 @@ drawmap[modeMini] = function()
 -- tile display --
 
 function setmaparea()
+  if screen == nil then print(debug.traceback()) end
   if inmini then
     D.maparea = rectS(D.cmini.size)
     D.rmaparea = nil
@@ -719,7 +722,7 @@ drawmap[modeTiles] = function()
   setmaparea()
   settilectr()
   recentermap()
-  
+
   local mcf = V.floor(D.mapcenter)
   tcs = D.tilectr - (D.mapcenter -mcf) * tilesize
 
@@ -731,14 +734,18 @@ drawmap[modeTiles] = function()
   TileCut = V.renewscreen(TileCut, D.tileext.size)
   
   scrset(MAP, 999, 999, 0)
+  profstart("xtile")
   V.scrcopy(MAP, mcf+D.tileext.top, TileCut, 0, D.tileext.size, xtile)
+  profend("xtile")
   
   local tcs2 = tcs + (D.tileext.top - 0.5) * D.tilesize
   local tcs3 = tcs2 + D.tileext.size * D.tilesize
   
+  profstart("scrx")
   for k,v in pairs(tilelayers) do
     V.drawscreenx(D.output, TileCut, tcs2, D.tilesize, getlayerX(v))
     end
+  profend("scrx")
   return getAxCommon()
   end
 
@@ -922,15 +929,21 @@ function drawAscii(ax)
   if not ax then
     V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, TMAP_COPY)
   else
+    profstart("ax1")
     if ax[1] then V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, ax[1]) end
+    profend("ax1")
 
+    profstart("ax2")
     if ax[2] then
       V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, ax[2])
       end
+    profend("ax2")
 
+    profstart("ax3")
     if ax[3] then
       V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, ax[3])
       end
+    profend("ax3")
 
     end
   
@@ -1030,9 +1043,6 @@ function drawmessageTemp()
   end
   
 function drawandrefresh()
-  profstart("drawandrefresh")
-
-
   if haveascii then
     if not mainscreen then
       delayed_videomode()
@@ -1049,7 +1059,6 @@ function drawandrefresh()
   else
     lastrender = nil
     end
-  profend("drawandrefresh")
   end
 
 -- convert a pixel to process coordinates (modify the event)
@@ -1343,10 +1352,18 @@ function calcAutocenter()
     autocenteringNow.x = true
     autocenteringNow.y = true
     end
+    
+  
+  if mode == modeTPP or mode == modeFPP then
+    autocenteringNow.x = true
+    autocenteringNow.y = true
+    return
+    end
 
   local tm = rectTS(D.tilectr - (D.mapcenter + .5) * D.tilesize, D.tilesize * D.map.size)
   local ptop = pixeltoprocess(rmaparea.top)
   local pbot = pixeltoprocess(rmaparea.bot)
+  local nobot = not (ptop and pbot)
 
   local bigpart = acw/100
   local smallpart = 1-bigpart
@@ -1357,7 +1374,7 @@ function calcAutocenter()
       if tm.top[k] >= D.rmaparea.top[k] - 1e-6 then
         -- no more scrolling
         autocenteringNow[k] = false
-      elseif playerpos[k] < pbot[k]*smallpart + ptop[k]*bigpart then
+      elseif nobot or playerpos[k] < pbot[k]*smallpart + ptop[k]*bigpart then
         autocenteringNow[k] = true
         end
     elseif playerpos[k] > mapcenter[k] + 1e-6 then
@@ -1365,7 +1382,7 @@ function calcAutocenter()
       if tm.bot[k] <= D.rmaparea.bot[k] + 1e-6 then
         -- no more scrolling
         autocenteringNow[k] = false
-      elseif playerpos[k] > pbot[k]*bigpart + ptop[k]*smallpart then
+      elseif nobot or playerpos[k] > pbot[k]*bigpart + ptop[k]*smallpart then
         autocenteringNow[k] = true
         end
     else

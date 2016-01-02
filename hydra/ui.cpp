@@ -369,8 +369,16 @@ bool doshadow(cell &c1, cell &c2) {
   return false;
   }
 
+map<long long, int> gmapcache;
+
+long long lastid;
+
+void cacheMap(int id, int val) {
+  gmapcache[lastid] = val;
+  }
+
 // return a multi-layer tile as a Lua table
-void drawMapLua(lua_State *L, int x, int y) {
+void drawMapLua(lua_State *L, int x, int y, int mode) {
   vec2 v = vec2(x,y);
   if(topx != TBAR) v.x += playerpos.x - center.x;
   if(topy != TBAR) v.y += playerpos.y - center.y;
@@ -381,6 +389,41 @@ void drawMapLua(lua_State *L, int x, int y) {
     noteye_table_setInt(L, "out", 1);
     return;
     }
+  
+  int shadow = 0;
+  if(doshadow(M[v], M[v+vec2(+1, 0)])) shadow |= 1;
+  if(doshadow(M[v], M[v+vec2(-1, 0)])) shadow |= 2;
+  if(doshadow(M[v], M[v+vec2( 0,+1)])) shadow |= 4;
+  if(doshadow(M[v], M[v+vec2( 0,-1)])) shadow |= 8;
+
+  int floorid;    
+  if(c.type == CT_STAIRDOWN) floorid = 3;
+  else if(c.type == CT_STAIRUP) floorid = 2;
+  else if(c.type == CT_WALL) floorid = 1;
+  else floorid = 0;
+
+  bool onplayer = wrap(v) == wrap(playerpos);
+  if(!onplayer && !c.h && !(mode == 8 && (c.mushrooms || c.it || c.dead))) {
+    long long cacheid = shadow&15;
+    cacheid <<= 3; cacheid += (x+3*y) % 5;
+    cacheid <<= 1; if(c.type == CT_HEXOUT) cacheid++;
+    cacheid <<= 1; if(c.ontarget) cacheid++;
+    if(c.explored) {
+      cacheid <<= 6; if(c.mushrooms) cacheid |= 1+hydraiconid(c.mushrooms);
+      cacheid <<= 7; if(c.it) cacheid |= c.it->icon();
+      cacheid <<= 5; if(c.it) cacheid |= c.it->gcolor();
+      cacheid <<= 2; cacheid |= floorid;
+      cacheid <<= 1; cacheid |= c.seen;
+      cacheid <<= 5; cacheid |= c.dead == HC_TWIN+1 ? 31 : c.dead;
+      }
+    else { cacheid <<= (6+7+5+2+1+5); cacheid |= 30; }
+    if(gmapcache.count(cacheid)) {
+      noteye_table_setInt(L, "cached", gmapcache[cacheid]);
+      return;
+      }
+    noteye_table_setInt(L, "cacheid", cacheid);
+    lastid = cacheid;
+    }
 
   if(wrap(v) == wrap(playerpos)) {
     noteye_table_setInt(L, "hicon", '@');
@@ -388,11 +431,6 @@ void drawMapLua(lua_State *L, int x, int y) {
     noteye_table_setInt(L, "hcolor", getVGAcolor(col));
     }
   
-  int shadow = 0;
-  if(doshadow(M[v], M[v+vec2(+1, 0)])) shadow |= 1;
-  if(doshadow(M[v], M[v+vec2(-1, 0)])) shadow |= 2;
-  if(doshadow(M[v], M[v+vec2( 0,+1)])) shadow |= 4;
-  if(doshadow(M[v], M[v+vec2( 0,-1)])) shadow |= 8;
   noteye_table_setInt(L, "shadow", shadow);
 
   if(c.type == CT_HEXOUT)
@@ -428,10 +466,7 @@ void drawMapLua(lua_State *L, int x, int y) {
       if(c.it->asWpn()) noteye_table_setInt(L, "itype", c.it->asWpn()->type);
       }
     
-    if(c.type == CT_STAIRDOWN) noteye_table_setInt(L, "floor", '>');
-    else if(c.type == CT_STAIRUP) noteye_table_setInt(L, "floor", '<');
-    else if(c.type == CT_WALL) noteye_table_setInt(L, "floor", '#');
-    else noteye_table_setInt(L, "floor", '.');
+    noteye_table_setInt(L, "floor", ".#<>" [floorid]);
     
     if(c.dead == HC_TWIN+1) noteye_table_setInt(L, "dead", -1);
     else if(c.dead) noteye_table_setInt(L, "dead", getVGAcolorX(hyinf[c.dead-1].color));

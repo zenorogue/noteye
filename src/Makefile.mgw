@@ -27,7 +27,7 @@ noteye-jni-mingw.o: noteye-jni.cpp
 #	strip ../noteye.exe
 
 ../noteye.exe: ../noteye.dll noteye.res noteye-main.cpp ../hydraslayer.dll
-	g++ -DHYDRA -DOPENGL noteye-main.cpp noteye.res -o ../noteye.exe ../noteye.dll ../hydraslayer.dll
+	g++ -DHYDRA -DOPENGL -O3 noteye-main.cpp noteye.res -o ../noteye.exe ../noteye.dll ../hydraslayer.dll
 	strip ../noteye.exe
 
 ../noteyefull.exe: noteye.res noteye-main.cpp noteye-hn.o hydra-mingw.o
@@ -36,7 +36,7 @@ noteye-jni-mingw.o: noteye-jni.cpp
 	strip ../noteyefull.exe
 
 ../hydra.exe: hydra-mingw.o ../noteye.dll ../hydraslayer.dll ../hydra/hydra.res
-	g++ -DHYDRA -DHYDRAONLY -DOPENGL noteye-main.cpp ../hydra/hydra.res -o ../hydra.exe ../noteye.dll ../hydraslayer.dll -mwindows
+	g++ -DHYDRA -DHYDRAONLY -DOPENGL -O3 noteye-main.cpp ../hydra/hydra.res -o ../hydra.exe ../noteye.dll ../hydraslayer.dll -mwindows
 	strip ../hydra.exe
 
 ../hydra/hydra.res: ../hydra/hydra.rc ../hydra/hydra.ico

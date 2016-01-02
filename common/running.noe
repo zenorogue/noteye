@@ -36,7 +36,7 @@ noteye_config_variable("maxcpu", 80, "CPU usage limit")
 function frameheader()
   menuy = 12
   scrwrite(IMG, 1, 1, "Framerate statistics: \v7 (since the last time in NotEye menu)", Font, vgaget(10))
-  if fps.frames > 0 and fps.stop > fps.start and fps.totaltime > 0 then
+  if fps.frames and fps.stop and fps.start and fps.totaltime and fps.frames > 0 and fps.stop > fps.start and fps.totaltime > 0 then
 
     local cputime = fps.totaltimev or fps.totaltime
     

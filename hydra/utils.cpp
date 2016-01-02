@@ -152,11 +152,15 @@ void col(int x) {
 
 void addstri(string s) { addstr(s.c_str()); }
 
+int hydraiconid(int heads) {
+  if(heads < 34) return heads;
+  else if(heads < 100) return 33;
+  else if(heads < 1000) return 34;
+  else return 35;
+  }
+
 char hydraicon(int heads) {
-  if(heads < 34) return ".123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" [heads];
-  else if(heads < 100) return 'X';
-  else if(heads < 1000) return 'Y';
-  else return 'Z';
+  return ".123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" [hydraiconid(heads)];
   }
 
 int powerf(int p) { 

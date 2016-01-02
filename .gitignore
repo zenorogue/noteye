@@ -5,3 +5,5 @@ user/*
 *.res
 *.so
 noteye
+hydra.log
+veclog.txt
