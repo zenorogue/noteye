@@ -41,6 +41,8 @@ function loadTTFont(fname, x, y, ext, aname)
   Fonts[fname] = F
   end
 
+hexFF0000FF = tonumber("FF0000FF", 16)
+
 function ttf_getAtSize(F, sx, sy)
   local id = sx * 1000 + sy
   if F.sizes[id] then
@@ -66,7 +68,7 @@ function ttf_getAtSize(F, sx, sy)
   -- print("font size used: "..ts)
 
   for c=32,127 do
-    rendertext(F.ttfont, ts, string.char(c), 0xFF0000FF, P, V(sx/2, sy*c+sy/2), V(-.5,-.5))
+    rendertext(F.ttfont, ts, string.char(c), hexFF0000FF, P, V(sx/2, sy*c+sy/2), V(-.5,-.5))
     end
 
   F2.png = P
