@@ -1017,7 +1017,7 @@ function handlemousewindows(ev)
   return false
   end
 
-function havetrailer = false
+havetrailer = false
 
 function invoke_trailer()
   if trailer and trailer.phase == 3 then
