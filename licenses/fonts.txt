@@ -1,0 +1,15 @@
+Square is a TTF font intended for roguelike games, by Wouter van Oortmerssen,
+under the Creative Commons Attribution 3.0 Unported license
+( http://creativecommons.org/licenses/by/3.0/deed.en_US )
+
+Downloaded from http://strlen.com/square
+
+***
+
+SDS fonts come from the DawnLike tileset.
+It was created by DragonDePlatino under the CC BY-SA 3.0 license
+http://opengameart.org/content/dawnlike-16x16-universal-rogue-like-tileset-v10
+
+***
+
+Thanks to Asmerillon on Polish roguelike forums for tinyfont66 and tinyfont68

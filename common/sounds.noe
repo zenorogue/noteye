@@ -1,0 +1,212 @@
+-- Necklace of the Eye v8.2 roguelike frontend
+-- Copyright (C) 2010-2015 Zeno Rogue, see noteye.noe for details
+
+-- things related to audio
+
+-- baksoundtrack backs up the soundtrack as reconfigured by user
+
+noteye_config_variable("volsound", 100, "sound volume", {
+  setter = function(x) if tonumber(x) then pickvolume(tonumber(x), volmusic) end end
+  })
+noteye_config_variable("volmusic", 60, "music volume", {
+  setter = function(x) if tonumber(x) then pickvolume(volsound, tonumber(x)) end end
+  })
+
+soundtrackobj = {}
+
+function resetmusic()
+  soundtrack = {}
+  end
+
+function addmusic(s)
+  table.insert(soundtrack, s)
+  end
+
+function clonetrack(src, dst)
+  dst = {}
+  for k,v in pairs(src) do
+    dst[k] = v
+    end
+  end
+
+if baksoundtrack then
+  clonetrack(baksoundtrack, soundtrack)
+
+else
+  resetmusic()
+  addmusic(sounddir.."music1.ogg")
+  addmusic(sounddir.."music2.ogg")
+  addmusic(sounddir.."music3.ogg")
+  addmusic(sounddir.."music4.ogg")
+  addmusic(sounddir.."music5.ogg")
+  addmusic(sounddir.."music6.ogg")
+  addmusic(sounddir.."music7.ogg")
+  addmusic(sounddir.."music8.ogg")
+  addmusic(sounddir.."music1.mp3")
+  addmusic(sounddir.."music2.mp3")
+  addmusic(sounddir.."music3.mp3")
+  addmusic(sounddir.."music4.mp3")
+  addmusic(sounddir.."music5.mp3")
+  addmusic(sounddir.."music6.mp3")
+  addmusic(sounddir.."music7.mp3")
+  addmusic(sounddir.."music8.mp3")
+  end
+
+mid = 0
+
+function checkmusic()
+  if appactive and not musicon() then 
+    if volmusic == 0 then return end
+
+    if #soundtrack == 0 then
+      return
+      end
+    local s = soundtrack[1 + mid % #soundtrack]
+    mid = mid + 1
+    if not soundtrackobj[s] then
+      soundtrackobj[s] = loadmusic(s)
+      end
+    local obj = soundtrackobj[s]
+    if not obj or (obj == 0) then
+      return
+      end
+    
+    musicvolume(volmusic)
+    playmusic(obj)
+    end
+  end
+
+function disablemusic()
+  if not forcemusic then
+    resetmusic()
+    musicvolume(0)
+    havemusic = false
+    end
+  end
+
+-- loading and garbage-collection music 
+
+Musics = {}
+MusicTime = {}
+
+function freeoldmusic(maximum)
+  local maxt = getticks()
+  local q = 0
+  for n,t in pairs(MusicTime) do
+    if t < maxt then maxt = t end
+    q = q + 1
+    end
+  for n,t in pairs(MusicTime) do
+    if t == maxt and q > maximum then 
+      -- logprint2("freeing: "..n)
+      delete(Musics[n])
+      Musics[n] = nil
+      MusicTime[n] = nil
+      end
+    end
+  end
+
+function loadmusic2(filename)
+  if not Musics[filename] then
+    local m = loadmusic(musicdir..filename)
+    if m > 0 then Musics[filename] = m 
+    else
+      logprint2("unable to load music file: "..filename)
+      return
+      end
+    end
+  MusicTime[filename] = getticks()
+  end
+
+arrowstochange = {"You can also increase and decrease the volume with \vearrow keys\vp."}
+
+function musicarrows(ev, val)
+  volmusic = tonumber(val) or volmusic
+  musicvolume(volmusic)
+  return msarrows(ev, val)
+  end
+
+function soundarrows(ev, val)
+  volsound = tonumber(val) or volsound
+  if ev.type == evKeyUp then samplesound() end
+  return msarrows(ev, val)
+  end
+
+function msarrows(ev, val)
+  if ev.type == evKeyDown then
+    local xval = tonumber(val) or 64
+    local c = ev.keycode
+    local chr = keychr(ev)
+    if c == SDLK.RIGHT or chr == "+" or chr == "=" or c == SDLK.KP6 then
+      return math.min(xval+1, 128)
+    elseif c == SDLK.LEFT or chr == "-" or c == SDLK.KP4 then
+      return math.max(xval-1, 0)
+    elseif c == SDLK.UP or c == SDLK.KP8 then
+      return math.min(xval+8, 128)
+    elseif c == SDLK.DOWN or c == SDLK.KP2 then
+      return math.max(xval-8, 0)
+    elseif c == SDLK.PAGEDOWN or c == SDLK.KP3 then
+      return math.min(xval+32, 128)
+    elseif c == SDLK.PAGEUP or c == SDLK.KP9 then
+      return math.max(xval-32, 0)
+    elseif c == SDLK.HOME or c == SDLK.KP7 then
+      return 0
+    elseif c == SDLK.END or c == SDLK.KP1 then
+      return 128
+      end
+    end
+  end
+
+function samplesound()
+  end
+
+addtomenu(mainmenu, "v", writechoicef(function()
+    return "configure audio (sound volume \ve"..volsound.."\vp, music volume \ve"..volmusic.."\vp)" end),
+  function()
+    ret = askstr("" .. volsound, "enter the sound volume (1-128, or 0 to turn off):", arrowstochange, soundarrows)
+    if tonumber(ret) then volsound = tonumber(ret)
+      if volsound < 0 then volsound = 0 end
+      if volsound > 128 then volsound = 128 end
+      end
+    ret = askstr("" .. volmusic, "enter the music volume (1-128, or 0 to turn off):", arrowstochange, musicarrows)
+    if tonumber(ret) then volmusic = tonumber(ret)
+      if volmusic < 0 then volmusic = 0 end
+      if volmusic > 128 then volmusic = 128 end
+      end
+    pickvolume(volsound, volmusic)
+    return 1
+    end,
+  function() return not havemusic end
+  )
+
+function pickvolume(vs, vm)
+  cfgscripts.volume = function(file)
+    file:write("pickvolume("..volsound..","..volmusic..")\n")
+    end
+  volsound = vs volmusic = vm
+  musicvolume(volmusic)
+  if volmusic == 0 then musichalt() end
+  end
+
+function stopmusic()
+  fadeoutmusic(1000)
+  end
+
+Sounds = {}
+SoundsTime = {}
+
+function playsoundfromfile(filename, relvol)
+  local s = Sounds[filename]
+  if not s then
+    s = loadsound(filename)
+    if s > 0 then Sounds[filename] = s 
+    else
+      logprint2("warning: sound file could not be loaded: "..filename)
+      return
+    end
+    end
+  if s then
+    SoundsTime[filename] = getticks()
+    playsound(s, (volsound * relvol + 66) / 100)
+    end
+  end

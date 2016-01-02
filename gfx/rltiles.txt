@@ -1,0 +1,2474 @@
+AT ( 0, 0) ./asc32/ch40.bmp
+AT ( 1, 0) ./asc32/ch41.bmp
+AT ( 2, 0) ./asc32/ch42.bmp
+AT ( 3, 0) ./asc32/ch43.bmp
+AT ( 4, 0) ./asc32/ch44.bmp
+AT ( 5, 0) ./asc32/ch45.bmp
+AT ( 6, 0) ./asc32/ch46.bmp
+AT ( 7, 0) ./asc32/ch47.bmp
+AT ( 8, 0) ./asc32/ch48.bmp
+AT ( 9, 0) ./asc32/ch49.bmp
+AT (10, 0) ./asc32/ch4a.bmp
+AT (11, 0) ./asc32/ch4b.bmp
+AT (12, 0) ./asc32/ch4c.bmp
+AT (13, 0) ./asc32/ch4d.bmp
+AT (14, 0) ./asc32/ch4e.bmp
+AT (15, 0) ./asc32/ch4f.bmp
+AT (16, 0) ./asc32/ch50.bmp
+AT (17, 0) ./asc32/ch51.bmp
+AT (18, 0) ./asc32/ch52.bmp
+AT (19, 0) ./asc32/ch53.bmp
+AT (20, 0) ./asc32/ch54.bmp
+AT (21, 0) ./asc32/ch55.bmp
+AT (22, 0) ./asc32/ch56.bmp
+AT (23, 0) ./asc32/ch57.bmp
+AT (24, 0) ./asc32/ch58.bmp
+AT (25, 0) ./asc32/ch59.bmp
+AT (26, 0) ./asc32/ch5a.bmp
+AT (27, 0) ./asc32/ch60.bmp
+AT (28, 0) ./asc32/ch61.bmp
+AT (29, 0) ./asc32/ch62.bmp
+AT (30, 0) ./asc32/ch63.bmp
+AT (31, 0) ./asc32/ch64.bmp
+AT (32, 0) ./asc32/ch65.bmp
+AT (33, 0) ./asc32/ch66.bmp
+AT (34, 0) ./asc32/ch67.bmp
+AT (35, 0) ./asc32/ch68.bmp
+AT (36, 0) ./asc32/ch69.bmp
+AT (37, 0) ./asc32/ch6a.bmp
+AT (38, 0) ./asc32/ch6b.bmp
+AT (39, 0) ./asc32/ch6c.bmp
+AT (40, 0) ./asc32/ch6d.bmp
+AT (41, 0) ./asc32/ch6e.bmp
+AT (42, 0) ./asc32/ch6f.bmp
+AT (43, 0) ./asc32/ch70.bmp
+AT (44, 0) ./asc32/ch71.bmp
+AT (45, 0) ./asc32/ch72.bmp
+AT (46, 0) ./asc32/ch73.bmp
+AT (47, 0) ./asc32/ch74.bmp
+AT (48, 0) ./asc32/ch75.bmp
+AT (49, 0) ./asc32/ch76.bmp
+AT ( 0, 1) ./asc32/ch77.bmp
+AT ( 1, 1) ./asc32/ch78.bmp
+AT ( 2, 1) ./asc32/ch79.bmp
+AT ( 3, 1) ./asc32/ch7a.bmp
+AT ( 4, 1) ./blank.bmp
+AT ( 5, 1) ./item/amulet/amulet_of_yendor.bmp
+AT ( 6, 1) ./item/amulet/bone_gray.bmp
+AT ( 7, 1) ./item/amulet/cameo_blue.bmp
+AT ( 8, 1) ./item/amulet/cameo_orange.bmp
+AT ( 9, 1) ./item/amulet/celtic_blue.bmp
+AT (10, 1) ./item/amulet/celtic_red.bmp
+AT (11, 1) ./item/amulet/celtic_yellow.bmp
+AT (12, 1) ./item/amulet/circular.bmp
+AT (13, 1) ./item/amulet/concave.bmp
+AT (14, 1) ./item/amulet/crystal_green.bmp
+AT (15, 1) ./item/amulet/crystal_red.bmp
+AT (16, 1) ./item/amulet/crystal_white.bmp
+AT (17, 1) ./item/amulet/cylinder_gray.bmp
+AT (18, 1) ./item/amulet/eye_cyan.bmp
+AT (19, 1) ./item/amulet/eye_green.bmp
+AT (20, 1) ./item/amulet/eye_magenta.bmp
+AT (21, 1) ./item/amulet/face1_gold.bmp
+AT (22, 1) ./item/amulet/face2.bmp
+AT (23, 1) ./item/amulet/golden.bmp
+AT (24, 1) ./item/amulet/hexagonal.bmp
+AT (25, 1) ./item/amulet/octagonal.bmp
+AT (26, 1) ./item/amulet/oval.bmp
+AT (27, 1) ./item/amulet/penta_green.bmp
+AT (28, 1) ./item/amulet/penta_orange.bmp
+AT (29, 1) ./item/amulet/pyramidal.bmp
+AT (30, 1) ./item/amulet/ring_cyan.bmp
+AT (31, 1) ./item/amulet/ring_green.bmp
+AT (32, 1) ./item/amulet/ring_red.bmp
+AT (33, 1) ./item/amulet/spherical.bmp
+AT (34, 1) ./item/amulet/square.bmp
+AT (35, 1) ./item/amulet/stone1_cyan.bmp
+AT (36, 1) ./item/amulet/stone1_green.bmp
+AT (37, 1) ./item/amulet/stone1_pink.bmp
+AT (38, 1) ./item/amulet/stone2_blue.bmp
+AT (39, 1) ./item/amulet/stone2_green.bmp
+AT (40, 1) ./item/amulet/stone2_red.bmp
+AT (41, 1) ./item/amulet/stone3_blue.bmp
+AT (42, 1) ./item/amulet/stone3_green.bmp
+AT (43, 1) ./item/amulet/stone3_magenta.bmp
+AT (44, 1) ./item/amulet/triangular.bmp
+AT (45, 1) ./item/armor/alchemy_smock.bmp
+AT (46, 1) ./item/armor/animal_skin.bmp
+AT (47, 1) ./item/armor/banded_mail.bmp
+AT (48, 1) ./item/armor/black_dragon_scale_mail.bmp
+AT (49, 1) ./item/armor/black_dragon_scales.bmp
+AT ( 0, 2) ./item/armor/blue_dragon_scale_mail.bmp
+AT ( 1, 2) ./item/armor/blue_dragon_scales.bmp
+AT ( 2, 2) ./item/armor/boots_blue1.bmp
+AT ( 3, 2) ./item/armor/boots_brown1.bmp
+AT ( 4, 2) ./item/armor/boots_brown2.bmp
+AT ( 5, 2) ./item/armor/boots_green1.bmp
+AT ( 6, 2) ./item/armor/boots_green2.bmp
+AT ( 7, 2) ./item/armor/boots_iron1.bmp
+AT ( 8, 2) ./item/armor/boots_iron2.bmp
+AT ( 9, 2) ./item/armor/boots_iron3.bmp
+AT (10, 2) ./item/armor/boots_stripe1.bmp
+AT (11, 2) ./item/armor/boots_yellow1.bmp
+AT (12, 2) ./item/armor/breast_plate1.bmp
+AT (13, 2) ./item/armor/breast_plate2.bmp
+AT (14, 2) ./item/armor/bronze_plate_mail.bmp
+AT (15, 2) ./item/armor/buckled_boots.bmp
+AT (16, 2) ./item/armor/cap1.bmp
+AT (17, 2) ./item/armor/cap2.bmp
+AT (18, 2) ./item/armor/cap3.bmp
+AT (19, 2) ./item/armor/chain_mail.bmp
+AT (20, 2) ./item/armor/cloak2.bmp
+AT (21, 2) ./item/armor/cloak3.bmp
+AT (22, 2) ./item/armor/cloak4.bmp
+AT (23, 2) ./item/armor/combat_boots.bmp
+AT (24, 2) ./item/armor/cornuthaum.bmp
+AT (25, 2) ./item/armor/crested_helmet.bmp
+AT (26, 2) ./item/armor/crystal_plate_mail.bmp
+AT (27, 2) ./item/armor/dented_pot.bmp
+AT (28, 2) ./item/armor/dunce_cap.bmp
+AT (29, 2) ./item/armor/dwarven_ringmail.bmp
+AT (30, 2) ./item/armor/dwarvish_cloak.bmp
+AT (31, 2) ./item/armor/dwarvish_iron_helm.bmp
+AT (32, 2) ./item/armor/dwarvish_mithril_coat.bmp
+AT (33, 2) ./item/armor/dwarvish_roundshield.bmp
+AT (34, 2) ./item/armor/elven_cloak.bmp
+AT (35, 2) ./item/armor/elven_leather_armor.bmp
+AT (36, 2) ./item/armor/elven_leather_helm.bmp
+AT (37, 2) ./item/armor/elven_mithril_coat.bmp
+AT (38, 2) ./item/armor/elven_ringmail.bmp
+AT (39, 2) ./item/armor/elven_shield.bmp
+AT (40, 2) ./item/armor/etched_helmet.bmp
+AT (41, 2) ./item/armor/fedora.bmp
+AT (42, 2) ./item/armor/fencing_gloves.bmp
+AT (43, 2) ./item/armor/gauntlet1.bmp
+AT (44, 2) ./item/armor/gauntlet2.bmp
+AT (45, 2) ./item/armor/glove1.bmp
+AT (46, 2) ./item/armor/glove2.bmp
+AT (47, 2) ./item/armor/glove3.bmp
+AT (48, 2) ./item/armor/glove4.bmp
+AT (49, 2) ./item/armor/glove5.bmp
+AT ( 0, 3) ./item/armor/glove6.bmp
+AT ( 1, 3) ./item/armor/gold_dragon_armour.bmp
+AT ( 2, 3) ./item/armor/gold_dragon_hide.bmp
+AT ( 3, 3) ./item/armor/gray_dragon_scale_mail.bmp
+AT ( 4, 3) ./item/armor/gray_dragon_scales.bmp
+AT ( 5, 3) ./item/armor/green_dragon_scale_mail.bmp
+AT ( 6, 3) ./item/armor/green_dragon_scales.bmp
+AT ( 7, 3) ./item/armor/hat1.bmp
+AT ( 8, 3) ./item/armor/hawaiian_shirt.bmp
+AT ( 9, 3) ./item/armor/helm2.bmp
+AT (10, 3) ./item/armor/helm3.bmp
+AT (11, 3) ./item/armor/helm_green.bmp
+AT (12, 3) ./item/armor/helm_visor1.bmp
+AT (13, 3) ./item/armor/hiking_boots.bmp
+AT (14, 3) ./item/armor/ice_dragon_armour.bmp
+AT (15, 3) ./item/armor/ice_dragon_hide.bmp
+AT (16, 3) ./item/armor/iron_shoes.bmp
+AT (17, 3) ./item/armor/jackboots.bmp
+AT (18, 3) ./item/armor/jungle_boots.bmp
+AT (19, 3) ./item/armor/large_shield.bmp
+AT (20, 3) ./item/armor/leather_armor2.bmp
+AT (21, 3) ./item/armor/leather_armor3.bmp
+AT (22, 3) ./item/armor/leather_armor.bmp
+AT (23, 3) ./item/armor/leather_armour2.bmp
+AT (24, 3) ./item/armor/leather_cloak.bmp
+AT (25, 3) ./item/armor/leather_jacket.bmp
+AT (26, 3) ./item/armor/low_boots.bmp
+AT (27, 3) ./item/armor/mottled_dragon_hide.bmp
+AT (28, 3) ./item/armor/mpttled_dragon_armour.bmp
+AT (29, 3) ./item/armor/mud_boots.bmp
+AT (30, 3) ./item/armor/mummy_wrapping.bmp
+AT (31, 3) ./item/armor/oilskin_cloak.bmp
+AT (32, 3) ./item/armor/old_gloves.bmp
+AT (33, 3) ./item/armor/opera_cloak.bmp
+AT (34, 3) ./item/armor/orange_dragon_scale_mail.bmp
+AT (35, 3) ./item/armor/orange_dragon_scales.bmp
+AT (36, 3) ./item/armor/orcish_chain_mail.bmp
+AT (37, 3) ./item/armor/orcish_cloak.bmp
+AT (38, 3) ./item/armor/orcish_helm.bmp
+AT (39, 3) ./item/armor/orcish_leather_armor.bmp
+AT (40, 3) ./item/armor/orcish_platemail.bmp
+AT (41, 3) ./item/armor/orcish_ring_mail.bmp
+AT (42, 3) ./item/armor/orcish_ringmail.bmp
+AT (43, 3) ./item/armor/orcish_shield.bmp
+AT (44, 3) ./item/armor/ornamental_cope.bmp
+AT (45, 3) ./item/armor/padded_gloves.bmp
+AT (46, 3) ./item/armor/piece_of_cloth.bmp
+AT (47, 3) ./item/armor/plate_mail2.bmp
+AT (48, 3) ./item/armor/plate_mail.bmp
+AT (49, 3) ./item/armor/plumed_helmet.bmp
+AT ( 0, 4) ./item/armor/red_dragon_scale_mail.bmp
+AT ( 1, 4) ./item/armor/red_dragon_scales.bmp
+AT ( 2, 4) ./item/armor/riding_boots.bmp
+AT ( 3, 4) ./item/armor/riding_gloves.bmp
+AT ( 4, 4) ./item/armor/ring_mail.bmp
+AT ( 5, 4) ./item/armor/robe2.bmp
+AT ( 6, 4) ./item/armor/robe3.bmp
+AT ( 7, 4) ./item/armor/robe.bmp
+AT ( 8, 4) ./item/armor/scale_mail.bmp
+AT ( 9, 4) ./item/armor/shield2.bmp
+AT (10, 4) ./item/armor/shield_gondor.bmp
+AT (11, 4) ./item/armor/shield_kite2.bmp
+AT (12, 4) ./item/armor/shield_kite3.bmp
+AT (13, 4) ./item/armor/shield_large2.bmp
+AT (14, 4) ./item/armor/shield_large3.bmp
+AT (15, 4) ./item/armor/shield_large4.bmp
+AT (16, 4) ./item/armor/shield_of_reflection.bmp
+AT (17, 4) ./item/armor/shield_rohan.bmp
+AT (18, 4) ./item/armor/shield_round2.bmp
+AT (19, 4) ./item/armor/shimmering_dragon_scale_mail.bmp
+AT (20, 4) ./item/armor/shimmering_dragon_scales.bmp
+AT (21, 4) ./item/armor/silver_dragon_scale_mail.bmp
+AT (22, 4) ./item/armor/silver_dragon_scales.bmp
+AT (23, 4) ./item/armor/small_shield.bmp
+AT (24, 4) ./item/armor/snow_boots.bmp
+AT (25, 4) ./item/armor/splint_mail.bmp
+AT (26, 4) ./item/armor/s_suit.bmp
+AT (27, 4) ./item/armor/studded_leather_armor.bmp
+AT (28, 4) ./item/armor/swamp_dragon_armour.bmp
+AT (29, 4) ./item/armor/swamp_dragon_hide.bmp
+AT (30, 4) ./item/armor/tattered_cape.bmp
+AT (31, 4) ./item/armor/troll_hide.bmp
+AT (32, 4) ./item/armor/troll_leather_armour.bmp
+AT (33, 4) ./item/armor/t_shirt.bmp
+AT (34, 4) ./item/armor/uruk_hai_shield.bmp
+AT (35, 4) ./item/armor/visored_helmet.bmp
+AT (36, 4) ./item/armor/white_dragon_scale_mail.bmp
+AT (37, 4) ./item/armor/white_dragon_scales.bmp
+AT (38, 4) ./item/armor/wizard_hat.bmp
+AT (39, 4) ./item/armor/yellow_dragon_scale_mail.bmp
+AT (40, 4) ./item/armor/yellow_dragon_scales.bmp
+AT (41, 4) ./item/book/blank_paper.bmp
+AT (42, 4) ./item/book/book_of_the_dead.bmp
+AT (43, 4) ./item/book/bronze.bmp
+AT (44, 4) ./item/book/cloth.bmp
+AT (45, 4) ./item/book/copper.bmp
+AT (46, 4) ./item/book/cyan.bmp
+AT (47, 4) ./item/book/dark_blue.bmp
+AT (48, 4) ./item/book/dark_brown.bmp
+AT (49, 4) ./item/book/dark_gray.bmp
+AT ( 0, 5) ./item/book/dark_green.bmp
+AT ( 1, 5) ./item/book/dog_eared.bmp
+AT ( 2, 5) ./item/book/dull.bmp
+AT ( 3, 5) ./item/book/dusty.bmp
+AT ( 4, 5) ./item/book/glittering.bmp
+AT ( 5, 5) ./item/book/gold.bmp
+AT ( 6, 5) ./item/book/gray.bmp
+AT ( 7, 5) ./item/book/indigo.bmp
+AT ( 8, 5) ./item/book/leather.bmp
+AT ( 9, 5) ./item/book/light_blue.bmp
+AT (10, 5) ./item/book/light_brown.bmp
+AT (11, 5) ./item/book/light_gray.bmp
+AT (12, 5) ./item/book/light_green.bmp
+AT (13, 5) ./item/book/magenta.bmp
+AT (14, 5) ./item/book/metal_blue.bmp
+AT (15, 5) ./item/book/metal_cyan.bmp
+AT (16, 5) ./item/book/metal_green.bmp
+AT (17, 5) ./item/book/mottled.bmp
+AT (18, 5) ./item/book/orange.bmp
+AT (19, 5) ./item/book/parchment.bmp
+AT (20, 5) ./item/book/pink.bmp
+AT (21, 5) ./item/book/plaid.bmp
+AT (22, 5) ./item/book/purple.bmp
+AT (23, 5) ./item/book/ragged.bmp
+AT (24, 5) ./item/book/red.bmp
+AT (25, 5) ./item/book/shining.bmp
+AT (26, 5) ./item/book/silver.bmp
+AT (27, 5) ./item/book/stained.bmp
+AT (28, 5) ./item/book/tan.bmp
+AT (29, 5) ./item/book/thick.bmp
+AT (30, 5) ./item/book/thin.bmp
+AT (31, 5) ./item/book/turquoise.bmp
+AT (32, 5) ./item/book/vellum.bmp
+AT (33, 5) ./item/book/velvet.bmp
+AT (34, 5) ./item/book/violet.bmp
+AT (35, 5) ./item/book/white.bmp
+AT (36, 5) ./item/book/wrinkled.bmp
+AT (37, 5) ./item/book/yellow.bmp
+AT (38, 5) ./item/dc-dngn24/black.bmp
+AT (39, 5) ./item/dc-dngn24/blood_green.bmp
+AT (40, 5) ./item/dc-dngn24/blood_red.bmp
+AT (41, 5) ./item/dc-dngn24/cursor.bmp
+AT (42, 5) ./item/dc-dngn24/dngn_closed_door.bmp
+AT (43, 5) ./item/dc-dngn24/dngn_deep_water2.bmp
+AT (44, 5) ./item/dc-dngn24/dngn_deep_water.bmp
+AT (45, 5) ./item/dc-dngn24/dngn_enter.bmp
+AT (46, 5) ./item/dc-dngn24/dngn_floor.bmp
+AT (47, 5) ./item/dc-dngn24/dngn_floor_lair.bmp
+AT (48, 5) ./item/dc-dngn24/dngn_floor_swamp.bmp
+AT (49, 5) ./item/dc-dngn24/dngn_green_crystal_wall.bmp
+AT ( 0, 6) ./item/dc-dngn24/dngn_lava.bmp
+AT ( 1, 6) ./item/dc-dngn24/dngn_metal_wall.bmp
+AT ( 2, 6) ./item/dc-dngn24/dngn_open_door.bmp
+AT ( 3, 6) ./item/dc-dngn24/dngn_return.bmp
+AT ( 4, 6) ./item/dc-dngn24/dngn_rock_wall00.bmp
+AT ( 5, 6) ./item/dc-dngn24/dngn_rock_wall01.bmp
+AT ( 6, 6) ./item/dc-dngn24/dngn_rock_wall02.bmp
+AT ( 7, 6) ./item/dc-dngn24/dngn_rock_wall03.bmp
+AT ( 8, 6) ./item/dc-dngn24/dngn_rock_wall04.bmp
+AT ( 9, 6) ./item/dc-dngn24/dngn_rock_wall05.bmp
+AT (10, 6) ./item/dc-dngn24/dngn_rock_wall06.bmp
+AT (11, 6) ./item/dc-dngn24/dngn_rock_wall07.bmp
+AT (12, 6) ./item/dc-dngn24/dngn_rock_wall08.bmp
+AT (13, 6) ./item/dc-dngn24/dngn_rock_wall09.bmp
+AT (14, 6) ./item/dc-dngn24/dngn_rock_wall10.bmp
+AT (15, 6) ./item/dc-dngn24/dngn_rock_wall11.bmp
+AT (16, 6) ./item/dc-dngn24/dngn_rock_wall12.bmp
+AT (17, 6) ./item/dc-dngn24/dngn_rock_wall13.bmp
+AT (18, 6) ./item/dc-dngn24/dngn_rock_wall14.bmp
+AT (19, 6) ./item/dc-dngn24/dngn_rock_wall15.bmp
+AT (20, 6) ./item/dc-dngn24/dngn_shallow_water2.bmp
+AT (21, 6) ./item/dc-dngn24/dngn_shallow_water.bmp
+AT (22, 6) ./item/dc-dngn24/dngn_stair_dw.bmp
+AT (23, 6) ./item/dc-dngn24/dngn_stair_up.bmp
+AT (24, 6) ./item/dc-dngn24/dngn_wall.bmp
+AT (25, 6) ./item/dc-dngn24/dngn_wax_wall.bmp
+AT (26, 6) ./item/dc-dngn24/mask_deep_water.bmp
+AT (27, 6) ./item/dc-dngn24/mask_lava.bmp
+AT (28, 6) ./item/dc-dngn24/mask_shallow_water.bmp
+AT (29, 6) ./item/dc-dngn/dngn_altar.bmp
+AT (30, 6) ./item/dc-dngn/dngn_altar_elyvilon.bmp
+AT (31, 6) ./item/dc-dngn/dngn_altar_kikubaaqudgha.bmp
+AT (32, 6) ./item/dc-dngn/dngn_altar_makhleb.bmp
+AT (33, 6) ./item/dc-dngn/dngn_altar_nemelex_xobeh.bmp
+AT (34, 6) ./item/dc-dngn/dngn_altar_okawaru.bmp
+AT (35, 6) ./item/dc-dngn/dngn_altar_shining_one.bmp
+AT (36, 6) ./item/dc-dngn/dngn_altar_sif_muna.bmp
+AT (37, 6) ./item/dc-dngn/dngn_altar_trog.bmp
+AT (38, 6) ./item/dc-dngn/dngn_altar_vehumet.bmp
+AT (39, 6) ./item/dc-dngn/dngn_altar_xom.bmp
+AT (40, 6) ./item/dc-dngn/dngn_altar_yredelemnul.bmp
+AT (41, 6) ./item/dc-dngn/dngn_altar_zin.bmp
+AT (42, 6) ./item/dc-dngn/dngn_blue_fountain.bmp
+AT (43, 6) ./item/dc-dngn/dngn_closed_door.bmp
+AT (44, 6) ./item/dc-dngn/dngn_deep_water.bmp
+AT (45, 6) ./item/dc-dngn/dngn_dry_fountain.bmp
+AT (46, 6) ./item/dc-dngn/dngn_enter_abyss.bmp
+AT (47, 6) ./item/dc-dngn/dngn_enter.bmp
+AT (48, 6) ./item/dc-dngn/dngn_enter_cocytus.bmp
+AT (49, 6) ./item/dc-dngn/dngn_enter_dis.bmp
+AT ( 0, 7) ./item/dc-dngn/dngn_enter_gehenna.bmp
+AT ( 1, 7) ./item/dc-dngn/dngn_enter_hell.bmp
+AT ( 2, 7) ./item/dc-dngn/dngn_enter_labyrinth.bmp
+AT ( 3, 7) ./item/dc-dngn/dngn_enter_pandemonium.bmp
+AT ( 4, 7) ./item/dc-dngn/dngn_enter_shop.bmp
+AT ( 5, 7) ./item/dc-dngn/dngn_enter_tartarus.bmp
+AT ( 6, 7) ./item/dc-dngn/dngn_entrance.bmp
+AT ( 7, 7) ./item/dc-dngn/dngn_exit.bmp
+AT ( 8, 7) ./item/dc-dngn/dngn_granite_statue.bmp
+AT ( 9, 7) ./item/dc-dngn/dngn_green_crystal_wall.bmp
+AT (10, 7) ./item/dc-dngn/dngn_lava.bmp
+AT (11, 7) ./item/dc-dngn/dngn_metal_wall.bmp
+AT (12, 7) ./item/dc-dngn/dngn_open_door.bmp
+AT (13, 7) ./item/dc-dngn/dngn_orange_crystal_statue.bmp
+AT (14, 7) ./item/dc-dngn/dngn_orcish_idol.bmp
+AT (15, 7) ./item/dc-dngn/dngn_return.bmp
+AT (16, 7) ./item/dc-dngn/dngn_rock_stairs_down.bmp
+AT (17, 7) ./item/dc-dngn/dngn_rock_stairs_up.bmp
+AT (18, 7) ./item/dc-dngn/dngn_rock_wall_00.bmp
+AT (19, 7) ./item/dc-dngn/dngn_rock_wall_01.bmp
+AT (20, 7) ./item/dc-dngn/dngn_rock_wall_02.bmp
+AT (21, 7) ./item/dc-dngn/dngn_rock_wall_03.bmp
+AT (22, 7) ./item/dc-dngn/dngn_rock_wall_04.bmp
+AT (23, 7) ./item/dc-dngn/dngn_rock_wall_05.bmp
+AT (24, 7) ./item/dc-dngn/dngn_rock_wall_06.bmp
+AT (25, 7) ./item/dc-dngn/dngn_rock_wall_07.bmp
+AT (26, 7) ./item/dc-dngn/dngn_rock_wall_08.bmp
+AT (27, 7) ./item/dc-dngn/dngn_rock_wall_09.bmp
+AT (28, 7) ./item/dc-dngn/dngn_rock_wall_10.bmp
+AT (29, 7) ./item/dc-dngn/dngn_rock_wall_11.bmp
+AT (30, 7) ./item/dc-dngn/dngn_rock_wall_12.bmp
+AT (31, 7) ./item/dc-dngn/dngn_rock_wall_13.bmp
+AT (32, 7) ./item/dc-dngn/dngn_rock_wall_14.bmp
+AT (33, 7) ./item/dc-dngn/dngn_rock_wall_15.bmp
+AT (34, 7) ./item/dc-dngn/dngn_shallow_water.bmp
+AT (35, 7) ./item/dc-dngn/dngn_silver_statue.bmp
+AT (36, 7) ./item/dc-dngn/dngn_sparkling_fountain.bmp
+AT (37, 7) ./item/dc-dngn/dngn_stone_arch.bmp
+AT (38, 7) ./item/dc-dngn/dngn_stone_wall.bmp
+AT (39, 7) ./item/dc-dngn/dngn_transit_pandemonium.bmp
+AT (40, 7) ./item/dc-dngn/dngn_trap_iii.bmp
+AT (41, 7) ./item/dc-dngn/dngn_trap_magical.bmp
+AT (42, 7) ./item/dc-dngn/dngn_trap_mechanical.bmp
+AT (43, 7) ./item/dc-dngn/dngn_wax_wall.bmp
+AT (44, 7) ./item/dc-misc/blood_blue.bmp
+AT (45, 7) ./item/dc-misc/blood_green.bmp
+AT (46, 7) ./item/dc-misc/blood_magenta.bmp
+AT (47, 7) ./item/dc-misc/blood_red.bmp
+AT (48, 7) ./item/dc-misc/cursor_red.bmp
+AT (49, 7) ./item/dc-misc/error.bmp
+AT ( 0, 8) ./item/dc-misc/mask_deep_water.bmp
+AT ( 1, 8) ./item/dc-misc/mask_lava.bmp
+AT ( 2, 8) ./item/dc-misc/mask_shallow_water.bmp
+AT ( 3, 8) ./item/dc-misc/something_under.bmp
+AT ( 4, 8) ./item/dc-misc/txt1.bmp
+AT ( 5, 8) ./item/dc-misc/txt2.bmp
+AT ( 6, 8) ./item/dc-misc/txt3.bmp
+AT ( 7, 8) ./item/dc-misc/txt4.bmp
+AT ( 8, 8) ./item/dc-misc/unseen_armour.bmp
+AT ( 9, 8) ./item/dc-misc/unseen_item.bmp
+AT (10, 8) ./item/dc-misc/unseen_monster.bmp
+AT (11, 8) ./item/dc-misc/unseen_weapon.bmp
+AT (12, 8) ./item/dc-mon0/0demon/beast.bmp
+AT (13, 8) ./item/dc-mon0/0demon/blue_death.bmp
+AT (14, 8) ./item/dc-mon0/0demon/blue_devil.bmp
+AT (15, 8) ./item/dc-mon0/0demon/cacodemon.bmp
+AT (16, 8) ./item/dc-mon0/0demon/cerebov.bmp
+AT (17, 8) ./item/dc-mon0/0demon/death_cob.bmp
+AT (18, 8) ./item/dc-mon0/0demon/demonic_crawler.bmp
+AT (19, 8) ./item/dc-mon0/0demon/ereshkigal.bmp
+AT (20, 8) ./item/dc-mon0/0demon/executioner.bmp
+AT (21, 8) ./item/dc-mon0/0demon/fiend.bmp
+AT (22, 8) ./item/dc-mon0/0demon/gloorx_vloq.bmp
+AT (23, 8) ./item/dc-mon0/0demon/green_death.bmp
+AT (24, 8) ./item/dc-mon0/0demon/hairy_devil.bmp
+AT (25, 8) ./item/dc-mon0/0demon/hellion.bmp
+AT (26, 8) ./item/dc-mon0/0demon/hellwing.bmp
+AT (27, 8) ./item/dc-mon0/0demon/ice_devil.bmp
+AT (28, 8) ./item/dc-mon0/0demon/ice_fiend.bmp
+AT (29, 8) ./item/dc-mon0/0demon/imp.bmp
+AT (30, 8) ./item/dc-mon0/0demon/iron_devil.bmp
+AT (31, 8) ./item/dc-mon0/0demon/lom_lobon.bmp
+AT (32, 8) ./item/dc-mon0/0demon/lorocyproca.bmp
+AT (33, 8) ./item/dc-mon0/0demon/manes2.bmp
+AT (34, 8) ./item/dc-mon0/0demon/midge.bmp
+AT (35, 8) ./item/dc-mon0/0demon/mnoleg.bmp
+AT (36, 8) ./item/dc-mon0/0demon/neqoxec2.bmp
+AT (37, 8) ./item/dc-mon0/0demon/neqoxec.bmp
+AT (38, 8) ./item/dc-mon0/0demon/orange_demon.bmp
+AT (39, 8) ./item/dc-mon0/0demon/pandemonium_demon.bmp
+AT (40, 8) ./item/dc-mon0/0demon/reaper.bmp
+AT (41, 8) ./item/dc-mon0/0demon/red_devil.bmp
+AT (42, 8) ./item/dc-mon0/0demon/rotting_devil.bmp
+AT (43, 8) ./item/dc-mon0/0demon/shadow_demon.bmp
+AT (44, 8) ./item/dc-mon0/0demon/shadow_fiend.bmp
+AT (45, 8) ./item/dc-mon0/0demon/shadow_imp.bmp
+AT (46, 8) ./item/dc-mon0/0demon/smoke_demon.bmp
+AT (47, 8) ./item/dc-mon0/0demon/soul_eater.bmp
+AT (48, 8) ./item/dc-mon0/0demon/sun_demon.bmp
+AT (49, 8) ./item/dc-mon0/0demon/tormentor.bmp
+AT ( 0, 9) ./item/dc-mon0/0demon/ufetubus.bmp
+AT ( 1, 9) ./item/dc-mon0/0demon/white_imp.bmp
+AT ( 2, 9) ./item/dc-mon0/0demon/ynoxinul.bmp
+AT ( 3, 9) ./item/dc-mon0/0fish/big_fish.bmp
+AT ( 4, 9) ./item/dc-mon0/0fish/electrical_eel.bmp
+AT ( 5, 9) ./item/dc-mon0/0fish/giant_goldfish.bmp
+AT ( 6, 9) ./item/dc-mon0/0fish/lava_fish.bmp
+AT ( 7, 9) ./item/dc-mon0/0golem/electric_golem.bmp
+AT ( 8, 9) ./item/dc-mon0/0golem/toenail_golem.bmp
+AT ( 9, 9) ./item/dc-mon0/0man/adolf.bmp
+AT (10, 9) ./item/dc-mon0/0man/agnes.bmp
+AT (11, 9) ./item/dc-mon0/0man/donald.bmp
+AT (12, 9) ./item/dc-mon0/0man/duane.bmp
+AT (13, 9) ./item/dc-mon0/0man/edmund.bmp
+AT (14, 9) ./item/dc-mon0/0man/erica.bmp
+AT (15, 9) ./item/dc-mon0/0man/frances.bmp
+AT (16, 9) ./item/dc-mon0/0man/francis.bmp
+AT (17, 9) ./item/dc-mon0/0man/glowing_shapeshifter.bmp
+AT (18, 9) ./item/dc-mon0/0man/harold.bmp
+AT (19, 9) ./item/dc-mon0/0man/hell_knight.bmp
+AT (20, 9) ./item/dc-mon0/0man/human.bmp
+AT (21, 9) ./item/dc-mon0/0man/jessica.bmp
+AT (22, 9) ./item/dc-mon0/0man/job_gladiator.bmp
+AT (23, 9) ./item/dc-mon0/0man/joseph.bmp
+AT (24, 9) ./item/dc-mon0/0man/josephine.bmp
+AT (25, 9) ./item/dc-mon0/0man/jozef.bmp
+AT (26, 9) ./item/dc-mon0/0man/killer_klown.bmp
+AT (27, 9) ./item/dc-mon0/0man/louise.bmp
+AT (28, 9) ./item/dc-mon0/0man/margery.bmp
+AT (29, 9) ./item/dc-mon0/0man/maud.bmp
+AT (30, 9) ./item/dc-mon0/0man/michael.bmp
+AT (31, 9) ./item/dc-mon0/0man/necromancer.bmp
+AT (32, 9) ./item/dc-mon0/0man/norbert.bmp
+AT (33, 9) ./item/dc-mon0/0man/norris.bmp
+AT (34, 9) ./item/dc-mon0/0man/psyche.bmp
+AT (35, 9) ./item/dc-mon0/0man/rupert.bmp
+AT (36, 9) ./item/dc-mon0/0man/shapeshifter.bmp
+AT (37, 9) ./item/dc-mon0/0man/sigmund.bmp
+AT (38, 9) ./item/dc-mon0/0man/terence.bmp
+AT (39, 9) ./item/dc-mon0/0man/vault_guard.bmp
+AT (40, 9) ./item/dc-mon0/0man/wayne.bmp
+AT (41, 9) ./item/dc-mon0/0man/wizard.bmp
+AT (42, 9) ./item/dc-mon0/a/giant_cockroach.bmp
+AT (43, 9) ./item/dc-mon0/b/butterfly1.bmp
+AT (44, 9) ./item/dc-mon0/b/butterfly2.bmp
+AT (45, 9) ./item/dc-mon0/b/butterfly3.bmp
+AT (46, 9) ./item/dc-mon0/b/butterfly4.bmp
+AT (47, 9) ./item/dc-mon0/b/butterfly5.bmp
+AT (48, 9) ./item/dc-mon0/b/butterfly6.bmp
+AT (49, 9) ./item/dc-mon0/b/butterfly.bmp
+AT ( 0,10) ./item/dc-mon0/c/centaur_warrior.bmp
+AT ( 1,10) ./item/dc-mon0/c/yaktaur.bmp
+AT ( 2,10) ./item/dc-mon0/c/yaktaur_captain.bmp
+AT ( 3,10) ./item/dc-mon0/d/firedrake.bmp
+AT ( 4,10) ./item/dc-mon0/d/lindwurm.bmp
+AT ( 5,10) ./item/dc-mon0/d/mottled_dragon.bmp
+AT ( 6,10) ./item/dc-mon0/d/steam_dragon.bmp
+AT ( 7,10) ./item/dc-mon0/d/swamp_drake.bmp
+AT ( 8,10) ./item/dc-mon0/e/deep_elf_annihilator.bmp
+AT ( 9,10) ./item/dc-mon0/e/deep_elf_conjurer.bmp
+AT (10,10) ./item/dc-mon0/e/deep_elf_death_mage.bmp
+AT (11,10) ./item/dc-mon0/e/deep_elf_demonologist.bmp
+AT (12,10) ./item/dc-mon0/e/deep_elf_fighter0.bmp
+AT (13,10) ./item/dc-mon0/e/deep_elf_fighter.bmp
+AT (14,10) ./item/dc-mon0/e/deep_elf_high_priest.bmp
+AT (15,10) ./item/dc-mon0/e/deep_elf_knight0.bmp
+AT (16,10) ./item/dc-mon0/e/deep_elf_knight.bmp
+AT (17,10) ./item/dc-mon0/e/deep_elf_mage.bmp
+AT (18,10) ./item/dc-mon0/e/deep_elf_priest.bmp
+AT (19,10) ./item/dc-mon0/e/deep_elf_soldier0.bmp
+AT (20,10) ./item/dc-mon0/e/deep_elf_soldier.bmp
+AT (21,10) ./item/dc-mon0/e/deep_elf_sorcerer.bmp
+AT (22,10) ./item/dc-mon0/e/deep_elf_summoner.bmp
+AT (23,10) ./item/dc-mon0/e/elf.bmp
+AT (24,10) ./item/dc-mon0/f/fungus.bmp
+AT (25,10) ./item/dc-mon0/f/wandering_mushroom.bmp
+AT (26,10) ./item/dc-mon0/g/boggart.bmp
+AT (27,10) ./item/dc-mon0/g/gargoyle.bmp
+AT (28,10) ./item/dc-mon0/g/gnoll0.bmp
+AT (29,10) ./item/dc-mon0/g/gnoll.bmp
+AT (30,10) ./item/dc-mon0/g/goblin0.bmp
+AT (31,10) ./item/dc-mon0/g/hobgoblin0.bmp
+AT (32,10) ./item/dc-mon0/g/hobgoblin.bmp
+AT (33,10) ./item/dc-mon0/g/ijyb.bmp
+AT (34,10) ./item/dc-mon0/g/metal_gargoyle.bmp
+AT (35,10) ./item/dc-mon0/g/molten_gargoyle.bmp
+AT (36,10) ./item/dc-mon0/h/hell_hog.bmp
+AT (37,10) ./item/dc-mon0/h/hog.bmp
+AT (38,10) ./item/dc-mon0/h/hound.bmp
+AT (39,10) ./item/dc-mon0/h/war_dog.bmp
+AT (40,10) ./item/dc-mon0/k/bumblebee.bmp
+AT (41,10) ./item/dc-mon0/k/killer_bee.bmp
+AT (42,10) ./item/dc-mon0/l/giant_iguana.bmp
+AT (43,10) ./item/dc-mon0/l/giant_lizard.bmp
+AT (44,10) ./item/dc-mon0/l/gila_monster.bmp
+AT (45,10) ./item/dc-mon0/l/komodo_dragon.bmp
+AT (46,10) ./item/dc-mon0/m/elephant_slug.bmp
+AT (47,10) ./item/dc-mon0/m/giant_slug.bmp
+AT (48,10) ./item/dc-mon0/m/giant_snail.bmp
+AT (49,10) ./item/dc-mon0/m/manticore.bmp
+AT ( 0,11) ./item/dc-mon0/n/necrophage.bmp
+AT ( 1,11) ./item/dc-mon0/n/rotting_hulk.bmp
+AT ( 2,11) ./item/dc-mon0/o/blork_the_orc0.bmp
+AT ( 3,11) ./item/dc-mon0/o/blork_the_orc.bmp
+AT ( 4,11) ./item/dc-mon0/o/orc0.bmp
+AT ( 5,11) ./item/dc-mon0/o/orc.bmp
+AT ( 6,11) ./item/dc-mon0/o/orc_high_priest.bmp
+AT ( 7,11) ./item/dc-mon0/o/orc_knight0.bmp
+AT ( 8,11) ./item/dc-mon0/o/orc_knight.bmp
+AT ( 9,11) ./item/dc-mon0/o/orc_priest.bmp
+AT (10,11) ./item/dc-mon0/o/orc_sorcerer.bmp
+AT (11,11) ./item/dc-mon0/o/orc_warlord0.bmp
+AT (12,11) ./item/dc-mon0/o/orc_warlord.bmp
+AT (13,11) ./item/dc-mon0/o/orc_warrior0.bmp
+AT (14,11) ./item/dc-mon0/o/orc_warrior.bmp
+AT (15,11) ./item/dc-mon0/o/orc_wizard.bmp
+AT (16,11) ./item/dc-mon0/o/urug0.bmp
+AT (17,11) ./item/dc-mon0/o/urug.bmp
+AT (18,11) ./item/dc-mon0/p/flayed_ghost.bmp
+AT (19,11) ./item/dc-mon0/p/hungry_ghost.bmp
+AT (20,11) ./item/dc-mon0/p/insubstantial_wisp.bmp
+AT (21,11) ./item/dc-mon0/p/phantom.bmp
+AT (22,11) ./item/dc-mon0/r/green_rat.bmp
+AT (23,11) ./item/dc-mon0/r/orange_rat.bmp
+AT (24,11) ./item/dc-mon0/r/quokka.bmp
+AT (25,11) ./item/dc-mon0/r/rat.bmp
+AT (26,11) ./item/dc-mon0/s/giant_mite.bmp
+AT (27,11) ./item/dc-mon0/s/redback.bmp
+AT (28,11) ./item/dc-mon0/u/ugly_thing.bmp
+AT (29,11) ./item/dc-mon0/u/very_ugly_thing.bmp
+AT (30,11) ./item/dc-mon0/v/spatial_vortex.bmp
+AT (31,11) ./item/dc-mon0/w/brain_worm.bmp
+AT (32,11) ./item/dc-mon0/w/killer_bee_larva.bmp
+AT (33,11) ./item/dc-mon0/w/lava_worm.bmp
+AT (34,11) ./item/dc-mon0/w/spiny_worm.bmp
+AT (35,11) ./item/dc-mon0/w/swamp_worm.bmp
+AT (36,11) ./item/dc-mon0/w/worm.bmp
+AT (37,11) ./item/dc-mon0/x/abomination_small2.bmp
+AT (38,11) ./item/dc-mon0/x/abomination_small.bmp
+AT (39,11) ./item/dc-mon0/x/unseen_horror.bmp
+AT (40,11) ./item/dc-mon0/y/giant_blowfly.bmp
+AT (41,11) ./item/dc-mon0/y/giant_mosquito.bmp
+AT (42,11) ./item/dc-mon0/y/moth_of_wrath.bmp
+AT (43,11) ./item/dc-mon0/y/red_wasp.bmp
+AT (44,11) ./item/dc-mon0/z/curse_skull.bmp
+AT (45,11) ./item/dc-mon0/z/curse_toe.bmp
+AT (46,11) ./item/dc-mon0/z/flying_skull.bmp
+AT (47,11) ./item/dc-mon0/z/simulacrum_small.bmp
+AT (48,11) ./item/dc-mon0/z/skeletal_warrior.bmp
+AT (49,11) ./item/dc-mon1/a/angel.bmp
+AT ( 0,12) ./item/dc-mon1/b/boring_beetle.bmp
+AT ( 1,12) ./item/dc-mon1/b/boulder_beetle.bmp
+AT ( 2,12) ./item/dc-mon1/b/program_bug.bmp
+AT ( 3,12) ./item/dc-mon1/d/golden_dragon.bmp
+AT ( 4,12) ./item/dc-mon1/d/hydra1.bmp
+AT ( 5,12) ./item/dc-mon1/d/hydra2.bmp
+AT ( 6,12) ./item/dc-mon1/d/hydra3.bmp
+AT ( 7,12) ./item/dc-mon1/d/hydra4.bmp
+AT ( 8,12) ./item/dc-mon1/d/hydra5.bmp
+AT ( 9,12) ./item/dc-mon1/d/hydra.bmp
+AT (10,12) ./item/dc-mon1/d/iron_dragon.bmp
+AT (11,12) ./item/dc-mon1/d/quicksilver_dragon.bmp
+AT (12,12) ./item/dc-mon1/d/serpent_of_hell.bmp
+AT (13,12) ./item/dc-mon1/d/skeletal_dragon.bmp
+AT (14,12) ./item/dc-mon1/d/swamp_dragon.bmp
+AT (15,12) ./item/dc-mon1/d/wyvern.bmp
+AT (16,12) ./item/dc-mon1/d/xtahua.bmp
+AT (17,12) ./item/dc-mon1/e/efreet.bmp
+AT (18,12) ./item/dc-mon1/f/blink_frog.bmp
+AT (19,12) ./item/dc-mon1/f/giant_brown_frog.bmp
+AT (20,12) ./item/dc-mon1/f/giant_frog.bmp
+AT (21,12) ./item/dc-mon1/f/spiny_frog.bmp
+AT (22,12) ./item/dc-mon1/g/eye_of_devastation.bmp
+AT (23,12) ./item/dc-mon1/g/eye_of_draining.bmp
+AT (24,12) ./item/dc-mon1/g/giant_orange_brain.bmp
+AT (25,12) ./item/dc-mon1/g/great_orb_of_eyes.bmp
+AT (26,12) ./item/dc-mon1/g/shining_eye.bmp
+AT (27,12) ./item/dc-mon1/h/griffon.bmp
+AT (28,12) ./item/dc-mon1/h/hippogriff.bmp
+AT (29,12) ./item/dc-mon1/h/sphinx.bmp
+AT (30,12) ./item/dc-mon1/i/ice_beast.bmp
+AT (31,12) ./item/dc-mon1/j/azure_jelly2.bmp
+AT (32,12) ./item/dc-mon1/j/death_ooze.bmp
+AT (33,12) ./item/dc-mon1/j/giant_amoeba.bmp
+AT (34,12) ./item/dc-mon1/j/jelly.bmp
+AT (35,12) ./item/dc-mon1/j/pulsating_lump.bmp
+AT (36,12) ./item/dc-mon1/k/big_kobold.bmp
+AT (37,12) ./item/dc-mon1/k/kobold.bmp
+AT (38,12) ./item/dc-mon1/k/kobold_demonologist.bmp
+AT (39,12) ./item/dc-mon1/l/ancient_lich.bmp
+AT (40,12) ./item/dc-mon1/l/boris.bmp
+AT (41,12) ./item/dc-mon1/l/lich.bmp
+AT (42,12) ./item/dc-mon1/m/greater_mummy.bmp
+AT (43,12) ./item/dc-mon1/m/guardian_mummy.bmp
+AT (44,12) ./item/dc-mon1/m/mummy.bmp
+AT (45,12) ./item/dc-mon1/m/mummy_priest.bmp
+AT (46,12) ./item/dc-mon1/n/greater_naga0.bmp
+AT (47,12) ./item/dc-mon1/n/greater_naga.bmp
+AT (48,12) ./item/dc-mon1/n/guardian_naga.bmp
+AT (49,12) ./item/dc-mon1/n/naga0.bmp
+AT ( 0,13) ./item/dc-mon1/n/naga.bmp
+AT ( 1,13) ./item/dc-mon1/n/naga_mage.bmp
+AT ( 2,13) ./item/dc-mon1/n/naga_warrior0.bmp
+AT ( 3,13) ./item/dc-mon1/n/naga_warrior.bmp
+AT ( 4,13) ./item/dc-mon1/o/erolcha.bmp
+AT ( 5,13) ./item/dc-mon1/o/ogre_mage.bmp
+AT ( 6,13) ./item/dc-mon1/o/two_headed_ogre.bmp
+AT ( 7,13) ./item/dc-mon1/p/oklob_plant.bmp
+AT ( 8,13) ./item/dc-mon1/p/plant.bmp
+AT ( 9,13) ./item/dc-mon1/q/queen_ant.bmp
+AT (10,13) ./item/dc-mon1/q/queen_bee.bmp
+AT (11,13) ./item/dc-mon1/r/rakshasa.bmp
+AT (12,13) ./item/dc-mon1/r/rakshasa_fake.bmp
+AT (13,13) ./item/dc-mon1/s/black_snake.bmp
+AT (14,13) ./item/dc-mon1/s/brown_snake.bmp
+AT (15,13) ./item/dc-mon1/s/grey_snake.bmp
+AT (16,13) ./item/dc-mon1/s/lava_snake.bmp
+AT (17,13) ./item/dc-mon1/s/yellow_snake.bmp
+AT (18,13) ./item/dc-mon1/t/iron_troll.bmp
+AT (19,13) ./item/dc-mon1/t/snorg.bmp
+AT (20,13) ./item/dc-mon1/u/bear.bmp
+AT (21,13) ./item/dc-mon1/u/black_bear.bmp
+AT (22,13) ./item/dc-mon1/u/grizzly_bear.bmp
+AT (23,13) ./item/dc-mon1/u/polar_bear.bmp
+AT (24,13) ./item/dc-mon1/v/vampire_knight.bmp
+AT (25,13) ./item/dc-mon1/w/freezing_wraith.bmp
+AT (26,13) ./item/dc-mon1/w/shadow_wraith.bmp
+AT (27,13) ./item/dc-mon1/w/spectral_thing.bmp
+AT (28,13) ./item/dc-mon1/w/spectral_warrior.bmp
+AT (29,13) ./item/dc-mon1/x/abomination_large1.bmp
+AT (30,13) ./item/dc-mon1/x/abomination_large2.bmp
+AT (31,13) ./item/dc-mon1/x/abomination_large3.bmp
+AT (32,13) ./item/dc-mon1/x/abomination_large4.bmp
+AT (33,13) ./item/dc-mon1/x/abomination_large5.bmp
+AT (34,13) ./item/dc-mon1/x/abomination_large6.bmp
+AT (35,13) ./item/dc-mon1/x/orb_guardian.bmp
+AT (36,13) ./item/dc-mon1/x/tentacled_monstrosity.bmp
+AT (37,13) ./item/dc-mon1/y/death_yak.bmp
+AT (38,13) ./item/dc-mon1/y/sheep.bmp
+AT (39,13) ./item/dc-mon1/y/yak.bmp
+AT (40,13) ./item/dc-mon1/z/simulacrum_large.bmp
+AT (41,13) ./item/effect/acid_venom.bmp
+AT (42,13) ./item/effect/arrow0.bmp
+AT (43,13) ./item/effect/arrow1.bmp
+AT (44,13) ./item/effect/arrow2.bmp
+AT (45,13) ./item/effect/arrow3.bmp
+AT (46,13) ./item/effect/arrow4.bmp
+AT (47,13) ./item/effect/arrow5.bmp
+AT (48,13) ./item/effect/arrow6.bmp
+AT (49,13) ./item/effect/arrow7.bmp
+AT ( 0,14) ./item/effect/blinding_venom.bmp
+AT ( 1,14) ./item/effect/bolt01.bmp
+AT ( 2,14) ./item/effect/bolt02.bmp
+AT ( 3,14) ./item/effect/bolt03.bmp
+AT ( 4,14) ./item/effect/bolt04.bmp
+AT ( 5,14) ./item/effect/bolt05.bmp
+AT ( 6,14) ./item/effect/bolt06.bmp
+AT ( 7,14) ./item/effect/bolt07.bmp
+AT ( 8,14) ./item/effect/bolt08.bmp
+AT ( 9,14) ./item/effect/bolt0.bmp
+AT (10,14) ./item/effect/bolt1.bmp
+AT (11,14) ./item/effect/bolt2.bmp
+AT (12,14) ./item/effect/bolt3.bmp
+AT (13,14) ./item/effect/bolt4.bmp
+AT (14,14) ./item/effect/bolt5.bmp
+AT (15,14) ./item/effect/bolt6.bmp
+AT (16,14) ./item/effect/bolt7.bmp
+AT (17,14) ./item/effect/boomerang1.bmp
+AT (18,14) ./item/effect/boomerang2.bmp
+AT (19,14) ./item/effect/cloud_black_smoke.bmp
+AT (20,14) ./item/effect/cloud_blue_smoke.bmp
+AT (21,14) ./item/effect/cloud_cold0.bmp
+AT (22,14) ./item/effect/cloud_cold1.bmp
+AT (23,14) ./item/effect/cloud_cold2.bmp
+AT (24,14) ./item/effect/cloud_fire0.bmp
+AT (25,14) ./item/effect/cloud_fire1.bmp
+AT (26,14) ./item/effect/cloud_fire2.bmp
+AT (27,14) ./item/effect/cloud_grey_smoke.bmp
+AT (28,14) ./item/effect/cloud_miasma.bmp
+AT (29,14) ./item/effect/cloud_poison0.bmp
+AT (30,14) ./item/effect/cloud_poison1.bmp
+AT (31,14) ./item/effect/cloud_poison2.bmp
+AT (32,14) ./item/effect/cloud_purp_smoke.bmp
+AT (33,14) ./item/effect/dart0.bmp
+AT (34,14) ./item/effect/dart1.bmp
+AT (35,14) ./item/effect/dart2.bmp
+AT (36,14) ./item/effect/dart3.bmp
+AT (37,14) ./item/effect/dart4.bmp
+AT (38,14) ./item/effect/dart5.bmp
+AT (39,14) ./item/effect/dart6.bmp
+AT (40,14) ./item/effect/dart7.bmp
+AT (41,14) ./item/effect/engulf1.bmp
+AT (42,14) ./item/effect/engulf2.bmp
+AT (43,14) ./item/effect/engulf3.bmp
+AT (44,14) ./item/effect/engulf4.bmp
+AT (45,14) ./item/effect/engulf5.bmp
+AT (46,14) ./item/effect/engulf6.bmp
+AT (47,14) ./item/effect/engulf7.bmp
+AT (48,14) ./item/effect/engulf8.bmp
+AT (49,14) ./item/effect/explode_black0.bmp
+AT ( 0,15) ./item/effect/explode_black1.bmp
+AT ( 1,15) ./item/effect/explode_black2.bmp
+AT ( 2,15) ./item/effect/explode_black3.bmp
+AT ( 3,15) ./item/effect/explode_black4.bmp
+AT ( 4,15) ./item/effect/explode_black5.bmp
+AT ( 5,15) ./item/effect/explode_black6.bmp
+AT ( 6,15) ./item/effect/explode_black7.bmp
+AT ( 7,15) ./item/effect/explode_black8.bmp
+AT ( 8,15) ./item/effect/explode_blue0.bmp
+AT ( 9,15) ./item/effect/explode_blue1.bmp
+AT (10,15) ./item/effect/explode_blue2.bmp
+AT (11,15) ./item/effect/explode_blue3.bmp
+AT (12,15) ./item/effect/explode_blue4.bmp
+AT (13,15) ./item/effect/explode_blue5.bmp
+AT (14,15) ./item/effect/explode_blue6.bmp
+AT (15,15) ./item/effect/explode_blue7.bmp
+AT (16,15) ./item/effect/explode_blue8.bmp
+AT (17,15) ./item/effect/explode_brown0.bmp
+AT (18,15) ./item/effect/explode_brown1.bmp
+AT (19,15) ./item/effect/explode_brown2.bmp
+AT (20,15) ./item/effect/explode_brown3.bmp
+AT (21,15) ./item/effect/explode_brown4.bmp
+AT (22,15) ./item/effect/explode_brown5.bmp
+AT (23,15) ./item/effect/explode_brown6.bmp
+AT (24,15) ./item/effect/explode_brown7.bmp
+AT (25,15) ./item/effect/explode_brown8.bmp
+AT (26,15) ./item/effect/explode_darkblue0.bmp
+AT (27,15) ./item/effect/explode_darkblue1.bmp
+AT (28,15) ./item/effect/explode_darkblue2.bmp
+AT (29,15) ./item/effect/explode_darkblue3.bmp
+AT (30,15) ./item/effect/explode_darkblue4.bmp
+AT (31,15) ./item/effect/explode_darkblue5.bmp
+AT (32,15) ./item/effect/explode_darkblue6.bmp
+AT (33,15) ./item/effect/explode_darkblue7.bmp
+AT (34,15) ./item/effect/explode_darkblue8.bmp
+AT (35,15) ./item/effect/explode_green0.bmp
+AT (36,15) ./item/effect/explode_green1.bmp
+AT (37,15) ./item/effect/explode_green2.bmp
+AT (38,15) ./item/effect/explode_green3.bmp
+AT (39,15) ./item/effect/explode_green4.bmp
+AT (40,15) ./item/effect/explode_green5.bmp
+AT (41,15) ./item/effect/explode_green6.bmp
+AT (42,15) ./item/effect/explode_green7.bmp
+AT (43,15) ./item/effect/explode_green8.bmp
+AT (44,15) ./item/effect/explode_purple0.bmp
+AT (45,15) ./item/effect/explode_purple1.bmp
+AT (46,15) ./item/effect/explode_purple2.bmp
+AT (47,15) ./item/effect/explode_purple3.bmp
+AT (48,15) ./item/effect/explode_purple4.bmp
+AT (49,15) ./item/effect/explode_purple5.bmp
+AT ( 0,16) ./item/effect/explode_purple6.bmp
+AT ( 1,16) ./item/effect/explode_purple7.bmp
+AT ( 2,16) ./item/effect/explode_purple8.bmp
+AT ( 3,16) ./item/effect/explode_red0.bmp
+AT ( 4,16) ./item/effect/explode_red1.bmp
+AT ( 5,16) ./item/effect/explode_red2.bmp
+AT ( 6,16) ./item/effect/explode_red3.bmp
+AT ( 7,16) ./item/effect/explode_red4.bmp
+AT ( 8,16) ./item/effect/explode_red5.bmp
+AT ( 9,16) ./item/effect/explode_red6.bmp
+AT (10,16) ./item/effect/explode_red7.bmp
+AT (11,16) ./item/effect/explode_red8.bmp
+AT (12,16) ./item/effect/needle0.bmp
+AT (13,16) ./item/effect/needle1.bmp
+AT (14,16) ./item/effect/needle2.bmp
+AT (15,16) ./item/effect/needle3.bmp
+AT (16,16) ./item/effect/needle4.bmp
+AT (17,16) ./item/effect/needle5.bmp
+AT (18,16) ./item/effect/needle6.bmp
+AT (19,16) ./item/effect/needle7.bmp
+AT (20,16) ./item/effect/resist1.bmp
+AT (21,16) ./item/effect/resist2.bmp
+AT (22,16) ./item/effect/resist3.bmp
+AT (23,16) ./item/effect/resist4.bmp
+AT (24,16) ./item/effect/zap_acid0.bmp
+AT (25,16) ./item/effect/zap_acid1.bmp
+AT (26,16) ./item/effect/zap_acid2.bmp
+AT (27,16) ./item/effect/zap_acid3.bmp
+AT (28,16) ./item/effect/zap_black0.bmp
+AT (29,16) ./item/effect/zap_black1.bmp
+AT (30,16) ./item/effect/zap_black2.bmp
+AT (31,16) ./item/effect/zap_black3.bmp
+AT (32,16) ./item/effect/zap_dig.bmp
+AT (33,16) ./item/effect/zap_elec0.bmp
+AT (34,16) ./item/effect/zap_elec1.bmp
+AT (35,16) ./item/effect/zap_elec2.bmp
+AT (36,16) ./item/effect/zap_elec3.bmp
+AT (37,16) ./item/effect/zap_fire0.bmp
+AT (38,16) ./item/effect/zap_fire1.bmp
+AT (39,16) ./item/effect/zap_fire2.bmp
+AT (40,16) ./item/effect/zap_fire3.bmp
+AT (41,16) ./item/effect/zap_flash.bmp
+AT (42,16) ./item/effect/zap_gas0.bmp
+AT (43,16) ./item/effect/zap_gas1.bmp
+AT (44,16) ./item/effect/zap_gas2.bmp
+AT (45,16) ./item/effect/zap_gas3.bmp
+AT (46,16) ./item/effect/zap_ice0.bmp
+AT (47,16) ./item/effect/zap_ice1.bmp
+AT (48,16) ./item/effect/zap_ice2.bmp
+AT (49,16) ./item/effect/zap_ice3.bmp
+AT ( 0,17) ./item/effect/zap_magic0.bmp
+AT ( 1,17) ./item/effect/zap_magic1.bmp
+AT ( 2,17) ./item/effect/zap_magic2.bmp
+AT ( 3,17) ./item/effect/zap_magic3.bmp
+AT ( 4,17) ./item/effect/zap_sleep0.bmp
+AT ( 5,17) ./item/effect/zap_sleep1.bmp
+AT ( 6,17) ./item/effect/zap_sleep2.bmp
+AT ( 7,17) ./item/effect/zap_sleep3.bmp
+AT ( 8,17) ./item/effect/zigzag1.bmp
+AT ( 9,17) ./item/effect/zigzag2.bmp
+AT (10,17) ./item/effect/zigzag3.bmp
+AT (11,17) ./item/effect/zigzag4.bmp
+AT (12,17) ./item/food/apple.bmp
+AT (13,17) ./item/food/apricot.bmp
+AT (14,17) ./item/food/banana.bmp
+AT (15,17) ./item/food/beef_jerky.bmp
+AT (16,17) ./item/food/bone.bmp
+AT (17,17) ./item/food/bread0.bmp
+AT (18,17) ./item/food/bread_ration.bmp
+AT (19,17) ./item/food/candy_bar.bmp
+AT (20,17) ./item/food/carrot.bmp
+AT (21,17) ./item/food/cheese.bmp
+AT (22,17) ./item/food/chocorate.bmp
+AT (23,17) ./item/food/choko.bmp
+AT (24,17) ./item/food/clove_of_garlic.bmp
+AT (25,17) ./item/food/corpse.bmp
+AT (26,17) ./item/food/corpse_rotten.bmp
+AT (27,17) ./item/food/cram_ration.bmp
+AT (28,17) ./item/food/c_ration.bmp
+AT (29,17) ./item/food/cream_pie.bmp
+AT (30,17) ./item/food/egg.bmp
+AT (31,17) ./item/food/eucalyptus_leaf.bmp
+AT (32,17) ./item/food/food_ration.bmp
+AT (33,17) ./item/food/fortune_cookie.bmp
+AT (34,17) ./item/food/grape.bmp
+AT (35,17) ./item/food/honeycomb.bmp
+AT (36,17) ./item/food/huge_chunk_of_meat.bmp
+AT (37,17) ./item/food/kelp_frond.bmp
+AT (38,17) ./item/food/k_ration.bmp
+AT (39,17) ./item/food/lembas_wafer.bmp
+AT (40,17) ./item/food/lemon.bmp
+AT (41,17) ./item/food/lump_of_royal_jelly.bmp
+AT (42,17) ./item/food/lychee.bmp
+AT (43,17) ./item/food/meatball.bmp
+AT (44,17) ./item/food/meat_ring.bmp
+AT (45,17) ./item/food/meat_stick.bmp
+AT (46,17) ./item/food/melon.bmp
+AT (47,17) ./item/food/orange.bmp
+AT (48,17) ./item/food/pancake.bmp
+AT (49,17) ./item/food/pear.bmp
+AT ( 0,18) ./item/food/pizza.bmp
+AT ( 1,18) ./item/food/rambutan.bmp
+AT ( 2,18) ./item/food/sausage.bmp
+AT ( 3,18) ./item/food/slime_mold.bmp
+AT ( 4,18) ./item/food/snozzcumber.bmp
+AT ( 5,18) ./item/food/sprig_of_wolfsbane.bmp
+AT ( 6,18) ./item/food/strawberry.bmp
+AT ( 7,18) ./item/food/sultana.bmp
+AT ( 8,18) ./item/food/tin.bmp
+AT ( 9,18) ./item/food/tripe_ration.bmp
+AT (10,18) ./item/gem/black.bmp
+AT (11,18) ./item/gem/blue.bmp
+AT (12,18) ./item/gem/boulder.bmp
+AT (13,18) ./item/gem/gold_piece.bmp
+AT (14,18) ./item/gem/green.bmp
+AT (15,18) ./item/gem/grey_stone.bmp
+AT (16,18) ./item/gem/orange.bmp
+AT (17,18) ./item/gem/red.bmp
+AT (18,18) ./item/gem/rock.bmp
+AT (19,18) ./item/gem/stone.bmp
+AT (20,18) ./item/gem/violet.bmp
+AT (21,18) ./item/gem/white.bmp
+AT (22,18) ./item/gem/yellow.bmp
+AT (23,18) ./item/gem/yellowish_brown.bmp
+AT (24,18) ./item/misc/beartrap.bmp
+AT (25,18) ./item/misc/bell.bmp
+AT (26,18) ./item/misc/bell_of_opening.bmp
+AT (27,18) ./item/misc/blindfold.bmp
+AT (28,18) ./item/misc/brass_lantern.bmp
+AT (29,18) ./item/misc/bugle.bmp
+AT (30,18) ./item/misc/candelabrum_of_invocation.bmp
+AT (31,18) ./item/misc/can_of_grease.bmp
+AT (32,18) ./item/misc/chest.bmp
+AT (33,18) ./item/misc/credit_card.bmp
+AT (34,18) ./item/misc/crystal_ball.bmp
+AT (35,18) ./item/misc/drum.bmp
+AT (36,18) ./item/misc/figurine.bmp
+AT (37,18) ./item/misc/flute.bmp
+AT (38,18) ./item/misc/grappling_hook.bmp
+AT (39,18) ./item/misc/harp.bmp
+AT (40,18) ./item/misc/heavy_iron_ball.bmp
+AT (41,18) ./item/misc/horn.bmp
+AT (42,18) ./item/misc/ice_box.bmp
+AT (43,18) ./item/misc/iron_chain.bmp
+AT (44,18) ./item/misc/lamp.bmp
+AT (45,18) ./item/misc/land_mine.bmp
+AT (46,18) ./item/misc/large_box.bmp
+AT (47,18) ./item/misc/leash.bmp
+AT (48,18) ./item/misc/lenses.bmp
+AT (49,18) ./item/misc/lock_pick.bmp
+AT ( 0,19) ./item/misc/magic_marker.bmp
+AT ( 1,19) ./item/misc/mirror.bmp
+AT ( 2,19) ./item/misc/misc_altar.bmp
+AT ( 3,19) ./item/misc/misc_book.bmp
+AT ( 4,19) ./item/misc/misc_bottle.bmp
+AT ( 5,19) ./item/misc/misc_box.bmp
+AT ( 6,19) ./item/misc/misc_crystal.bmp
+AT ( 7,19) ./item/misc/misc_deck.bmp
+AT ( 8,19) ./item/misc/misc_disc.bmp
+AT ( 9,19) ./item/misc/misc_fan.bmp
+AT (10,19) ./item/misc/misc_horn.bmp
+AT (11,19) ./item/misc/misc_lamp.bmp
+AT (12,19) ./item/misc/misc_lantern.bmp
+AT (13,19) ./item/misc/misc_orb.bmp
+AT (14,19) ./item/misc/misc_rune.bmp
+AT (15,19) ./item/misc/misc_stone.bmp
+AT (16,19) ./item/misc/sack.bmp
+AT (17,19) ./item/misc/saddle.bmp
+AT (18,19) ./item/misc/skeleton_key.bmp
+AT (19,19) ./item/misc/statue.bmp
+AT (20,19) ./item/misc/stethoscope.bmp
+AT (21,19) ./item/misc/tallow_candle.bmp
+AT (22,19) ./item/misc/tinning_kit.bmp
+AT (23,19) ./item/misc/tin_opener.bmp
+AT (24,19) ./item/misc/towel.bmp
+AT (25,19) ./item/misc/unicorn_horn.bmp
+AT (26,19) ./item/misc/wax_candle.bmp
+AT (27,19) ./item/misc/whistle.bmp
+AT (28,19) ./item/potion/black.bmp
+AT (29,19) ./item/potion/brilliant_blue.bmp
+AT (30,19) ./item/potion/brown.bmp
+AT (31,19) ./item/potion/bubbly.bmp
+AT (32,19) ./item/potion/clear.bmp
+AT (33,19) ./item/potion/cloudy.bmp
+AT (34,19) ./item/potion/cyan.bmp
+AT (35,19) ./item/potion/dark.bmp
+AT (36,19) ./item/potion/dark_green.bmp
+AT (37,19) ./item/potion/effervescent.bmp
+AT (38,19) ./item/potion/emerald.bmp
+AT (39,19) ./item/potion/fizzy.bmp
+AT (40,19) ./item/potion/golden.bmp
+AT (41,19) ./item/potion/magenta.bmp
+AT (42,19) ./item/potion/milky.bmp
+AT (43,19) ./item/potion/murky.bmp
+AT (44,19) ./item/potion/orange.bmp
+AT (45,19) ./item/potion/pink.bmp
+AT (46,19) ./item/potion/puce.bmp
+AT (47,19) ./item/potion/purple_red.bmp
+AT (48,19) ./item/potion/ruby.bmp
+AT (49,19) ./item/potion/silver.bmp
+AT ( 0,20) ./item/potion/sky_blue.bmp
+AT ( 1,20) ./item/potion/smoky.bmp
+AT ( 2,20) ./item/potion/swirly.bmp
+AT ( 3,20) ./item/potion/white.bmp
+AT ( 4,20) ./item/potion/yellow.bmp
+AT ( 5,20) ./item/ring/agate.bmp
+AT ( 6,20) ./item/ring/black_onyx.bmp
+AT ( 7,20) ./item/ring/brass.bmp
+AT ( 8,20) ./item/ring/bronze.bmp
+AT ( 9,20) ./item/ring/clay.bmp
+AT (10,20) ./item/ring/copper.bmp
+AT (11,20) ./item/ring/coral.bmp
+AT (12,20) ./item/ring/diamond.bmp
+AT (13,20) ./item/ring/emerald.bmp
+AT (14,20) ./item/ring/engagement.bmp
+AT (15,20) ./item/ring/glass.bmp
+AT (16,20) ./item/ring/gold_blue.bmp
+AT (17,20) ./item/ring/gold.bmp
+AT (18,20) ./item/ring/gold_cyan.bmp
+AT (19,20) ./item/ring/gold_green.bmp
+AT (20,20) ./item/ring/gold_magenta.bmp
+AT (21,20) ./item/ring/gold_red.bmp
+AT (22,20) ./item/ring/gold_white.bmp
+AT (23,20) ./item/ring/gold_yellow.bmp
+AT (24,20) ./item/ring/granite.bmp
+AT (25,20) ./item/ring/iron.bmp
+AT (26,20) ./item/ring/ivory.bmp
+AT (27,20) ./item/ring/jade.bmp
+AT (28,20) ./item/ring/moonstone.bmp
+AT (29,20) ./item/ring/opal.bmp
+AT (30,20) ./item/ring/pearl.bmp
+AT (31,20) ./item/ring/plain_black.bmp
+AT (32,20) ./item/ring/plain_blue.bmp
+AT (33,20) ./item/ring/plain_cyan.bmp
+AT (34,20) ./item/ring/plain_dark.bmp
+AT (35,20) ./item/ring/plain_green.bmp
+AT (36,20) ./item/ring/plain_magenta.bmp
+AT (37,20) ./item/ring/plain_red.bmp
+AT (38,20) ./item/ring/plain_yellow.bmp
+AT (39,20) ./item/ring/ruby.bmp
+AT (40,20) ./item/ring/sapphire.bmp
+AT (41,20) ./item/ring/shiny.bmp
+AT (42,20) ./item/ring/silver.bmp
+AT (43,20) ./item/ring/steel.bmp
+AT (44,20) ./item/ring/tiger_eye.bmp
+AT (45,20) ./item/ring/topaz.bmp
+AT (46,20) ./item/ring/twisted.bmp
+AT (47,20) ./item/ring/wire.bmp
+AT (48,20) ./item/ring/wooden.bmp
+AT (49,20) ./item/scroll/andova_begarin.bmp
+AT ( 0,21) ./item/scroll/blank_paper.bmp
+AT ( 1,21) ./item/scroll/daiyen_fooels.bmp
+AT ( 2,21) ./item/scroll/duam_xnaht.bmp
+AT ( 3,21) ./item/scroll/elam_ebow.bmp
+AT ( 4,21) ./item/scroll/elbib_yloh.bmp
+AT ( 5,21) ./item/scroll/foobie_bletch.bmp
+AT ( 6,21) ./item/scroll/garven_deh.bmp
+AT ( 7,21) ./item/scroll/hackem_muche.bmp
+AT ( 8,21) ./item/scroll/juyed_awk_yacc.bmp
+AT ( 9,21) ./item/scroll/kernod_wel.bmp
+AT (10,21) ./item/scroll/kirje.bmp
+AT (11,21) ./item/scroll/lep_gex_ven_zea.bmp
+AT (12,21) ./item/scroll/mail.bmp
+AT (13,21) ./item/scroll/nr_9.bmp
+AT (14,21) ./item/scroll/pratyavayah.bmp
+AT (15,21) ./item/scroll/prirutsenie.bmp
+AT (16,21) ./item/scroll/read_me.bmp
+AT (17,21) ./item/scroll/temov.bmp
+AT (18,21) ./item/scroll/tharr.bmp
+AT (19,21) ./item/scroll/ve_forbryderne.bmp
+AT (20,21) ./item/scroll/velox_neb.bmp
+AT (21,21) ./item/scroll/venzar_borgavve.bmp
+AT (22,21) ./item/scroll/verr_yed_horre.bmp
+AT (23,21) ./item/scroll/xixaxa_xoxaxa_xuxaxa.bmp
+AT (24,21) ./item/scroll/yum_yum.bmp
+AT (25,21) ./item/scroll/zelgo_mer.bmp
+AT (26,21) ./item/wand/aluminum.bmp
+AT (27,21) ./item/wand/balsa.bmp
+AT (28,21) ./item/wand/brass.bmp
+AT (29,21) ./item/wand/copper.bmp
+AT (30,21) ./item/wand/crystal.bmp
+AT (31,21) ./item/wand/curved.bmp
+AT (32,21) ./item/wand/ebony.bmp
+AT (33,21) ./item/wand/forked.bmp
+AT (34,21) ./item/wand/gem_bone.bmp
+AT (35,21) ./item/wand/gem_brass.bmp
+AT (36,21) ./item/wand/gem_bronze.bmp
+AT (37,21) ./item/wand/gem_copper.bmp
+AT (38,21) ./item/wand/gem_glass.bmp
+AT (39,21) ./item/wand/gem_gold.bmp
+AT (40,21) ./item/wand/gem_iron.bmp
+AT (41,21) ./item/wand/gem_ivory.bmp
+AT (42,21) ./item/wand/gem_lead.bmp
+AT (43,21) ./item/wand/gem_plastic.bmp
+AT (44,21) ./item/wand/gem_silver.bmp
+AT (45,21) ./item/wand/gem_wood.bmp
+AT (46,21) ./item/wand/glass.bmp
+AT (47,21) ./item/wand/hexagonal.bmp
+AT (48,21) ./item/wand/iridium.bmp
+AT (49,21) ./item/wand/iron.bmp
+AT ( 0,22) ./item/wand/jeweled.bmp
+AT ( 1,22) ./item/wand/long.bmp
+AT ( 2,22) ./item/wand/maple.bmp
+AT ( 3,22) ./item/wand/marble.bmp
+AT ( 4,22) ./item/wand/oak.bmp
+AT ( 5,22) ./item/wand/pine.bmp
+AT ( 6,22) ./item/wand/platinum.bmp
+AT ( 7,22) ./item/wand/runed.bmp
+AT ( 8,22) ./item/wand/short.bmp
+AT ( 9,22) ./item/wand/silver.bmp
+AT (10,22) ./item/wand/spiked.bmp
+AT (11,22) ./item/wand/staff00.bmp
+AT (12,22) ./item/wand/staff01.bmp
+AT (13,22) ./item/wand/staff02.bmp
+AT (14,22) ./item/wand/staff03.bmp
+AT (15,22) ./item/wand/staff04.bmp
+AT (16,22) ./item/wand/staff05.bmp
+AT (17,22) ./item/wand/staff06.bmp
+AT (18,22) ./item/wand/staff07.bmp
+AT (19,22) ./item/wand/staff08.bmp
+AT (20,22) ./item/wand/staff09.bmp
+AT (21,22) ./item/wand/steel.bmp
+AT (22,22) ./item/wand/tin.bmp
+AT (23,22) ./item/wand/uranium.bmp
+AT (24,22) ./item/wand/zinc.bmp
+AT (25,22) ./item/weapon/aklys.bmp
+AT (26,22) ./item/weapon/ancient_sword.bmp
+AT (27,22) ./item/weapon/ancus.bmp
+AT (28,22) ./item/weapon/arrow.bmp
+AT (29,22) ./item/weapon/athame.bmp
+AT (30,22) ./item/weapon/axe.bmp
+AT (31,22) ./item/weapon/bardiche.bmp
+AT (32,22) ./item/weapon/battle_axe2.bmp
+AT (33,22) ./item/weapon/battle_axe3.bmp
+AT (34,22) ./item/weapon/battle_axe.bmp
+AT (35,22) ./item/weapon/bec_de_corbin.bmp
+AT (36,22) ./item/weapon/bill_guisarme.bmp
+AT (37,22) ./item/weapon/blowgun.bmp
+AT (38,22) ./item/weapon/boomerang.bmp
+AT (39,22) ./item/weapon/bow.bmp
+AT (40,22) ./item/weapon/broadsword.bmp
+AT (41,22) ./item/weapon/bullwhip.bmp
+AT (42,22) ./item/weapon/club.bmp
+AT (43,22) ./item/weapon/crossbow2.bmp
+AT (44,22) ./item/weapon/crossbow.bmp
+AT (45,22) ./item/weapon/crossbow_bolt.bmp
+AT (46,22) ./item/weapon/crysknife.bmp
+AT (47,22) ./item/weapon/dagger.bmp
+AT (48,22) ./item/weapon/dart.bmp
+AT (49,22) ./item/weapon/dart-p.bmp
+AT ( 0,23) ./item/weapon/demon_blade.bmp
+AT ( 1,23) ./item/weapon/demon_trident.bmp
+AT ( 2,23) ./item/weapon/demon_whip.bmp
+AT ( 3,23) ./item/weapon/double_sword.bmp
+AT ( 4,23) ./item/weapon/dwarvish_short_sword.bmp
+AT ( 5,23) ./item/weapon/dwarvish_spear.bmp
+AT ( 6,23) ./item/weapon/elven_arrow.bmp
+AT ( 7,23) ./item/weapon/elven_bow.bmp
+AT ( 8,23) ./item/weapon/elven_broadsword.bmp
+AT ( 9,23) ./item/weapon/elven_dagger.bmp
+AT (10,23) ./item/weapon/elven_short_sword.bmp
+AT (11,23) ./item/weapon/elven_spear.bmp
+AT (12,23) ./item/weapon/eveningstar.bmp
+AT (13,23) ./item/weapon/executioner_axe2.bmp
+AT (14,23) ./item/weapon/falchion.bmp
+AT (15,23) ./item/weapon/fauchard.bmp
+AT (16,23) ./item/weapon/flail2.bmp
+AT (17,23) ./item/weapon/flail.bmp
+AT (18,23) ./item/weapon/giant_club.bmp
+AT (19,23) ./item/weapon/giant_spiked_club.bmp
+AT (20,23) ./item/weapon/glaive.bmp
+AT (21,23) ./item/weapon/guisarme.bmp
+AT (22,23) ./item/weapon/halberd.bmp
+AT (23,23) ./item/weapon/hammer2.bmp
+AT (24,23) ./item/weapon/hammer.bmp
+AT (25,23) ./item/weapon/hand_axe.bmp
+AT (26,23) ./item/weapon/hand_crossbow.bmp
+AT (27,23) ./item/weapon/javelin.bmp
+AT (28,23) ./item/weapon/katana2.bmp
+AT (29,23) ./item/weapon/katana3.bmp
+AT (30,23) ./item/weapon/katana.bmp
+AT (31,23) ./item/weapon/knife.bmp
+AT (32,23) ./item/weapon/lance.bmp
+AT (33,23) ./item/weapon/long_sword2.bmp
+AT (34,23) ./item/weapon/long_sword.bmp
+AT (35,23) ./item/weapon/lucern_hammer.bmp
+AT (36,23) ./item/weapon/mace2.bmp
+AT (37,23) ./item/weapon/mace.bmp
+AT (38,23) ./item/weapon/mace_large.bmp
+AT (39,23) ./item/weapon/morningstar2.bmp
+AT (40,23) ./item/weapon/morning_star.bmp
+AT (41,23) ./item/weapon/needle.bmp
+AT (42,23) ./item/weapon/needle-p.bmp
+AT (43,23) ./item/weapon/orcish_arrow.bmp
+AT (44,23) ./item/weapon/orcish_bow.bmp
+AT (45,23) ./item/weapon/orcish_spear.bmp
+AT (46,23) ./item/weapon/partisan.bmp
+AT (47,23) ./item/weapon/quarterstaff.bmp
+AT (48,23) ./item/weapon/ranseur.bmp
+AT (49,23) ./item/weapon/rubber_hose.bmp
+AT ( 0,24) ./item/weapon/runesword.bmp
+AT ( 1,24) ./item/weapon/sabre2.bmp
+AT ( 2,24) ./item/weapon/scalpel.bmp
+AT ( 3,24) ./item/weapon/scimitar.bmp
+AT ( 4,24) ./item/weapon/scythe.bmp
+AT ( 5,24) ./item/weapon/short_sword2.bmp
+AT ( 6,24) ./item/weapon/short_sword.bmp
+AT ( 7,24) ./item/weapon/shuriken.bmp
+AT ( 8,24) ./item/weapon/silver_arrow.bmp
+AT ( 9,24) ./item/weapon/silver_dagger.bmp
+AT (10,24) ./item/weapon/silver_saber.bmp
+AT (11,24) ./item/weapon/silver_spear.bmp
+AT (12,24) ./item/weapon/sling.bmp
+AT (13,24) ./item/weapon/spear2.bmp
+AT (14,24) ./item/weapon/spear.bmp
+AT (15,24) ./item/weapon/spetum.bmp
+AT (16,24) ./item/weapon/spiked_flail.bmp
+AT (17,24) ./item/weapon/spwpn_glaive_of_prune.bmp
+AT (18,24) ./item/weapon/spwpn_knife_of_accuracy.bmp
+AT (19,24) ./item/weapon/spwpn_mace_of_variability.bmp
+AT (20,24) ./item/weapon/spwpn_sceptre_of_asmodeus.bmp
+AT (21,24) ./item/weapon/spwpn_sceptre_of_torment.bmp
+AT (22,24) ./item/weapon/spwpn_scythe_of_curses.bmp
+AT (23,24) ./item/weapon/spwpn_singing_sword.bmp
+AT (24,24) ./item/weapon/spwpn_staff_of_dispater.bmp
+AT (25,24) ./item/weapon/spwpn_staff_of_olgreb.bmp
+AT (26,24) ./item/weapon/spwpn_sword_of_cerebov.bmp
+AT (27,24) ./item/weapon/spwpn_sword_of_power.bmp
+AT (28,24) ./item/weapon/spwpn_sword_of_zonguldrok.bmp
+AT (29,24) ./item/weapon/spwpn_vampires_tooth.bmp
+AT (30,24) ./item/weapon/spwpn_wrath_of_trog.bmp
+AT (31,24) ./item/weapon/stiletto.bmp
+AT (32,24) ./item/weapon/sword_orcish.bmp
+AT (33,24) ./item/weapon/trident.bmp
+AT (34,24) ./item/weapon/triple_sword.bmp
+AT (35,24) ./item/weapon/tsurugi.bmp
+AT (36,24) ./item/weapon/two_handed_sword.bmp
+AT (37,24) ./item/weapon/voulge.bmp
+AT (38,24) ./item/weapon/war_hammer.bmp
+AT (39,24) ./item/weapon/worm_tooth.bmp
+AT (40,24) ./item/weapon/ya.bmp
+AT (41,24) ./item/weapon/yumi.bmp
+AT (42,24) ./new.bmp
+AT (43,24) ./nh-dngn/air.bmp
+AT (44,24) ./nh-dngn/altar.bmp
+AT (45,24) ./nh-dngn/anti_magic_trap_field.bmp
+AT (46,24) ./nh-dngn/arrow_trap.bmp
+AT (47,24) ./nh-dngn/bear_trap.bmp
+AT (48,24) ./nh-dngn/closed_door_h.bmp
+AT (49,24) ./nh-dngn/closed_door_v.bmp
+AT ( 0,25) ./nh-dngn/cloud.bmp
+AT ( 1,25) ./nh-dngn/corridor.bmp
+AT ( 2,25) ./nh-dngn/corridor_light.bmp
+AT ( 3,25) ./nh-dngn/dark_part_of_a_room.bmp
+AT ( 4,25) ./nh-dngn/dart_trap.bmp
+AT ( 5,25) ./nh-dngn/doorway.bmp
+AT ( 6,25) ./nh-dngn/falling_rock_trap.bmp
+AT ( 7,25) ./nh-dngn/fire_trap.bmp
+AT ( 8,25) ./nh-dngn/floor_light.bmp
+AT ( 9,25) ./nh-dngn/floor_of_a_room.bmp
+AT (10,25) ./nh-dngn/fountain.bmp
+AT (11,25) ./nh-dngn/grave.bmp
+AT (12,25) ./nh-dngn/hole.bmp
+AT (13,25) ./nh-dngn/ice.bmp
+AT (14,25) ./nh-dngn/iron_bars.bmp
+AT (15,25) ./nh-dngn/ladder_down.bmp
+AT (16,25) ./nh-dngn/ladder_up.bmp
+AT (17,25) ./nh-dngn/land_mine.bmp
+AT (18,25) ./nh-dngn/level_teleporter.bmp
+AT (19,25) ./nh-dngn/lit_corridor.bmp
+AT (20,25) ./nh-dngn/lowered_drawbridge_h.bmp
+AT (21,25) ./nh-dngn/lowered_drawbridge_v.bmp
+AT (22,25) ./nh-dngn/magic_portal.bmp
+AT (23,25) ./nh-dngn/magic_trap.bmp
+AT (24,25) ./nh-dngn/molten_lava.bmp
+AT (25,25) ./nh-dngn/open_door_h.bmp
+AT (26,25) ./nh-dngn/open_door_v.bmp
+AT (27,25) ./nh-dngn/opulent_throne.bmp
+AT (28,25) ./nh-dngn/pit.bmp
+AT (29,25) ./nh-dngn/polymorph_trap.bmp
+AT (30,25) ./nh-dngn/raised_drawbridge_h.bmp
+AT (31,25) ./nh-dngn/raised_drawbridge_v.bmp
+AT (32,25) ./nh-dngn/rolling_boulder_trap.bmp
+AT (33,25) ./nh-dngn/rust_trap.bmp
+AT (34,25) ./nh-dngn/sink.bmp
+AT (35,25) ./nh-dngn/sleeping_gas_trap.bmp
+AT (36,25) ./nh-dngn/spiked_pit.bmp
+AT (37,25) ./nh-dngn/squeaky_board.bmp
+AT (38,25) ./nh-dngn/staircase_down.bmp
+AT (39,25) ./nh-dngn/staircase_up.bmp
+AT (40,25) ./nh-dngn/statue_trap.bmp
+AT (41,25) ./nh-dngn/teleportation_trap.bmp
+AT (42,25) ./nh-dngn/trap_door.bmp
+AT (43,25) ./nh-dngn/tree.bmp
+AT (44,25) ./nh-dngn/wall_gehennom00.bmp
+AT (45,25) ./nh-dngn/wall_gehennom01.bmp
+AT (46,25) ./nh-dngn/wall_gehennom02.bmp
+AT (47,25) ./nh-dngn/wall_gehennom03.bmp
+AT (48,25) ./nh-dngn/wall_gehennom04.bmp
+AT (49,25) ./nh-dngn/wall_gehennom05.bmp
+AT ( 0,26) ./nh-dngn/wall_gehennom06.bmp
+AT ( 1,26) ./nh-dngn/wall_gehennom07.bmp
+AT ( 2,26) ./nh-dngn/wall_gehennom08.bmp
+AT ( 3,26) ./nh-dngn/wall_gehennom09.bmp
+AT ( 4,26) ./nh-dngn/wall_gehennom10.bmp
+AT ( 5,26) ./nh-dngn/wall_knox00.bmp
+AT ( 6,26) ./nh-dngn/wall_knox01.bmp
+AT ( 7,26) ./nh-dngn/wall_knox02.bmp
+AT ( 8,26) ./nh-dngn/wall_knox03.bmp
+AT ( 9,26) ./nh-dngn/wall_knox04.bmp
+AT (10,26) ./nh-dngn/wall_knox05.bmp
+AT (11,26) ./nh-dngn/wall_knox06.bmp
+AT (12,26) ./nh-dngn/wall_knox07.bmp
+AT (13,26) ./nh-dngn/wall_knox08.bmp
+AT (14,26) ./nh-dngn/wall_knox09.bmp
+AT (15,26) ./nh-dngn/wall_knox10.bmp
+AT (16,26) ./nh-dngn/wall_main00.bmp
+AT (17,26) ./nh-dngn/wall_main01.bmp
+AT (18,26) ./nh-dngn/wall_main02.bmp
+AT (19,26) ./nh-dngn/wall_main03.bmp
+AT (20,26) ./nh-dngn/wall_main04.bmp
+AT (21,26) ./nh-dngn/wall_main05.bmp
+AT (22,26) ./nh-dngn/wall_main06.bmp
+AT (23,26) ./nh-dngn/wall_main07.bmp
+AT (24,26) ./nh-dngn/wall_main08.bmp
+AT (25,26) ./nh-dngn/wall_main09.bmp
+AT (26,26) ./nh-dngn/wall_main10.bmp
+AT (27,26) ./nh-dngn/wall_mine00.bmp
+AT (28,26) ./nh-dngn/wall_mine01.bmp
+AT (29,26) ./nh-dngn/wall_mine02.bmp
+AT (30,26) ./nh-dngn/wall_mine03.bmp
+AT (31,26) ./nh-dngn/wall_mine04.bmp
+AT (32,26) ./nh-dngn/wall_mine05.bmp
+AT (33,26) ./nh-dngn/wall_mine06.bmp
+AT (34,26) ./nh-dngn/wall_mine07.bmp
+AT (35,26) ./nh-dngn/wall_mine08.bmp
+AT (36,26) ./nh-dngn/wall_mine09.bmp
+AT (37,26) ./nh-dngn/wall_mine10.bmp
+AT (38,26) ./nh-dngn/wall_sokoban00.bmp
+AT (39,26) ./nh-dngn/wall_sokoban01.bmp
+AT (40,26) ./nh-dngn/wall_sokoban02.bmp
+AT (41,26) ./nh-dngn/wall_sokoban03.bmp
+AT (42,26) ./nh-dngn/wall_sokoban04.bmp
+AT (43,26) ./nh-dngn/wall_sokoban05.bmp
+AT (44,26) ./nh-dngn/wall_sokoban06.bmp
+AT (45,26) ./nh-dngn/wall_sokoban07.bmp
+AT (46,26) ./nh-dngn/wall_sokoban08.bmp
+AT (47,26) ./nh-dngn/wall_sokoban09.bmp
+AT (48,26) ./nh-dngn/wall_sokoban10.bmp
+AT (49,26) ./nh-dngn/water2.bmp
+AT ( 0,27) ./nh-dngn/water.bmp
+AT ( 1,27) ./nh-dngn/web.bmp
+AT ( 2,27) ./nh-misc/cursor.bmp
+AT ( 3,27) ./nh-misc/heart.bmp
+AT ( 4,27) ./nh-misc/question1.bmp
+AT ( 5,27) ./nh-misc/question2.bmp
+AT ( 6,27) ./nh-misc/question3.bmp
+AT ( 7,27) ./nh-misc/question4.bmp
+AT ( 8,27) ./nh-misc/question5.bmp
+AT ( 9,27) ./nh-misc/question6.bmp
+AT (10,27) ./nh-mon0/0demon/asmodeus.bmp
+AT (11,27) ./nh-mon0/0demon/baalzebub.bmp
+AT (12,27) ./nh-mon0/0demon/balrog.bmp
+AT (13,27) ./nh-mon0/0demon/barbed_devil.bmp
+AT (14,27) ./nh-mon0/0demon/bone_devil.bmp
+AT (15,27) ./nh-mon0/0demon/death.bmp
+AT (16,27) ./nh-mon0/0demon/dispater.bmp
+AT (17,27) ./nh-mon0/0demon/djinni.bmp
+AT (18,27) ./nh-mon0/0demon/erinys.bmp
+AT (19,27) ./nh-mon0/0demon/famine.bmp
+AT (20,27) ./nh-mon0/0demon/geryon.bmp
+AT (21,27) ./nh-mon0/0demon/ghost.bmp
+AT (22,27) ./nh-mon0/0demon/horned_devil.bmp
+AT (23,27) ./nh-mon0/0demon/ice_devil.bmp
+AT (24,27) ./nh-mon0/0demon/incubus.bmp
+AT (25,27) ./nh-mon0/0demon/juiblex.bmp
+AT (26,27) ./nh-mon0/0demon/mail_daemon.bmp
+AT (27,27) ./nh-mon0/0demon/pestilence.bmp
+AT (28,27) ./nh-mon0/0demon/pit_fiend.bmp
+AT (29,27) ./nh-mon0/0demon/sandestin.bmp
+AT (30,27) ./nh-mon0/0demon/shade.bmp
+AT (31,27) ./nh-mon0/0demon/succubus.bmp
+AT (32,27) ./nh-mon0/0demon/water_demon.bmp
+AT (33,27) ./nh-mon0/0demon/yeenoghu.bmp
+AT (34,27) ./nh-mon0/0golem/clay_golem.bmp
+AT (35,27) ./nh-mon0/0golem/flesh_golem.bmp
+AT (36,27) ./nh-mon0/0golem/glass_golem.bmp
+AT (37,27) ./nh-mon0/0golem/gold_golem.bmp
+AT (38,27) ./nh-mon0/0golem/iron_golem.bmp
+AT (39,27) ./nh-mon0/0golem/leather_golem.bmp
+AT (40,27) ./nh-mon0/0golem/paper_golem.bmp
+AT (41,27) ./nh-mon0/0golem/rope_golem.bmp
+AT (42,27) ./nh-mon0/0golem/stone_golem.bmp
+AT (43,27) ./nh-mon0/0golem/straw_golem.bmp
+AT (44,27) ./nh-mon0/0golem/wood_golem.bmp
+AT (45,27) ./nh-mon0/0lizard/baby_crocodile.bmp
+AT (46,27) ./nh-mon0/0lizard/chameleon.bmp
+AT (47,27) ./nh-mon0/0lizard/crocodile.bmp
+AT (48,27) ./nh-mon0/0lizard/electric_eel.bmp
+AT (49,27) ./nh-mon0/0lizard/gecko.bmp
+AT ( 0,28) ./nh-mon0/0lizard/giant_eel.bmp
+AT ( 1,28) ./nh-mon0/0lizard/iguana.bmp
+AT ( 2,28) ./nh-mon0/0lizard/jellyfish.bmp
+AT ( 3,28) ./nh-mon0/0lizard/kraken.bmp
+AT ( 4,28) ./nh-mon0/0lizard/lizard.bmp
+AT ( 5,28) ./nh-mon0/0lizard/long_worm_tail.bmp
+AT ( 6,28) ./nh-mon0/0lizard/newt.bmp
+AT ( 7,28) ./nh-mon0/0lizard/piranha.bmp
+AT ( 8,28) ./nh-mon0/0lizard/salamander.bmp
+AT ( 9,28) ./nh-mon0/0lizard/shark.bmp
+AT (10,28) ./nh-mon0/0man/abbot.bmp
+AT (11,28) ./nh-mon0/0man/acolyte.bmp
+AT (12,28) ./nh-mon0/0man/aligned_priest.bmp
+AT (13,28) ./nh-mon0/0man/apprentice.bmp
+AT (14,28) ./nh-mon0/0man/archeologist.bmp
+AT (15,28) ./nh-mon0/0man/ashikaga_takauji.bmp
+AT (16,28) ./nh-mon0/0man/attendant.bmp
+AT (17,28) ./nh-mon0/0man/barbarian.bmp
+AT (18,28) ./nh-mon0/0man/captain.bmp
+AT (19,28) ./nh-mon0/0man/caveman.bmp
+AT (20,28) ./nh-mon0/0man/charon.bmp
+AT (21,28) ./nh-mon0/0man/chieftain.bmp
+AT (22,28) ./nh-mon0/0man/chromatic_dragon.bmp
+AT (23,28) ./nh-mon0/0man/cyclops.bmp
+AT (24,28) ./nh-mon0/0man/dark_one.bmp
+AT (25,28) ./nh-mon0/0man/doppelganger.bmp
+AT (26,28) ./nh-mon0/0man/elf.bmp
+AT (27,28) ./nh-mon0/0man/elvenking.bmp
+AT (28,28) ./nh-mon0/0man/goblin_king.bmp
+AT (29,28) ./nh-mon0/0man/grand_master.bmp
+AT (30,28) ./nh-mon0/0man/guard.bmp
+AT (31,28) ./nh-mon0/0man/guide.bmp
+AT (32,28) ./nh-mon0/0man/healer.bmp
+AT (33,28) ./nh-mon0/0man/high-elf.bmp
+AT (34,28) ./nh-mon0/0man/high_priest.bmp
+AT (35,28) ./nh-mon0/0man/human.bmp
+AT (36,28) ./nh-mon0/0man/hunter.bmp
+AT (37,28) ./nh-mon0/0man/invisible_monster.bmp
+AT (38,28) ./nh-mon0/0man/ixoth.bmp
+AT (39,28) ./nh-mon0/0man/knight.bmp
+AT (40,28) ./nh-mon0/0man/lieutenant.bmp
+AT (41,28) ./nh-mon0/0man/lord_sato.bmp
+AT (42,28) ./nh-mon0/0man/lord_surtur.bmp
+AT (43,28) ./nh-mon0/0man/master_assassin.bmp
+AT (44,28) ./nh-mon0/0man/master_kaen.bmp
+AT (45,28) ./nh-mon0/0man/medusa.bmp
+AT (46,28) ./nh-mon0/0man/minion_of_huhetotl.bmp
+AT (47,28) ./nh-mon0/0man/monk.bmp
+AT (48,28) ./nh-mon0/0man/nalzok.bmp
+AT (49,28) ./nh-mon0/0man/neanderthal.bmp
+AT ( 0,29) ./nh-mon0/0man/ninja.bmp
+AT ( 1,29) ./nh-mon0/0man/nurse.bmp
+AT ( 2,29) ./nh-mon0/0man/orion.bmp
+AT ( 3,29) ./nh-mon0/0man/page.bmp
+AT ( 4,29) ./nh-mon0/0man/priest.bmp
+AT ( 5,29) ./nh-mon0/0man/prisoner.bmp
+AT ( 6,29) ./nh-mon0/0man/ranger.bmp
+AT ( 7,29) ./nh-mon0/0man/rogue.bmp
+AT ( 8,29) ./nh-mon0/0man/roshi.bmp
+AT ( 9,29) ./nh-mon0/0man/samurai.bmp
+AT (10,29) ./nh-mon0/0man/scorpius.bmp
+AT (11,29) ./nh-mon0/0man/sergeant.bmp
+AT (12,29) ./nh-mon0/0man/s_fellow.bmp
+AT (13,29) ./nh-mon0/0man/s_fighter.bmp
+AT (14,29) ./nh-mon0/0man/shopkeeper.bmp
+AT (15,29) ./nh-mon0/0man/s_nemesis.bmp
+AT (16,29) ./nh-mon0/0man/soldier.bmp
+AT (17,29) ./nh-mon0/0man/s_queen.bmp
+AT (18,29) ./nh-mon0/0man/strange_object.bmp
+AT (19,29) ./nh-mon0/0man/student.bmp
+AT (20,29) ./nh-mon0/0man/thoth_amon.bmp
+AT (21,29) ./nh-mon0/0man/thug.bmp
+AT (22,29) ./nh-mon0/0man/tourist.bmp
+AT (23,29) ./nh-mon0/0man/valkyrie.bmp
+AT (24,29) ./nh-mon0/0man/warrior.bmp
+AT (25,29) ./nh-mon0/0man/watch_captain.bmp
+AT (26,29) ./nh-mon0/0man/watchman.bmp
+AT (27,29) ./nh-mon0/0man/werejackal.bmp
+AT (28,29) ./nh-mon0/0man/wererat.bmp
+AT (29,29) ./nh-mon0/0man/werewolf.bmp
+AT (30,29) ./nh-mon0/0man/wizard.bmp
+AT (31,29) ./nh-mon0/0man/wizard_of_yendor.bmp
+AT (32,29) ./nh-mon0/a/fire_ant.bmp
+AT (33,29) ./nh-mon0/a/giant_ant.bmp
+AT (34,29) ./nh-mon0/a/giant_beetle.bmp
+AT (35,29) ./nh-mon0/a/killer_bee.bmp
+AT (36,29) ./nh-mon0/a/queen_bee.bmp
+AT (37,29) ./nh-mon0/a/soldier_ant.bmp
+AT (38,29) ./nh-mon0/b/acid_blob.bmp
+AT (39,29) ./nh-mon0/b/gelatinous_cube.bmp
+AT (40,29) ./nh-mon0/b/quivering_blob.bmp
+AT (41,29) ./nh-mon0/c/chickatrice.bmp
+AT (42,29) ./nh-mon0/c/cockatrice.bmp
+AT (43,29) ./nh-mon0/c/pyrolisk.bmp
+AT (44,29) ./nh-mon0/d/cerberus.bmp
+AT (45,29) ./nh-mon0/d/coyote.bmp
+AT (46,29) ./nh-mon0/d/dingo.bmp
+AT (47,29) ./nh-mon0/d/fox.bmp
+AT (48,29) ./nh-mon0/d/hell_hound.bmp
+AT (49,29) ./nh-mon0/d/hell_hound_pup.bmp
+AT ( 0,30) ./nh-mon0/d/jackal.bmp
+AT ( 1,30) ./nh-mon0/d/little_dog.bmp
+AT ( 2,30) ./nh-mon0/d/warg.bmp
+AT ( 3,30) ./nh-mon0/d/werejackal.bmp
+AT ( 4,30) ./nh-mon0/d/werewolf.bmp
+AT ( 5,30) ./nh-mon0/d/winter_wolf.bmp
+AT ( 6,30) ./nh-mon0/d/winter_wolf_cub.bmp
+AT ( 7,30) ./nh-mon0/d/wolf.bmp
+AT ( 8,30) ./nh-mon0/e/beholder.bmp
+AT ( 9,30) ./nh-mon0/e/flaming_sphere.bmp
+AT (10,30) ./nh-mon0/e/floating_eye.bmp
+AT (11,30) ./nh-mon0/e/freezing_sphere.bmp
+AT (12,30) ./nh-mon0/e/gas_spore.bmp
+AT (13,30) ./nh-mon0/e/shocking_sphere.bmp
+AT (14,30) ./nh-mon0/f/housecat.bmp
+AT (15,30) ./nh-mon0/f/jaguar.bmp
+AT (16,30) ./nh-mon0/f/kitten.bmp
+AT (17,30) ./nh-mon0/f/large_cat.bmp
+AT (18,30) ./nh-mon0/f/lynx.bmp
+AT (19,30) ./nh-mon0/f/panther.bmp
+AT (20,30) ./nh-mon0/f/tiger.bmp
+AT (21,30) ./nh-mon0/g/gargoyle.bmp
+AT (22,30) ./nh-mon0/g/gremlin.bmp
+AT (23,30) ./nh-mon0/g/winged_gargoyle.bmp
+AT (24,30) ./nh-mon0/h/dwarf.bmp
+AT (25,30) ./nh-mon0/h/dwarf_king.bmp
+AT (26,30) ./nh-mon0/h/dwarf_lord.bmp
+AT (27,30) ./nh-mon0/h/hobbit.bmp
+AT (28,30) ./nh-mon0/h/master_mind_flayer.bmp
+AT (29,30) ./nh-mon0/h/mind_flayer.bmp
+AT (30,30) ./nh-mon0/i/homunculus.bmp
+AT (31,30) ./nh-mon0/i/imp.bmp
+AT (32,30) ./nh-mon0/i/lemure.bmp
+AT (33,30) ./nh-mon0/i/manes.bmp
+AT (34,30) ./nh-mon0/i/quasit.bmp
+AT (35,30) ./nh-mon0/i/tengu.bmp
+AT (36,30) ./nh-mon0/j/blue_jelly.bmp
+AT (37,30) ./nh-mon0/j/ochre_jelly.bmp
+AT (38,30) ./nh-mon0/j/spotted_jelly.bmp
+AT (39,30) ./nh-mon0/k/kobold.bmp
+AT (40,30) ./nh-mon0/k/kobold_lord.bmp
+AT (41,30) ./nh-mon0/k/kobold_shaman.bmp
+AT (42,30) ./nh-mon0/k/large_kobold.bmp
+AT (43,30) ./nh-mon0/l/leprechaun.bmp
+AT (44,30) ./nh-mon0/m/giant_mimic.bmp
+AT (45,30) ./nh-mon0/m/large_mimic.bmp
+AT (46,30) ./nh-mon0/m/small_mimic.bmp
+AT (47,30) ./nh-mon0/n/mountain_nymph.bmp
+AT (48,30) ./nh-mon0/n/water_nymph.bmp
+AT (49,30) ./nh-mon0/n/wood_nymph.bmp
+AT ( 0,31) ./nh-mon0/o/goblin.bmp
+AT ( 1,31) ./nh-mon0/o/hill_orc.bmp
+AT ( 2,31) ./nh-mon0/o/hobgoblin.bmp
+AT ( 3,31) ./nh-mon0/o/mordor_orc.bmp
+AT ( 4,31) ./nh-mon0/o/orc.bmp
+AT ( 5,31) ./nh-mon0/o/orc-captain.bmp
+AT ( 6,31) ./nh-mon0/o/orc_shaman.bmp
+AT ( 7,31) ./nh-mon0/o/uruk-hai.bmp
+AT ( 8,31) ./nh-mon0/p/glass_piercer.bmp
+AT ( 9,31) ./nh-mon0/p/iron_piercer.bmp
+AT (10,31) ./nh-mon0/p/rock_piercer.bmp
+AT (11,31) ./nh-mon0/q/baluchitherium.bmp
+AT (12,31) ./nh-mon0/q/leocrotta.bmp
+AT (13,31) ./nh-mon0/q/mastodon.bmp
+AT (14,31) ./nh-mon0/q/mumak.bmp
+AT (15,31) ./nh-mon0/q/titanothere.bmp
+AT (16,31) ./nh-mon0/q/wumpus.bmp
+AT (17,31) ./nh-mon0/r/giant_rat.bmp
+AT (18,31) ./nh-mon0/r/rabid_rat.bmp
+AT (19,31) ./nh-mon0/r/rock_mole.bmp
+AT (20,31) ./nh-mon0/r/sewer_rat.bmp
+AT (21,31) ./nh-mon0/r/wererat.bmp
+AT (22,31) ./nh-mon0/r/woodchuck.bmp
+AT (23,31) ./nh-mon0/s/cave_spider.bmp
+AT (24,31) ./nh-mon0/s/centipede.bmp
+AT (25,31) ./nh-mon0/s/giant_spider.bmp
+AT (26,31) ./nh-mon0/s/scorpion.bmp
+AT (27,31) ./nh-mon0/t/lurker_above.bmp
+AT (28,31) ./nh-mon0/t/trapper.bmp
+AT (29,31) ./nh-mon0/u/black_unicorn.bmp
+AT (30,31) ./nh-mon0/u/gray_unicorn.bmp
+AT (31,31) ./nh-mon0/u/horse.bmp
+AT (32,31) ./nh-mon0/u/pony.bmp
+AT (33,31) ./nh-mon0/u/warhorse.bmp
+AT (34,31) ./nh-mon0/u/white_unicorn.bmp
+AT (35,31) ./nh-mon0/v/dust_vortex.bmp
+AT (36,31) ./nh-mon0/v/energy_vortex.bmp
+AT (37,31) ./nh-mon0/v/fire_vortex.bmp
+AT (38,31) ./nh-mon0/v/fog_cloud.bmp
+AT (39,31) ./nh-mon0/v/ice_vortex.bmp
+AT (40,31) ./nh-mon0/v/steam_vortex.bmp
+AT (41,31) ./nh-mon0/w/baby_long_worm.bmp
+AT (42,31) ./nh-mon0/w/baby_purple_worm.bmp
+AT (43,31) ./nh-mon0/w/long_worm.bmp
+AT (44,31) ./nh-mon0/w/purple_worm.bmp
+AT (45,31) ./nh-mon0/x/grid_bug.bmp
+AT (46,31) ./nh-mon0/x/xan.bmp
+AT (47,31) ./nh-mon0/y/black_light.bmp
+AT (48,31) ./nh-mon0/y/yellow_light.bmp
+AT (49,31) ./nh-mon0/z/zruty.bmp
+AT ( 0,32) ./nh-mon1/a/aleax.bmp
+AT ( 1,32) ./nh-mon1/a/angel.bmp
+AT ( 2,32) ./nh-mon1/a/couatl.bmp
+AT ( 3,32) ./nh-mon1/a/ki-rin.bmp
+AT ( 4,32) ./nh-mon1/b/bat.bmp
+AT ( 5,32) ./nh-mon1/b/giant_bat.bmp
+AT ( 6,32) ./nh-mon1/b/raven.bmp
+AT ( 7,32) ./nh-mon1/b/vampire_bat.bmp
+AT ( 8,32) ./nh-mon1/c/forest_centaur.bmp
+AT ( 9,32) ./nh-mon1/c/mountain_centaur.bmp
+AT (10,32) ./nh-mon1/c/plains_centaur.bmp
+AT (11,32) ./nh-mon1/d/baby_black_dragon.bmp
+AT (12,32) ./nh-mon1/d/baby_blue_dragon.bmp
+AT (13,32) ./nh-mon1/d/baby_gray_dragon.bmp
+AT (14,32) ./nh-mon1/d/baby_green_dragon.bmp
+AT (15,32) ./nh-mon1/d/baby_orange_dragon.bmp
+AT (16,32) ./nh-mon1/d/baby_red_dragon.bmp
+AT (17,32) ./nh-mon1/d/baby_shimmering_dragon.bmp
+AT (18,32) ./nh-mon1/d/baby_silver_dragon.bmp
+AT (19,32) ./nh-mon1/d/baby_white_dragon.bmp
+AT (20,32) ./nh-mon1/d/baby_yellow_dragon.bmp
+AT (21,32) ./nh-mon1/d/black_dragon.bmp
+AT (22,32) ./nh-mon1/d/blue_dragon.bmp
+AT (23,32) ./nh-mon1/d/gray_dragon.bmp
+AT (24,32) ./nh-mon1/d/green_dragon.bmp
+AT (25,32) ./nh-mon1/d/orange_dragon.bmp
+AT (26,32) ./nh-mon1/d/red_dragon.bmp
+AT (27,32) ./nh-mon1/d/shimmering_dragon.bmp
+AT (28,32) ./nh-mon1/d/silver_dragon.bmp
+AT (29,32) ./nh-mon1/d/white_dragon.bmp
+AT (30,32) ./nh-mon1/d/yellow_dragon.bmp
+AT (31,32) ./nh-mon1/e/air_elemental.bmp
+AT (32,32) ./nh-mon1/e/earth_elemental.bmp
+AT (33,32) ./nh-mon1/e/fire_elemental.bmp
+AT (34,32) ./nh-mon1/e/stalker.bmp
+AT (35,32) ./nh-mon1/e/water_elemental.bmp
+AT (36,32) ./nh-mon1/f/brown_mold.bmp
+AT (37,32) ./nh-mon1/f/green_mold.bmp
+AT (38,32) ./nh-mon1/f/lichen.bmp
+AT (39,32) ./nh-mon1/f/red_mold.bmp
+AT (40,32) ./nh-mon1/f/shrieker.bmp
+AT (41,32) ./nh-mon1/f/violet_fungus.bmp
+AT (42,32) ./nh-mon1/f/yellow_mold.bmp
+AT (43,32) ./nh-mon1/g/gnome.bmp
+AT (44,32) ./nh-mon1/g/gnome_king.bmp
+AT (45,32) ./nh-mon1/g/gnome_lord.bmp
+AT (46,32) ./nh-mon1/g/gnomish_wizard.bmp
+AT (47,32) ./nh-mon1/h/ettin.bmp
+AT (48,32) ./nh-mon1/h/fire_giant.bmp
+AT (49,32) ./nh-mon1/h/frost_giant.bmp
+AT ( 0,33) ./nh-mon1/h/giant.bmp
+AT ( 1,33) ./nh-mon1/h/hill_giant.bmp
+AT ( 2,33) ./nh-mon1/h/minotaur.bmp
+AT ( 3,33) ./nh-mon1/h/stone_giant.bmp
+AT ( 4,33) ./nh-mon1/h/storm_giant.bmp
+AT ( 5,33) ./nh-mon1/h/titan.bmp
+AT ( 6,33) ./nh-mon1/j/jabberwock.bmp
+AT ( 7,33) ./nh-mon1/j/vorpal_jabberwock.bmp
+AT ( 8,33) ./nh-mon1/k/kop_kaptain.bmp
+AT ( 9,33) ./nh-mon1/l/arch-lich.bmp
+AT (10,33) ./nh-mon1/l/demilich.bmp
+AT (11,33) ./nh-mon1/l/lich.bmp
+AT (12,33) ./nh-mon1/l/master_lich.bmp
+AT (13,33) ./nh-mon1/m/dwarf_mummy.bmp
+AT (14,33) ./nh-mon1/m/elf_mummy.bmp
+AT (15,33) ./nh-mon1/m/ettin_mummy.bmp
+AT (16,33) ./nh-mon1/m/giant_mummy.bmp
+AT (17,33) ./nh-mon1/m/gnome_mummy.bmp
+AT (18,33) ./nh-mon1/m/human_mummy.bmp
+AT (19,33) ./nh-mon1/m/kobold_mummy.bmp
+AT (20,33) ./nh-mon1/m/orc_mummy.bmp
+AT (21,33) ./nh-mon1/n/black_naga.bmp
+AT (22,33) ./nh-mon1/n/black_naga_hatchling.bmp
+AT (23,33) ./nh-mon1/n/golden_naga.bmp
+AT (24,33) ./nh-mon1/n/golden_naga_hatchling.bmp
+AT (25,33) ./nh-mon1/n/guardian_naga.bmp
+AT (26,33) ./nh-mon1/n/guardian_naga_hatchling.bmp
+AT (27,33) ./nh-mon1/n/red_naga.bmp
+AT (28,33) ./nh-mon1/n/red_naga_hatchling.bmp
+AT (29,33) ./nh-mon1/o/ogre.bmp
+AT (30,33) ./nh-mon1/o/ogre_king.bmp
+AT (31,33) ./nh-mon1/o/ogre_lord.bmp
+AT (32,33) ./nh-mon1/p/black_pudding.bmp
+AT (33,33) ./nh-mon1/p/brown_pudding.bmp
+AT (34,33) ./nh-mon1/p/gray_ooze.bmp
+AT (35,33) ./nh-mon1/p/green_slime.bmp
+AT (36,33) ./nh-mon1/q/quantum_mechanic.bmp
+AT (37,33) ./nh-mon1/r/disenchanter.bmp
+AT (38,33) ./nh-mon1/r/rust_monster.bmp
+AT (39,33) ./nh-mon1/s/garter_snake.bmp
+AT (40,33) ./nh-mon1/s/pit_viper.bmp
+AT (41,33) ./nh-mon1/s/water_moccasin.bmp
+AT (42,33) ./nh-mon1/t/ice_troll.bmp
+AT (43,33) ./nh-mon1/t/olog-hai.bmp
+AT (44,33) ./nh-mon1/t/rock_troll.bmp
+AT (45,33) ./nh-mon1/t/troll.bmp
+AT (46,33) ./nh-mon1/t/water_troll.bmp
+AT (47,33) ./nh-mon1/u/umber_hulk.bmp
+AT (48,33) ./nh-mon1/v/vampire.bmp
+AT (49,33) ./nh-mon1/v/vampire_lord.bmp
+AT ( 0,34) ./nh-mon1/v/vampire_mage.bmp
+AT ( 1,34) ./nh-mon1/v/vlad_the_impaler.bmp
+AT ( 2,34) ./nh-mon1/w/barrow_wight.bmp
+AT ( 3,34) ./nh-mon1/w/nazgul.bmp
+AT ( 4,34) ./nh-mon1/w/wraith.bmp
+AT ( 5,34) ./nh-mon1/x/xorn.bmp
+AT ( 6,34) ./nh-mon1/y/carnivorous_ape.bmp
+AT ( 7,34) ./nh-mon1/y/monkey.bmp
+AT ( 8,34) ./nh-mon1/y/sasquatch.bmp
+AT ( 9,34) ./nh-mon1/y/yeti.bmp
+AT (10,34) ./nh-mon1/z/dwarf_zombie.bmp
+AT (11,34) ./nh-mon1/z/elf_zombie.bmp
+AT (12,34) ./nh-mon1/z/ettin_zombie.bmp
+AT (13,34) ./nh-mon1/z/ghoul.bmp
+AT (14,34) ./nh-mon1/z/giant_zombie.bmp
+AT (15,34) ./nh-mon1/z/gnome_zombie.bmp
+AT (16,34) ./nh-mon1/z/human_zombie.bmp
+AT (17,34) ./nh-mon1/z/kobold_zombie.bmp
+AT (18,34) ./nh-mon1/z/orc_zombie.bmp
+AT (19,34) ./nh-tng/aquator.bmp
+AT (20,34) ./nh-tng/babelfish.bmp
+AT (21,34) ./nh-tng/bag_of_digestion.bmp
+AT (22,34) ./nh-tng/book1.bmp
+AT (23,34) ./nh-tng/book2.bmp
+AT (24,34) ./nh-tng/box2.bmp
+AT (25,34) ./nh-tng/burger.bmp
+AT (26,34) ./nh-tng/burned_moth_relay.bmp
+AT (27,34) ./nh-tng/chemistry.bmp
+AT (28,34) ./nh-tng/dead_cat.bmp
+AT (29,34) ./nh-tng/deminewt.bmp
+AT (30,34) ./nh-tng/diode.bmp
+AT (31,34) ./nh-tng/doumo.bmp
+AT (32,34) ./nh-tng/dragon2.bmp
+AT (33,34) ./nh-tng/dragon3.bmp
+AT (34,34) ./nh-tng/dragon.bmp
+AT (35,34) ./nh-tng/electric_sword.bmp
+AT (36,34) ./nh-tng/emu.bmp
+AT (37,34) ./nh-tng/floppy.bmp
+AT (38,34) ./nh-tng/food.bmp
+AT (39,34) ./nh-tng/gauntlet.bmp
+AT (40,34) ./nh-tng/gnome2.bmp
+AT (41,34) ./nh-tng/ic.bmp
+AT (42,34) ./nh-tng/kestrel.bmp
+AT (43,34) ./nh-tng/key_of_access.bmp
+AT (44,34) ./nh-tng/king2.bmp
+AT (45,34) ./nh-tng/king.bmp
+AT (46,34) ./nh-tng/kit.bmp
+AT (47,34) ./nh-tng/masternewt.bmp
+AT (48,34) ./nh-tng/mhdragon.bmp
+AT (49,34) ./nh-tng/neo.bmp
+AT ( 0,35) ./nh-tng/nymph.bmp
+AT ( 1,35) ./nh-tng/nymph_queen.bmp
+AT ( 2,35) ./nh-tng/pda.bmp
+AT ( 3,35) ./nh-tng/phantom.bmp
+AT ( 4,35) ./nh-tng/poison.bmp
+AT ( 5,35) ./nh-tng/potion1.bmp
+AT ( 6,35) ./nh-tng/principal1.bmp
+AT ( 7,35) ./nh-tng/principal2.bmp
+AT ( 8,35) ./nh-tng/pupil1.bmp
+AT ( 9,35) ./nh-tng/pupil2.bmp
+AT (10,35) ./nh-tng/pupil3.bmp
+AT (11,35) ./nh-tng/pupil4.bmp
+AT (12,35) ./nh-tng/pupil5.bmp
+AT (13,35) ./nh-tng/quagga.bmp
+AT (14,35) ./nh-tng/rattlesnake.bmp
+AT (15,35) ./nh-tng/reacher3.bmp
+AT (16,35) ./nh-tng/relay.bmp
+AT (17,35) ./nh-tng/schroedinger_box.bmp
+AT (18,35) ./nh-tng/staff1.bmp
+AT (19,35) ./nh-tng/teacher1.bmp
+AT (20,35) ./nh-tng/teacher2.bmp
+AT (21,35) ./nh-tng/teacher4.bmp
+AT (22,35) ./nh-tng/teacher5.bmp
+AT (23,35) ./nh-tng/tooth.bmp
+AT (24,35) ./nh-tng/transistor.bmp
+AT (25,35) ./nh-tng/vogon.bmp
+AT (26,35) ./nh-tng/wand1.bmp
+AT (27,35) ./nh-tng/wand2.bmp
+AT (28,35) ./nh-tng/xeroc.bmp
+AT (29,35) ./nh-tng/zombie.bmp
+AT (30,35) ./old/021.bmp
+AT (31,35) ./old/045.bmp
+AT (32,35) ./old/090.bmp
+AT (33,35) ./old/091.bmp
+AT (34,35) ./old/092.bmp
+AT (35,35) ./old/099.bmp
+AT (36,35) ./old/167.bmp
+AT (37,35) ./old/168.bmp
+AT (38,35) ./old/172.bmp
+AT (39,35) ./old/173.bmp
+AT (40,35) ./old/174.bmp
+AT (41,35) ./old/175.bmp
+AT (42,35) ./old/176.bmp
+AT (43,35) ./old/178.bmp
+AT (44,35) ./old/179.bmp
+AT (45,35) ./old/216.bmp
+AT (46,35) ./old/222.bmp
+AT (47,35) ./old/223.bmp
+AT (48,35) ./old/224.bmp
+AT (49,35) ./old/225.bmp
+AT ( 0,36) ./old/305.bmp
+AT ( 1,36) ./old/319.bmp
+AT ( 2,36) ./old/328.bmp
+AT ( 3,36) ./old/449.bmp
+AT ( 4,36) ./old/450.bmp
+AT ( 5,36) ./old/454.bmp
+AT ( 6,36) ./old/459.bmp
+AT ( 7,36) ./old/464.bmp
+AT ( 8,36) ./old/500.bmp
+AT ( 9,36) ./old/501.bmp
+AT (10,36) ./old/565.bmp
+AT (11,36) ./old/568.bmp
+AT (12,36) ./old/637.bmp
+AT (13,36) ./old/644.bmp
+AT (14,36) ./old/645.bmp
+AT (15,36) ./old/646.bmp
+AT (16,36) ./old/648.bmp
+AT (17,36) ./old/786.bmp
+AT (18,36) ./player/arm/glove_black2.bmp
+AT (19,36) ./player/arm/glove_black.bmp
+AT (20,36) ./player/arm/glove_blue.bmp
+AT (21,36) ./player/arm/glove_brown.bmp
+AT (22,36) ./player/arm/glove_chunli.bmp
+AT (23,36) ./player/arm/glove_gold.bmp
+AT (24,36) ./player/arm/glove_gray.bmp
+AT (25,36) ./player/arm/glove_grayfist.bmp
+AT (26,36) ./player/arm/glove_orange.bmp
+AT (27,36) ./player/arm/glove_purple.bmp
+AT (28,36) ./player/arm/glove_red.bmp
+AT (29,36) ./player/arm/glove_short_blue.bmp
+AT (30,36) ./player/arm/glove_short_gray.bmp
+AT (31,36) ./player/arm/glove_short_green.bmp
+AT (32,36) ./player/arm/glove_short_red.bmp
+AT (33,36) ./player/arm/glove_short_white.bmp
+AT (34,36) ./player/arm/glove_short_yellow.bmp
+AT (35,36) ./player/arm/glove_white.bmp
+AT (36,36) ./player/arm/glove_wrist_purple.bmp
+AT (37,36) ./player/base/centaur_f.bmp
+AT (38,36) ./player/base/centaur_m.bmp
+AT (39,36) ./player/base/deep_elf_f.bmp
+AT (40,36) ./player/base/deep_elf_m.bmp
+AT (41,36) ./player/base/demigod_f.bmp
+AT (42,36) ./player/base/demigod_m.bmp
+AT (43,36) ./player/base/demonspawn_f.bmp
+AT (44,36) ./player/base/demonspawn_m.bmp
+AT (45,36) ./player/base/draconian_black_f.bmp
+AT (46,36) ./player/base/draconian_black_m.bmp
+AT (47,36) ./player/base/draconian_f.bmp
+AT (48,36) ./player/base/draconian_gold_f.bmp
+AT (49,36) ./player/base/draconian_gold_m.bmp
+AT ( 0,37) ./player/base/draconian_gray_f.bmp
+AT ( 1,37) ./player/base/draconian_gray_m.bmp
+AT ( 2,37) ./player/base/draconian_green_f.bmp
+AT ( 3,37) ./player/base/draconian_green_m.bmp
+AT ( 4,37) ./player/base/draconian_m.bmp
+AT ( 5,37) ./player/base/draconian_mottled_f.bmp
+AT ( 6,37) ./player/base/draconian_mottled_m.bmp
+AT ( 7,37) ./player/base/draconian_pale_f.bmp
+AT ( 8,37) ./player/base/draconian_pale_m.bmp
+AT ( 9,37) ./player/base/draconian_purple_f.bmp
+AT (10,37) ./player/base/draconian_purple_m.bmp
+AT (11,37) ./player/base/draconian_red_f.bmp
+AT (12,37) ./player/base/draconian_red_m.bmp
+AT (13,37) ./player/base/draconian_white_f.bmp
+AT (14,37) ./player/base/draconian_white_m.bmp
+AT (15,37) ./player/base/dwarf_f.bmp
+AT (16,37) ./player/base/dwarf_m.bmp
+AT (17,37) ./player/base/elf_f.bmp
+AT (18,37) ./player/base/elf_m.bmp
+AT (19,37) ./player/base/ghoul_f.bmp
+AT (20,37) ./player/base/ghoul_m.bmp
+AT (21,37) ./player/base/gnome_f.bmp
+AT (22,37) ./player/base/gnome_m.bmp
+AT (23,37) ./player/base/halfling_f.bmp
+AT (24,37) ./player/base/halfling_m.bmp
+AT (25,37) ./player/base/human_f.bmp
+AT (26,37) ./player/base/human_m.bmp
+AT (27,37) ./player/base/kenku_f.bmp
+AT (28,37) ./player/base/kenku_m.bmp
+AT (29,37) ./player/base/kobold_f.bmp
+AT (30,37) ./player/base/kobold_m.bmp
+AT (31,37) ./player/base/merfolk_f.bmp
+AT (32,37) ./player/base/merfolk_fs.bmp
+AT (33,37) ./player/base/merfolk_m.bmp
+AT (34,37) ./player/base/merfolk_ms.bmp
+AT (35,37) ./player/base/minotaur_f.bmp
+AT (36,37) ./player/base/minotaur_m.bmp
+AT (37,37) ./player/base/mummy_f.bmp
+AT (38,37) ./player/base/mummy_m.bmp
+AT (39,37) ./player/base/naga_f.bmp
+AT (40,37) ./player/base/naga_m.bmp
+AT (41,37) ./player/base/ogre_f.bmp
+AT (42,37) ./player/base/ogre_mage_f.bmp
+AT (43,37) ./player/base/ogre_mage_m.bmp
+AT (44,37) ./player/base/ogre_m.bmp
+AT (45,37) ./player/base/orc_f.bmp
+AT (46,37) ./player/base/orc_m.bmp
+AT (47,37) ./player/base/shadow.bmp
+AT (48,37) ./player/base/spriggan_f.bmp
+AT (49,37) ./player/base/spriggan_m.bmp
+AT ( 0,38) ./player/base/troll_f.bmp
+AT ( 1,38) ./player/base/troll_m.bmp
+AT ( 2,38) ./player/beard/long_black.bmp
+AT ( 3,38) ./player/beard/long_red.bmp
+AT ( 4,38) ./player/beard/long_white.bmp
+AT ( 5,38) ./player/beard/long_yellow.bmp
+AT ( 6,38) ./player/beard/pj.bmp
+AT ( 7,38) ./player/beard/short_black.bmp
+AT ( 8,38) ./player/beard/short_red.bmp
+AT ( 9,38) ./player/beard/short_white.bmp
+AT (10,38) ./player/beard/short_yellow.bmp
+AT (11,38) ./player/body/animal_skin.bmp
+AT (12,38) ./player/body/aragorn.bmp
+AT (13,38) ./player/body/armor_mummy.bmp
+AT (14,38) ./player/body/arwen.bmp
+AT (15,38) ./player/body/banded2.bmp
+AT (16,38) ./player/body/banded.bmp
+AT (17,38) ./player/body/belt1.bmp
+AT (18,38) ./player/body/belt2.bmp
+AT (19,38) ./player/body/bikini_red.bmp
+AT (20,38) ./player/body/bloody.bmp
+AT (21,38) ./player/body/boromir.bmp
+AT (22,38) ./player/body/bplate_green.bmp
+AT (23,38) ./player/body/bplate_metal1.bmp
+AT (24,38) ./player/body/breast_black.bmp
+AT (25,38) ./player/body/chainmail2.bmp
+AT (26,38) ./player/body/chainmail3.bmp
+AT (27,38) ./player/body/chainmail.bmp
+AT (28,38) ./player/body/china_red2.bmp
+AT (29,38) ./player/body/china_red.bmp
+AT (30,38) ./player/body/chunli.bmp
+AT (31,38) ./player/body/crystal_plate.bmp
+AT (32,38) ./player/body/dragonarm_blue.bmp
+AT (33,38) ./player/body/dragonarm_brown.bmp
+AT (34,38) ./player/body/dragonarm_cyan.bmp
+AT (35,38) ./player/body/dragonarm_gold.bmp
+AT (36,38) ./player/body/dragonarm_green.bmp
+AT (37,38) ./player/body/dragonarm_magenta.bmp
+AT (38,38) ./player/body/dragonarm_white.bmp
+AT (39,38) ./player/body/dragonsc_blue.bmp
+AT (40,38) ./player/body/dragonsc_brown.bmp
+AT (41,38) ./player/body/dragonsc_cyan.bmp
+AT (42,38) ./player/body/dragonsc_gold.bmp
+AT (43,38) ./player/body/dragonsc_green.bmp
+AT (44,38) ./player/body/dragonsc_magenta.bmp
+AT (45,38) ./player/body/dragonsc_white.bmp
+AT (46,38) ./player/body/dress_green.bmp
+AT (47,38) ./player/body/dress_white.bmp
+AT (48,38) ./player/body/edison.bmp
+AT (49,38) ./player/body/frodo.bmp
+AT ( 0,39) ./player/body/gandalf_g.bmp
+AT ( 1,39) ./player/body/gimli.bmp
+AT ( 2,39) ./player/body/green_chain.bmp
+AT ( 3,39) ./player/body/green_susp.bmp
+AT ( 4,39) ./player/body/half_plate2.bmp
+AT ( 5,39) ./player/body/half_plate3.bmp
+AT ( 6,39) ./player/body/half_plate.bmp
+AT ( 7,39) ./player/body/jacket2.bmp
+AT ( 8,39) ./player/body/jacket3.bmp
+AT ( 9,39) ./player/body/jacket_stud.bmp
+AT (10,39) ./player/body/karate2.bmp
+AT (11,39) ./player/body/karate.bmp
+AT (12,39) ./player/body/lears_chain_mail.bmp
+AT (13,39) ./player/body/leather2.bmp
+AT (14,39) ./player/body/leather_armour.bmp
+AT (15,39) ./player/body/leather_green.bmp
+AT (16,39) ./player/body/leather_heavy.bmp
+AT (17,39) ./player/body/leather_jacket.bmp
+AT (18,39) ./player/body/leather_metal.bmp
+AT (19,39) ./player/body/leather_red.bmp
+AT (20,39) ./player/body/leather_short.bmp
+AT (21,39) ./player/body/leather_stud.bmp
+AT (22,39) ./player/body/legolas.bmp
+AT (23,39) ./player/body/merry.bmp
+AT (24,39) ./player/body/mesh_black.bmp
+AT (25,39) ./player/body/mesh_red.bmp
+AT (26,39) ./player/body/metal_blue.bmp
+AT (27,39) ./player/body/monk_black.bmp
+AT (28,39) ./player/body/monk_blue.bmp
+AT (29,39) ./player/body/neck.bmp
+AT (30,39) ./player/body/pipin.bmp
+AT (31,39) ./player/body/pj.bmp
+AT (32,39) ./player/body/plate_and_cloth2.bmp
+AT (33,39) ./player/body/plate_and_cloth.bmp
+AT (34,39) ./player/body/plate_black.bmp
+AT (35,39) ./player/body/plate.bmp
+AT (36,39) ./player/body/robe_black.bmp
+AT (37,39) ./player/body/robe_black_gold.bmp
+AT (38,39) ./player/body/robe_black_hood.bmp
+AT (39,39) ./player/body/robe_black_red.bmp
+AT (40,39) ./player/body/robe_blue.bmp
+AT (41,39) ./player/body/robe_blue_green.bmp
+AT (42,39) ./player/body/robe_blue_white.bmp
+AT (43,39) ./player/body/robe_brown2.bmp
+AT (44,39) ./player/body/robe_brown3.bmp
+AT (45,39) ./player/body/robe_brown.bmp
+AT (46,39) ./player/body/robe_cyan.bmp
+AT (47,39) ./player/body/robe_gray2.bmp
+AT (48,39) ./player/body/robe_green.bmp
+AT (49,39) ./player/body/robe_green_gold.bmp
+AT ( 0,40) ./player/body/robe_magenta.bmp
+AT ( 1,40) ./player/body/robe_of_night.bmp
+AT ( 2,40) ./player/body/robe_purple.bmp
+AT ( 3,40) ./player/body/robe_rainbow.bmp
+AT ( 4,40) ./player/body/robe_red2.bmp
+AT ( 5,40) ./player/body/robe_red3.bmp
+AT ( 6,40) ./player/body/robe_red.bmp
+AT ( 7,40) ./player/body/robe_red_gold.bmp
+AT ( 8,40) ./player/body/robe_white2.bmp
+AT ( 9,40) ./player/body/robe_white.bmp
+AT (10,40) ./player/body/robe_white_green.bmp
+AT (11,40) ./player/body/robe_white_red.bmp
+AT (12,40) ./player/body/robe_yellow.bmp
+AT (13,40) ./player/body/sailor.bmp
+AT (14,40) ./player/body/sam.bmp
+AT (15,40) ./player/body/saruman.bmp
+AT (16,40) ./player/body/scalemail2.bmp
+AT (17,40) ./player/body/scalemail.bmp
+AT (18,40) ./player/body/shirt_black3.bmp
+AT (19,40) ./player/body/shirt_black_and_cloth.bmp
+AT (20,40) ./player/body/shirt_black.bmp
+AT (21,40) ./player/body/shirt_blue.bmp
+AT (22,40) ./player/body/shirt_check.bmp
+AT (23,40) ./player/body/shirt_hawaii.bmp
+AT (24,40) ./player/body/shirt_vest.bmp
+AT (25,40) ./player/body/shirt_white1.bmp
+AT (26,40) ./player/body/shirt_white2.bmp
+AT (27,40) ./player/body/shirt_white3.bmp
+AT (28,40) ./player/body/shirt_white_yellow.bmp
+AT (29,40) ./player/body/shoulder_pad.bmp
+AT (30,40) ./player/body/skirt_onep_grey.bmp
+AT (31,40) ./player/body/slit_black.bmp
+AT (32,40) ./player/body/susp_black.bmp
+AT (33,40) ./player/body/troll_hide.bmp
+AT (34,40) ./player/body/vest_red.bmp
+AT (35,40) ./player/boot/long_red.bmp
+AT (36,40) ./player/boot/mesh_black.bmp
+AT (37,40) ./player/boot/mesh_blue.bmp
+AT (38,40) ./player/boot/mesh_red.bmp
+AT (39,40) ./player/boot/mesh_white.bmp
+AT (40,40) ./player/boot/middle_brown2.bmp
+AT (41,40) ./player/boot/middle_brown.bmp
+AT (42,40) ./player/boot/middle_gold.bmp
+AT (43,40) ./player/boot/middle_gray.bmp
+AT (44,40) ./player/boot/middle_green.bmp
+AT (45,40) ./player/boot/middle_purple.bmp
+AT (46,40) ./player/boot/middle_ybrown.bmp
+AT (47,40) ./player/boot/pj.bmp
+AT (48,40) ./player/boot/short_brown2.bmp
+AT (49,40) ./player/boot/short_brown.bmp
+AT ( 0,41) ./player/boot/short_purple.bmp
+AT ( 1,41) ./player/boot/short_red.bmp
+AT ( 2,41) ./player/cloak/black.bmp
+AT ( 3,41) ./player/cloak/blue.bmp
+AT ( 4,41) ./player/cloak/brown.bmp
+AT ( 5,41) ./player/cloak/cyan.bmp
+AT ( 6,41) ./player/cloak/gray.bmp
+AT ( 7,41) ./player/cloak/green.bmp
+AT ( 8,41) ./player/cloak/magenta.bmp
+AT ( 9,41) ./player/cloak/red.bmp
+AT (10,41) ./player/cloak/white.bmp
+AT (11,41) ./player/cloak/yellow.bmp
+AT (12,41) ./player/hair/aragorn.bmp
+AT (13,41) ./player/hair/arwen.bmp
+AT (14,41) ./player/hair/boromir.bmp
+AT (15,41) ./player/hair/elf_black.bmp
+AT (16,41) ./player/hair/elf_red.bmp
+AT (17,41) ./player/hair/elf_white.bmp
+AT (18,41) ./player/hair/elf_yellow.bmp
+AT (19,41) ./player/hair/fem_black.bmp
+AT (20,41) ./player/hair/fem_red.bmp
+AT (21,41) ./player/hair/fem_white.bmp
+AT (22,41) ./player/hair/fem_yellow.bmp
+AT (23,41) ./player/hair/frodo.bmp
+AT (24,41) ./player/hair/legolas.bmp
+AT (25,41) ./player/hair/long_black.bmp
+AT (26,41) ./player/hair/long_red.bmp
+AT (27,41) ./player/hair/long_white.bmp
+AT (28,41) ./player/hair/long_yellow.bmp
+AT (29,41) ./player/hair/merry.bmp
+AT (30,41) ./player/hair/pj.bmp
+AT (31,41) ./player/hair/sam.bmp
+AT (32,41) ./player/hair/short_black.bmp
+AT (33,41) ./player/hair/short_red.bmp
+AT (34,41) ./player/hair/short_white.bmp
+AT (35,41) ./player/hair/short_yellow.bmp
+AT (36,41) ./player/hand1/aragorn.bmp
+AT (37,41) ./player/hand1/arga.bmp
+AT (38,41) ./player/hand1/arwen.bmp
+AT (39,41) ./player/hand1/asmodeus.bmp
+AT (40,41) ./player/hand1/axe2.bmp
+AT (41,41) ./player/hand1/axe_blood.bmp
+AT (42,41) ./player/hand1/axe.bmp
+AT (43,41) ./player/hand1/axe_double.bmp
+AT (44,41) ./player/hand1/axe_executioner.bmp
+AT (45,41) ./player/hand1/axe_short.bmp
+AT (46,41) ./player/hand1/axe_small.bmp
+AT (47,41) ./player/hand1/axe_trog.bmp
+AT (48,41) ./player/hand1/black_sword.bmp
+AT (49,41) ./player/hand1/black_whip.bmp
+AT ( 0,42) ./player/hand1/bloodbane.bmp
+AT ( 1,42) ./player/hand1/blowgun.bmp
+AT ( 2,42) ./player/hand1/bone_lantern.bmp
+AT ( 3,42) ./player/hand1/boromir.bmp
+AT ( 4,42) ./player/hand1/bottle.bmp
+AT ( 5,42) ./player/hand1/bow2.bmp
+AT ( 6,42) ./player/hand1/bow3.bmp
+AT ( 7,42) ./player/hand1/bow_blue.bmp
+AT ( 8,42) ./player/hand1/bow.bmp
+AT ( 9,42) ./player/hand1/box.bmp
+AT (10,42) ./player/hand1/broadsword.bmp
+AT (11,42) ./player/hand1/chilly_death.bmp
+AT (12,42) ./player/hand1/club2.bmp
+AT (13,42) ./player/hand1/club3.bmp
+AT (14,42) ./player/hand1/club.bmp
+AT (15,42) ./player/hand1/club_slant.bmp
+AT (16,42) ./player/hand1/crossbow2.bmp
+AT (17,42) ./player/hand1/crossbow3.bmp
+AT (18,42) ./player/hand1/crossbow4.bmp
+AT (19,42) ./player/hand1/crossbow.bmp
+AT (20,42) ./player/hand1/crystal.bmp
+AT (21,42) ./player/hand1/dagger.bmp
+AT (22,42) ./player/hand1/dagger_slant.bmp
+AT (23,42) ./player/hand1/deck.bmp
+AT (24,42) ./player/hand1/d_glaive.bmp
+AT (25,42) ./player/hand1/dirt.bmp
+AT (26,42) ./player/hand1/disc.bmp
+AT (27,42) ./player/hand1/dispater.bmp
+AT (28,42) ./player/hand1/doom_knight.bmp
+AT (29,42) ./player/hand1/elemental_staff.bmp
+AT (30,42) ./player/hand1/eveningstar.bmp
+AT (31,42) ./player/hand1/falchion.bmp
+AT (32,42) ./player/hand1/fan.bmp
+AT (33,42) ./player/hand1/finisher.bmp
+AT (34,42) ./player/hand1/fire_blue.bmp
+AT (35,42) ./player/hand1/fire_cyan.bmp
+AT (36,42) ./player/hand1/fire_dark.bmp
+AT (37,42) ./player/hand1/fire_green.bmp
+AT (38,42) ./player/hand1/fire_red.bmp
+AT (39,42) ./player/hand1/fire_white2.bmp
+AT (40,42) ./player/hand1/fire_white.bmp
+AT (41,42) ./player/hand1/flaming_death.bmp
+AT (42,42) ./player/hand1/fork2.bmp
+AT (43,42) ./player/hand1/frail_ball2.bmp
+AT (44,42) ./player/hand1/frail_ball3.bmp
+AT (45,42) ./player/hand1/frail_ball4.bmp
+AT (46,42) ./player/hand1/frail_ball.bmp
+AT (47,42) ./player/hand1/frail_balls.bmp
+AT (48,42) ./player/hand1/frail_spike.bmp
+AT (49,42) ./player/hand1/frail_stick.bmp
+AT ( 0,43) ./player/hand1/frail_stick_slant.bmp
+AT ( 1,43) ./player/hand1/frodo.bmp
+AT ( 2,43) ./player/hand1/gandalf.bmp
+AT ( 3,43) ./player/hand1/giant_club.bmp
+AT ( 4,43) ./player/hand1/giant_club_slant.bmp
+AT ( 5,43) ./player/hand1/giant_club_spike.bmp
+AT ( 6,43) ./player/hand1/giant_club_spike_slant.bmp
+AT ( 7,43) ./player/hand1/gimli.bmp
+AT ( 8,43) ./player/hand1/glaive2.bmp
+AT ( 9,43) ./player/hand1/glaive3.bmp
+AT (10,43) ./player/hand1/glaive.bmp
+AT (11,43) ./player/hand1/glaive_of_prune.bmp
+AT (12,43) ./player/hand1/great_axe.bmp
+AT (13,43) ./player/hand1/great_bow.bmp
+AT (14,43) ./player/hand1/great_staff.bmp
+AT (15,43) ./player/hand1/great_sword.bmp
+AT (16,43) ./player/hand1/great_sword_slant.bmp
+AT (17,43) ./player/hand1/halberd.bmp
+AT (18,43) ./player/hand1/hammer2.bmp
+AT (19,43) ./player/hand1/hammer3.bmp
+AT (20,43) ./player/hand1/hammer.bmp
+AT (21,43) ./player/hand1/hand_axe.bmp
+AT (22,43) ./player/hand1/head.bmp
+AT (23,43) ./player/hand1/heavy_sword.bmp
+AT (24,43) ./player/hand1/hook.bmp
+AT (25,43) ./player/hand1/horn.bmp
+AT (26,43) ./player/hand1/jihad.bmp
+AT (27,43) ./player/hand1/katana.bmp
+AT (28,43) ./player/hand1/katana_slant.bmp
+AT (29,43) ./player/hand1/knife.bmp
+AT (30,43) ./player/hand1/krishna.bmp
+AT (31,43) ./player/hand1/lance2.bmp
+AT (32,43) ./player/hand1/lance.bmp
+AT (33,43) ./player/hand1/lantern.bmp
+AT (34,43) ./player/hand1/large_mace.bmp
+AT (35,43) ./player/hand1/leech.bmp
+AT (36,43) ./player/hand1/legolas.bmp
+AT (37,43) ./player/hand1/light_blue.bmp
+AT (38,43) ./player/hand1/light_red.bmp
+AT (39,43) ./player/hand1/light_yellow.bmp
+AT (40,43) ./player/hand1/long_sword.bmp
+AT (41,43) ./player/hand1/long_sword_slant.bmp
+AT (42,43) ./player/hand1/mace2.bmp
+AT (43,43) ./player/hand1/mace3.bmp
+AT (44,43) ./player/hand1/mace.bmp
+AT (45,43) ./player/hand1/mace_of_variability.bmp
+AT (46,43) ./player/hand1/mace_ruby.bmp
+AT (47,43) ./player/hand1/morg.bmp
+AT (48,43) ./player/hand1/morningstar2.bmp
+AT (49,43) ./player/hand1/morningstar.bmp
+AT ( 0,44) ./player/hand1/nunchaku.bmp
+AT ( 1,44) ./player/hand1/olgreb.bmp
+AT ( 2,44) ./player/hand1/orb.bmp
+AT ( 3,44) ./player/hand1/pick_axe.bmp
+AT ( 4,44) ./player/hand1/pike.bmp
+AT ( 5,44) ./player/hand1/plutonium_sword.bmp
+AT ( 6,44) ./player/hand1/pole_forked.bmp
+AT ( 7,44) ./player/hand1/punk.bmp
+AT ( 8,44) ./player/hand1/quarterstaff1.bmp
+AT ( 9,44) ./player/hand1/quarterstaff2.bmp
+AT (10,44) ./player/hand1/quarterstaff3.bmp
+AT (11,44) ./player/hand1/quarterstaff4.bmp
+AT (12,44) ./player/hand1/sabre.bmp
+AT (13,44) ./player/hand1/saruman.bmp
+AT (14,44) ./player/hand1/sceptre.bmp
+AT (15,44) ./player/hand1/scimitar2.bmp
+AT (16,44) ./player/hand1/scimitar.bmp
+AT (17,44) ./player/hand1/scythe.bmp
+AT (18,44) ./player/hand1/scythe_slant.bmp
+AT (19,44) ./player/hand1/short_sword2.bmp
+AT (20,44) ./player/hand1/short_sword.bmp
+AT (21,44) ./player/hand1/short_sword_slant.bmp
+AT (22,44) ./player/hand1/sickle.bmp
+AT (23,44) ./player/hand1/singing_sword.bmp
+AT (24,44) ./player/hand1/skull.bmp
+AT (25,44) ./player/hand1/sling.bmp
+AT (26,44) ./player/hand1/sniper.bmp
+AT (27,44) ./player/hand1/spark.bmp
+AT (28,44) ./player/hand1/spear1.bmp
+AT (29,44) ./player/hand1/spear2.bmp
+AT (30,44) ./player/hand1/spear3.bmp
+AT (31,44) ./player/hand1/spear4.bmp
+AT (32,44) ./player/hand1/spear5.bmp
+AT (33,44) ./player/hand1/staff_evil.bmp
+AT (34,44) ./player/hand1/staff_fork.bmp
+AT (35,44) ./player/hand1/staff_large.bmp
+AT (36,44) ./player/hand1/staff_mage2.bmp
+AT (37,44) ./player/hand1/staff_mage.bmp
+AT (38,44) ./player/hand1/staff_mummy.bmp
+AT (39,44) ./player/hand1/staff_ring_blue.bmp
+AT (40,44) ./player/hand1/staff_ruby.bmp
+AT (41,44) ./player/hand1/staff_skull.bmp
+AT (42,44) ./player/hand1/stick.bmp
+AT (43,44) ./player/hand1/stone.bmp
+AT (44,44) ./player/hand1/sword2.bmp
+AT (45,44) ./player/hand1/sword3.bmp
+AT (46,44) ./player/hand1/sword_black.bmp
+AT (47,44) ./player/hand1/sword_breaker.bmp
+AT (48,44) ./player/hand1/sword_jag.bmp
+AT (49,44) ./player/hand1/sword_seven.bmp
+AT ( 0,45) ./player/hand1/sword_thief.bmp
+AT ( 1,45) ./player/hand1/sword_tri.bmp
+AT ( 2,45) ./player/hand1/sword_twist.bmp
+AT ( 3,45) ./player/hand1/trident2.bmp
+AT ( 4,45) ./player/hand1/trident3.bmp
+AT ( 5,45) ./player/hand1/trident.bmp
+AT ( 6,45) ./player/hand1/trident_demon.bmp
+AT ( 7,45) ./player/hand1/trident_elec.bmp
+AT ( 8,45) ./player/hand1/voodoo.bmp
+AT ( 9,45) ./player/hand1/war_axe.bmp
+AT (10,45) ./player/hand1/whip.bmp
+AT (11,45) ./player/hand1/zonguldrok.bmp
+AT (12,45) ./player/hand2/book_black.bmp
+AT (13,45) ./player/hand2/book_blue.bmp
+AT (14,45) ./player/hand2/book_blue_dim.bmp
+AT (15,45) ./player/hand2/book_cyan.bmp
+AT (16,45) ./player/hand2/book_cyan_dim.bmp
+AT (17,45) ./player/hand2/book_green.bmp
+AT (18,45) ./player/hand2/book_green_dim.bmp
+AT (19,45) ./player/hand2/book_magenta.bmp
+AT (20,45) ./player/hand2/book_magenta_dim.bmp
+AT (21,45) ./player/hand2/book_red.bmp
+AT (22,45) ./player/hand2/book_red_dim.bmp
+AT (23,45) ./player/hand2/book_sky.bmp
+AT (24,45) ./player/hand2/book_white.bmp
+AT (25,45) ./player/hand2/book_yellow.bmp
+AT (26,45) ./player/hand2/book_yellow_dim.bmp
+AT (27,45) ./player/hand2/boromir.bmp
+AT (28,45) ./player/hand2/bullseye.bmp
+AT (29,45) ./player/hand2/fire_cyan.bmp
+AT (30,45) ./player/hand2/fire_dark.bmp
+AT (31,45) ./player/hand2/fire_green.bmp
+AT (32,45) ./player/hand2/fire_white2.bmp
+AT (33,45) ./player/hand2/fire_white.bmp
+AT (34,45) ./player/hand2/lantern.bmp
+AT (35,45) ./player/hand2/light_blue.bmp
+AT (36,45) ./player/hand2/light_red.bmp
+AT (37,45) ./player/hand2/light_yellow.bmp
+AT (38,45) ./player/hand2/pj.bmp
+AT (39,45) ./player/hand2/shield_diamond_yellow.bmp
+AT (40,45) ./player/hand2/shield_kite1.bmp
+AT (41,45) ./player/hand2/shield_kite2.bmp
+AT (42,45) ./player/hand2/shield_kite3.bmp
+AT (43,45) ./player/hand2/shield_kite4.bmp
+AT (44,45) ./player/hand2/shield_knight_blue.bmp
+AT (45,45) ./player/hand2/shield_knight_gray.bmp
+AT (46,45) ./player/hand2/shield_knight_rw.bmp
+AT (47,45) ./player/hand2/shield_long_cross.bmp
+AT (48,45) ./player/hand2/shield_long_red.bmp
+AT (49,45) ./player/hand2/shield_middle_black.bmp
+AT ( 0,46) ./player/hand2/shield_middle_brown.bmp
+AT ( 1,46) ./player/hand2/shield_middle_cyan.bmp
+AT ( 2,46) ./player/hand2/shield_middle_ethn.bmp
+AT ( 3,46) ./player/hand2/shield_middle_gray.bmp
+AT ( 4,46) ./player/hand2/shield_middle_round.bmp
+AT ( 5,46) ./player/hand2/shield_middle_unicorn.bmp
+AT ( 6,46) ./player/hand2/shield_of_resistance.bmp
+AT ( 7,46) ./player/hand2/shield_round1.bmp
+AT ( 8,46) ./player/hand2/shield_round2.bmp
+AT ( 9,46) ./player/hand2/shield_round3.bmp
+AT (10,46) ./player/hand2/shield_round4.bmp
+AT (11,46) ./player/hand2/shield_round5.bmp
+AT (12,46) ./player/hand2/shield_round6.bmp
+AT (13,46) ./player/hand2/shield_round7.bmp
+AT (14,46) ./player/hand2/shield_round_small2.bmp
+AT (15,46) ./player/hand2/shield_round_small.bmp
+AT (16,46) ./player/hand2/shield_round_white.bmp
+AT (17,46) ./player/hand2/shield_shaman.bmp
+AT (18,46) ./player/hand2/shield_skull.bmp
+AT (19,46) ./player/hand2/spark.bmp
+AT (20,46) ./player/hand2/torch.bmp
+AT (21,46) ./player/hand2/torsh2.bmp
+AT (22,46) ./player/head/art_dragonhelm.bmp
+AT (23,46) ./player/head/bandana_ybrown.bmp
+AT (24,46) ./player/head/band_blue.bmp
+AT (25,46) ./player/head/band_magenta.bmp
+AT (26,46) ./player/head/band_red.bmp
+AT (27,46) ./player/head/band_white.bmp
+AT (28,46) ./player/head/band_yellow.bmp
+AT (29,46) ./player/head/black_horn2.bmp
+AT (30,46) ./player/head/black_horn.bmp
+AT (31,46) ./player/head/blue_horn_gold.bmp
+AT (32,46) ./player/head/brown_gold.bmp
+AT (33,46) ./player/head/cap_black1.bmp
+AT (34,46) ./player/head/cap_blue.bmp
+AT (35,46) ./player/head/chain.bmp
+AT (36,46) ./player/head/cheek_red.bmp
+AT (37,46) ./player/head/clown1.bmp
+AT (38,46) ./player/head/cone_blue.bmp
+AT (39,46) ./player/head/cone_red.bmp
+AT (40,46) ./player/head/crown_gold.bmp
+AT (41,46) ./player/head/dyrovepreva.bmp
+AT (42,46) ./player/head/feather_blue.bmp
+AT (43,46) ./player/head/feather_green.bmp
+AT (44,46) ./player/head/feather_red.bmp
+AT (45,46) ./player/head/feather_white.bmp
+AT (46,46) ./player/head/feather_yellow.bmp
+AT (47,46) ./player/head/fhelm_gray3.bmp
+AT (48,46) ./player/head/fhelm_horn2.bmp
+AT (49,46) ./player/head/fhelm_horn_yellow.bmp
+AT ( 0,47) ./player/head/full_black.bmp
+AT ( 1,47) ./player/head/full_gold.bmp
+AT ( 2,47) ./player/head/gandalf.bmp
+AT ( 3,47) ./player/head/hat_black.bmp
+AT ( 4,47) ./player/head/healer.bmp
+AT ( 5,47) ./player/head/helm_gimli.bmp
+AT ( 6,47) ./player/head/helm_green.bmp
+AT ( 7,47) ./player/head/helm_plume.bmp
+AT ( 8,47) ./player/head/helm_red.bmp
+AT ( 9,47) ./player/head/hood_black2.bmp
+AT (10,47) ./player/head/hood_cyan.bmp
+AT (11,47) ./player/head/hood_gray.bmp
+AT (12,47) ./player/head/hood_green2.bmp
+AT (13,47) ./player/head/hood_green.bmp
+AT (14,47) ./player/head/hood_orange.bmp
+AT (15,47) ./player/head/hood_red2.bmp
+AT (16,47) ./player/head/hood_red.bmp
+AT (17,47) ./player/head/hood_white2.bmp
+AT (18,47) ./player/head/hood_white.bmp
+AT (19,47) ./player/head/hood_ybrown.bmp
+AT (20,47) ./player/head/horned.bmp
+AT (21,47) ./player/head/horn_evil.bmp
+AT (22,47) ./player/head/horn_gray.bmp
+AT (23,47) ./player/head/iron1.bmp
+AT (24,47) ./player/head/iron2.bmp
+AT (25,47) ./player/head/iron3.bmp
+AT (26,47) ./player/head/iron_red.bmp
+AT (27,47) ./player/head/mummy.bmp
+AT (28,47) ./player/head/ninja_black.bmp
+AT (29,47) ./player/head/straw.bmp
+AT (30,47) ./player/head/taiso_blue.bmp
+AT (31,47) ./player/head/taiso_magenta.bmp
+AT (32,47) ./player/head/taiso_red.bmp
+AT (33,47) ./player/head/taiso_white.bmp
+AT (34,47) ./player/head/taiso_yellow.bmp
+AT (35,47) ./player/head/turban_brown.bmp
+AT (36,47) ./player/head/turban_white.bmp
+AT (37,47) ./player/head/wizard_blackgold.bmp
+AT (38,47) ./player/head/wizard_blackred.bmp
+AT (39,47) ./player/head/wizard_blue.bmp
+AT (40,47) ./player/head/wizard_bluegreen.bmp
+AT (41,47) ./player/head/wizard_brown.bmp
+AT (42,47) ./player/head/wizard_darkgreen.bmp
+AT (43,47) ./player/head/wizard_purple.bmp
+AT (44,47) ./player/head/wizard_red.bmp
+AT (45,47) ./player/head/wizard_white.bmp
+AT (46,47) ./player/head/yellow_wing.bmp
+AT (47,47) ./player/leg/belt_gray.bmp
+AT (48,47) ./player/leg/belt_redbrown.bmp
+AT (49,47) ./player/leg/bikini_red.bmp
+AT ( 0,48) ./player/leg/leg_armor00.bmp
+AT ( 1,48) ./player/leg/leg_armor01.bmp
+AT ( 2,48) ./player/leg/leg_armor02.bmp
+AT ( 3,48) ./player/leg/leg_armor03.bmp
+AT ( 4,48) ./player/leg/leg_armor04.bmp
+AT ( 5,48) ./player/leg/leg_armor05.bmp
+AT ( 6,48) ./player/leg/loincloth_red.bmp
+AT ( 7,48) ./player/leg/metal_gray.bmp
+AT ( 8,48) ./player/leg/metal_green.bmp
+AT ( 9,48) ./player/leg/pants16.bmp
+AT (10,48) ./player/leg/pants_black.bmp
+AT (11,48) ./player/leg/pants_blue.bmp
+AT (12,48) ./player/leg/pants_brown.bmp
+AT (13,48) ./player/leg/pants_darkgreen.bmp
+AT (14,48) ./player/leg/pants_orange.bmp
+AT (15,48) ./player/leg/pants_short_brown3.bmp
+AT (16,48) ./player/leg/pants_short_brown.bmp
+AT (17,48) ./player/leg/pants_short_darkbrown.bmp
+AT (18,48) ./player/leg/pants_short_gray.bmp
+AT (19,48) ./player/leg/pj.bmp
+AT (20,48) ./player/leg/skirt_blue.bmp
+AT (21,48) ./player/leg/skirt_green.bmp
+AT (22,48) ./player/leg/skirt_white.bmp
+AT (23,48) ./item/armor/elven_scalemail.bmp
+AT (24,48) ./item/misc/expensive_camera.bmp
+AT (25,48) ./item/misc/pick_axe.bmp
+AT (26,48) ./item/weapon/dwarvish_mattock.bmp
+AT (27,48) ./item/weapon/executioner_axe.bmp
+AT (28,48) ./item/weapon/orcish_dagger.bmp
+AT (29,48) ./item/weapon/orcish_glaive.bmp
+AT (30,48) ./item/weapon/orcish_great_sword.bmp
+AT (31,48) ./item/weapon/orcish_long_sword.bmp
+AT (32,48) ./item/weapon/orcish_short_sword.bmp
+AT (33,48) ./item/weapon/war_axe.bmp
+AT (34,48) ./nh-mon0/0demon/demogorgon.bmp
+AT (35,48) ./nh-mon0/0demon/hezrou.bmp
+AT (36,48) ./nh-mon0/0demon/marilith.bmp
+AT (37,48) ./nh-mon0/0demon/nalfeshnee.bmp
+AT (38,48) ./nh-mon0/0demon/orcus.bmp
+AT (39,48) ./nh-mon0/0demon/vrock.bmp
+AT (40,48) ./nh-mon0/0man/arch_priest.bmp
+AT (41,48) ./nh-mon0/0man/cavewoman.bmp
+AT (42,48) ./nh-mon0/0man/croesus.bmp
+AT (43,48) ./nh-mon0/0man/earendil.bmp
+AT (44,48) ./nh-mon0/0man/elf-lord.bmp
+AT (45,48) ./nh-mon0/0man/elwing.bmp
+AT (46,48) ./nh-mon0/0man/green-elf.bmp
+AT (47,48) ./nh-mon0/0man/grey-elf.bmp
+AT (48,48) ./nh-mon0/0man/hippocrates.bmp
+AT (49,48) ./nh-mon0/0man/king_arthur.bmp
+AT ( 0,49) ./nh-mon0/0man/lord_carnarvon.bmp
+AT ( 1,49) ./nh-mon0/0man/master_of_thieves.bmp
+AT ( 2,49) ./nh-mon0/0man/norn.bmp
+AT ( 3,49) ./nh-mon0/0man/oracle.bmp
+AT ( 4,49) ./nh-mon0/0man/pelias.bmp
+AT ( 5,49) ./nh-mon0/0man/priestess.bmp
+AT ( 6,49) ./nh-mon0/0man/shaman_karnov.bmp
+AT ( 7,49) ./nh-mon0/0man/twoflower.bmp
+AT ( 8,49) ./nh-mon0/0man/wizard_of_balance.bmp
+AT ( 9,49) ./nh-mon0/0man/woodland-elf.bmp
+AT (10,49) ./nh-mon0/d/dog.bmp
+AT (11,49) ./nh-mon0/d/large_dog.bmp
+AT (12,49) ./nh-mon0/h/bugbear.bmp
+AT (13,49) ./nh-mon0/q/rothe.bmp
+AT (14,49) ./nh-mon1/a/archon.bmp
+AT (15,49) ./nh-mon1/k/keystone_kop.bmp
+AT (16,49) ./nh-mon1/k/kop_lieutenant.bmp
+AT (17,49) ./nh-mon1/k/kop_sergeant.bmp
+AT (18,49) ./nh-mon1/s/cobra.bmp
+AT (19,49) ./nh-mon1/s/python.bmp
+AT (20,49) ./nh-mon1/s/snake.bmp
+AT (21,49) ./nh-mon1/y/ape.bmp
+AT (22,49) ./nh-mon1/y/owlbear.bmp
+AT (23,49) ./nh-mon1/z/skeleton.bmp

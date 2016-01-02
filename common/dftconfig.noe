@@ -1,0 +1,159 @@
+-- Necklace of the Eye v7.6 roguelike frontend
+-- Copyright (C) 2010-2014 Zeno Rogue, see noteye.noe for details
+
+-- NotEye configuration file
+
+-- default visual settings:
+----------------------------
+
+-- start in fullscreen mode?
+fscr = false
+
+-- keep the original resolution in fullscreen mode?
+fscrmode = true
+
+-- what renderer to use? (see viewmode.noe for other values)
+currentRenderer = rendererAuto
+rendererSoftware = false
+rendererVsync = true
+
+-- which mode to start in (modeASCII, modeTiles, modeFPP, modeISO, modeMini)
+-- mode = modeTiles
+mode = modeTiles
+modepower = 5
+
+-- the default palette (use palpower > 7 to force it even if the game has its own
+-- palette, like Frozen Depths or Hydra Slayer)
+setpalette(palettes.dos)
+palpower = 0
+
+-- default font
+-- curfont = "cp437-16"
+curfont = "dejavu-20"
+curfonttype = fontadj.simpleA
+fontsize = {rx=32, ry=8}
+reqres = {f = V(1,1)}
+
+-- if you want this config file to override the default font,
+-- change this
+config_override_font = false
+
+-- reserve lines for messages below the screen
+msgreserve = 0
+
+-- have graphics
+havegfx = true
+
+-- have ascii (Note: in ASCII, NotEye menu is ran with Ctrl+[, not Ctrl+M)
+-- also, translating TrueColor games back to 16 colors does not work well yet
+haveascii = false
+
+-- input settings
+------------------
+
+-- diagonals (arrow combos by default)
+diaglayoutid = 6
+
+-- rotate both numpad and arrow keys
+rotatenumpad = true
+rotatearrowkeys = true
+
+-- see generic.noe for other names
+-- initialKeymap = mapWASDplus
+
+-- rec/view/server/client configuration
+-----------------------------------------
+
+-- initial recording and viewing speed
+
+recspeed = 1000
+viewspeed = 1000
+
+-- default filenames
+
+recfile = recfile or ((userdir or "").."record.nev")
+viewfile = viewfile or ((userdir or "").."view.nev")
+
+-- binary flags: enter "false" or "true"
+-- automatically start recording
+autorec = false
+-- start in view mode instead of game mode
+viewmode = false
+-- start server automatically (make sure that you know what you are doing!)
+autoserve = false
+-- record mode changes by default?
+servemode = true
+-- accept input from clients by default?
+serveinput = true
+-- should we get font from the stream?
+takefont = false
+
+-- default network configuration
+--------------------------------
+
+-- for client:
+portclient = 6677
+serverhost = "localhost"
+
+-- libtcod client:
+libtcodhost = "localhost"
+libtcodport = 6678
+
+-- for server:
+portserver = 6677
+
+-- audio options
+----------------
+
+volsound = 100
+volmusic = 60
+
+-- use the default music even if the game's noe file
+-- disables it, or defines its own soundtrack
+forcemusic = false
+
+-- user-defined music:
+-- resetmusic()
+-- addmusic("sound/music1.ogg")
+-- addmusic("sound/music2.ogg")
+
+-- misc options
+---------------
+
+-- allow taking screenshots quickly with F2
+-- quickshots = true
+
+-- enable this to see the coordinates and RGB colors of characters in libtcod on mouseover
+conshelp = false
+
+-- do you want to force external Hydra Slayer
+externalhydra = false
+
+-- change this to true if you want to start the games yourself
+-- (useful e.g. for playing via a telnet/ssh server)
+manualcall = false
+
+scrollwidth = 5
+
+-- user key remapping
+---------------------
+
+-- user key remappings: some examples
+
+-- uncomment if you want them to be disabled by default
+-- remapsoff = true
+
+-- replace "1" and "2" in Hydra Slayer, only while viewing the map
+-- remapkey(KEYS.d1, KEYS.d2, onlymap(ingame("hydra")))
+-- remapkey(KEYS.d2, KEYS.d1, onlymap(ingame("hydra")))
+
+-- replace F1 and F2 in Hydra Slayer (see sdlkeys.noe for other key names)
+-- remapkey(KEYS.F1, KEYS.F2, ingame("hydra"))
+-- remapkey(KEYS.F2, KEYS.F1, ingame("hydra"))
+
+-- replace "z" and "y" in all games
+-- remapkey(KEYS.z, KEYS.y, inallgames)
+-- remapkey(KEYS.y, KEYS.z, inallgames)
+
+-- make Enter start Hydra Slayer in the main menu
+--remapkey(KEYS.RETURN, KEYS.h, inmenu("noteyemain"))

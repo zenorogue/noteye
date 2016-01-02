@@ -1,0 +1,17 @@
+-- Necklace of the Eye v7.6 roguelike frontend
+-- Copyright (C) 2010-2014 Zeno Rogue, see noteye.noe for details
+
+-- for the alternative libtcod support
+
+print("NotEye via libtcod");
+game_to_launch = libtcodname
+vialibtcod = true
+threaded = true
+noteyedir = os.getenv("NOTEYEDIR").."/"
+
+-- check for the local config
+local f=io.open("config.noe","r")
+if f == nil then configfile = noteyedir.."config.noe" 
+else io.close(f) end
+
+dofile(noteyedir.."common/noteye.noe")

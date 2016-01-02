@@ -1,0 +1,41 @@
+Square is a TTF font intended for roguelike games, by Wouter van Oortmerssen,
+under the Creative Commons Attribution 3.0 Unported license
+( http://creativecommons.org/licenses/by/3.0/deed.en_US )
+
+Downloaded from http://strlen.com/square
+
+***
+
+NotEye includes the DawnLike tileset (see the "dawnlike" subdirectory).
+It was created by DragonDePlatino under the CC BY-SA 3.0 license
+http://opengameart.org/content/dawnlike-16x16-universal-rogue-like-tileset-v10
+It is used by the samples.
+
+Examples were removed from the original package, and fonts (SDS6x6 and SDS8x8) were
+converted from TTF tothe NotEye PNG format.
+
+***
+
+Part of the graphic tiles used in NotEye is the public domain roguelike tileset
+"RLTiles". You can find the original tileset at: http://rltiles.sf.net
+
+(These tiles are in the file rltiles.png, and they are used by nLarn and Rogue)
+
+***
+
+The Brogue fonts come from Brogue.
+
+***
+
+The Fantasy Font, Hydra graphics, VOI graphics (vapors.png), and NotEye and
+Hydra Slayer splash screens are made by Zeno Rogue <zeno@attnam.com>,
+under the Creative Commons BY-SA 3.0 license.
+
+
+***
+
+DejaVu fonts are in Public Domain: http://dejavu-fonts.org/wiki/index.php?title=License
+
+***
+
+DOS fonts and Courier are standard.

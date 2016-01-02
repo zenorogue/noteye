@@ -1,0 +1,4 @@
+all: sample
+
+sample.exe: sample.c ../noteye.dll ../src/noteye.h ../src/noteye-curses.h
+	gcc -Wl,-rpath,. sample.cpp -o sample.exe ../noteye.dll

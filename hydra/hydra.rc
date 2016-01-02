@@ -1,0 +1,26 @@
+id ICON "../hydra/hydra.ico"
+
+1 VERSIONINFO
+FILEVERSION     16,1,0,0
+PRODUCTVERSION  16,1,0,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "CompanyName", "Zeno Rogue"
+      VALUE "FileDescription", "A math puzzle roguelike"
+      VALUE "FileVersion", "16.1"
+      VALUE "InternalName", "hydra"
+      VALUE "LegalCopyright", "Zeno Rogue"
+      VALUE "OriginalFilename", "hydra.exe"
+      VALUE "ProductName", "Hydra Slayer"
+      VALUE "ProductVersion", "16.1"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1252
+  END
+END

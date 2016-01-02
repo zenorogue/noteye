@@ -1,0 +1,564 @@
+-- Necklace of the Eye v8.2 roguelike frontend
+-- Copyright (C) 2010-2015 Zeno Rogue, see noteye.noe for details
+
+-- things related to fonts
+
+if not Fonts then Fonts = {} end
+
+function loadBitmapFont(fname, x, y, adjuster)
+  local F = {}
+  local P = loadimage(gfxdir..fname..".png")
+  if P == 0 then
+    logprint2("font not found: "..fname..", replacing by the default font")
+    -- replace with 
+    P = loadimage(gfxdir.."cp437-8.png")
+    x = 16
+    y = 16
+    end
+  local Psize = imggetsize(P)
+  F.png = P
+  
+  F.font = adjuster(P,x,y,Psize.x,Psize.y)
+  
+  F.alias = imagealias(F.png, fname..".png")
+  F.size = V.be({x=Psize.x/x, y=Psize.y/y, rx=x, ry=y, sx=1, sy=1})
+  F.name = fname
+  F.adjuster = adjuster
+  F.adjustername = getnameintable(adjuster, fontadj)
+  Fonts[fname] = F
+  end
+  
+function loadTTFont(fname, x, y, ext, aname)
+  local F = {}
+  
+  F.ttfont = newttfont(gfxdir..fname..ext)
+  F.name = fname
+  F.sizes = {}
+  F.size = V(x, y)
+  F.size.rx = x
+  F.size.ry = y
+  F.adjustername = aname
+  Fonts[fname] = F
+  end
+
+function ttf_getAtSize(F, sx, sy)
+  local id = sx * 1000 + sy
+  if F.sizes[id] then
+    return F.sizes[id]
+    end
+  
+  local F2 = {}
+  F.sizes[id] = F2
+  
+  local P = newimage(sx, sy*256, 0)
+
+  local Psize = imggetsize(P)
+  
+  local ts = 1
+  while true do
+    ts = ts + 1
+    local size = ttfgetsize(F.ttfont, ts, "M", 0)
+    if size.x > sx or size.y > sy then
+      break
+      end
+    end
+  ts = ts - 1
+  -- print("font size used: "..ts)
+
+  for c=32,127 do
+    rendertext(F.ttfont, ts, string.char(c), 0xFF0000FF, P, V(sx/2, sy*c+sy/2), V(-.5,-.5))
+    end
+
+  F2.png = P
+  F2.alias = imagealias(P, F.name..".ttf")
+  F2.font = fontadj.simpleA(P,1,256,Psize.x,Psize.y)
+
+  return F2
+  end
+
+function loadfont(fname, x, y, adjuster)
+  if not Fonts[fname] then
+    if adjuster == "TTF" then
+      loadTTFont(fname, x, y, ".ttf", "TTF")
+    elseif adjuster == "OTF" then
+      loadTTFont(fname, x, y, ".otf", "OTF")
+    else
+      loadBitmapFont(fname, x, y, adjuster)
+      end
+    end
+  return fname
+  end
+
+function selectfont(fname)
+  curfont = fname
+  FontData = Fonts[fname]
+  Font = FontData.font -- will be nil for TrueType fonts
+  StreamSetFont = 2
+  end
+
+fontadj = {}
+fontadj.TTF = "TTF"
+fontadj.OTF = "OTF"
+
+hex1000000 = tonumber("1000000", 16)
+hex1000001 = tonumber("1000001", 16)
+hexFF0000FF = tonumber("FF0000FF", 16)
+
+function fontadj.simple(P,fx,fy,sx,sy)
+
+  for x=0,sx-1 do
+  for y=0,sy-1 do
+    local c = getpixel(P,x,y)
+    -- c = colorset(c, 3, colorpart(c, 0))
+    c = hex1000001 * colorpart(c, 0)
+    setpixel(P, x,y, c)
+    end end
+
+  return newfont(P, fx, fy, 0)
+  end
+
+function goi(x)
+  local s = x
+  for k,v in pairs(getobjectinfo(x)) do
+    s = s..":"..k..","..tostring(v)
+    end
+  return s
+  end
+
+function fontadj.simpleA(P,fx,fy,sx,sy)
+
+  for x=0,sx-1 do
+  for y=0,sy-1 do
+    local c = getpixel(P,x,y)
+    -- c = colorset(c, 3, colorpart(c, 0))
+    c = hex1000000 * colorpart(c, 0) + 255
+    setpixel(P, x,y, c)
+    end end
+  
+  return newfont(P, fx, fy, transAlpha)
+  end
+
+function fontadj.alpha(P,fx,fy,sx,sy)
+  return newfont(P,fx,fy,transAlpha)
+  end
+
+function fontadj.brogue(P,fx,fy,sx,sy)
+  for x=0,sx-1 do
+  for y=0,sy-1 do
+    pix = getpixel(P, x,y)
+    if bAND(pix, 255) > 192 then pix = bAND(pix, hexFF0000FF)
+    else pix = 0
+    end
+    setpixel(P, x, y, pix)
+    end end
+  return newfont(P,fx,fy,transAlpha)
+  end
+
+function selectfontfull(fname)
+  if fname then
+    selectfont(fname)
+    -- {x = Fonts[fname].size.x*2, y = Fonts[fname].size.y*2 }
+    prepareconsole()
+    if P then setfont(P, Font)
+    elseif S then setfont(S, Font) end
+    copymap()
+    end
+  end
+
+-- == fonts menu ==
+
+fontsmenu = {}
+
+fontsubmenu1 = {}
+fontsubmenu2 = {}
+fontsubmenu3 = {}
+fontsubmenu = fontsubmenu3
+
+fontparams = {}
+
+function addFont(key,name,a,b,c,d,menu)
+  fontparams[a] = {b,c,d}
+  addtomenu(menu,
+    key,
+    writechoice(name),
+    function () 
+      pickfont(a,b,c,d)
+      return true
+      end
+    )
+  end
+
+addtomenu(fontsubmenu1, "-", 
+  writechoice("choose from square fonts"),
+  function()
+    fontsubmenu = fontsubmenu2
+    menuexecute(fontsubmenu2, 
+      dfthdr("Select the font\n\n")
+      )
+    end
+  )
+
+addtomenu(fontsubmenu2, "-", 
+  writechoice("choose from TrueType fonts"),
+  function()
+    fontsubmenu = fontsubmenu3
+    menuexecute(fontsubmenu3, 
+      dfthdr("Select the font\n\n")
+      )
+    end
+  )
+
+addtomenu(fontsubmenu3, "-", 
+  writechoice("choose from rectangular fonts"),
+  function()
+    fontsubmenu = fontsubmenu1
+    menuexecute(fontsubmenu1, 
+      dfthdr("Select the font\n\n")
+      )
+    end
+  )
+
+addFont("q", "VGA font 8x16 (DOS default)", "cp437-16", 32, 8, fontadj.simpleA, fontsubmenu1)
+addFont("a", "VGA font 8x14", "cp437-14", 32, 8, fontadj.simpleA, fontsubmenu1)
+addFont("z", "VGA font 8x8", "cp437-8", 32, 8, fontadj.simpleA, fontsubmenu2)
+addFont("f", "Fantasy font 16x32", "fantasy-32", 32, 8, fontadj.simpleA, fontsubmenu1)
+addFont("e", "DejaVu Mono 10x20", "dejavu-20", 32, 8, fontadj.simpleA, fontsubmenu1)
+addFont("d", "DejaVu Mono 8x16", "dejavu-16", 32, 8, fontadj.simpleA, fontsubmenu1)
+addFont("c", "Courier 8x16", "courier-16", 32, 8, fontadj.simpleA, fontsubmenu1)
+addFont("t", "Tiny Font 3x5", "tinyfont", 32, 8, fontadj.simpleA, fontsubmenu1)
+addFont("o", "Tiny Font 6x6", "tinyfont66", 32, 8, fontadj.simpleA, fontsubmenu2)
+addFont("l", "Tiny Font 6x8", "tinyfont68", 32, 8, fontadj.simpleA, fontsubmenu1)
+addFont("y", "Square 8", "square-8", 16, 16, fontadj.simpleA, fontsubmenu2)
+addFont("u", "Square 14", "square-14", 16, 16, fontadj.simpleA, fontsubmenu2)
+addFont("h", "Square 16", "square-16", 16, 16, fontadj.simpleA, fontsubmenu2)
+addFont("j", "Square 26", "square-26", 16, 16, fontadj.simpleA, fontsubmenu2)
+addFont("i", "SDS_6x6", "SDS_6x6", 16, 16, fontadj.simpleA, fontsubmenu2)
+addFont("k", "SDS_8x8", "SDS_8x8", 16, 16, fontadj.simpleA, fontsubmenu2)
+
+addFont("a", "DejaVu Sans Mono", "DejaVuSansMono", 10, 20, "TTF", fontsubmenu3)
+addFont("b", "DejaVu Sans Mono Bold", "DejaVuSansMono-Bold", 10, 20, "TTF", fontsubmenu3)
+addFont("c", "DejaVu Sans Mono Oblique", "DejaVuSansMono-Oblique", 10, 20, "TTF", fontsubmenu3)
+addFont("d", "DejaVu Sans Mono Bold Oblique", "DejaVuSansMono-BoldOblique", 10, 20, "TTF", fontsubmenu3)
+addFont("e", "Inconsolata", "Inconsolata", 10, 20, "OTF", fontsubmenu3)
+
+if havebrogue then for u=1,5 do
+  addFont(""..u, "Brogue font #"..u,
+    "BrogueFont"..u, 16, 16, fontadj.brogue,
+    fontsubmenu1
+    )
+  end end
+
+resolutions = {
+  {fx=1, fy=1, name="original"},
+  {fx=2, fy=2, name="double size"},
+  {fx=1.5, fy=1.5, name="3/2 size"},
+  {fx=0.5, fy=0.5, name="half size"},
+  {fx=1, fy=0.5, name="half height"},
+  {fx=2, fy=1, name="double width"}
+  }
+
+fsmenu = {}
+
+resmenu = {}
+
+function addfontsize(key, name, res)
+  addtomenu(fsmenu,
+    key,
+    writechoice(name),
+    function () 
+      scalechoice(res)
+      end
+    )
+  end
+
+function addscreenres(key, name, res)
+  addtomenu(resmenu,
+    key,
+    writechoice(name),
+    function () 
+      pickresolution({s = res})
+      end
+    )
+  end
+
+addfontsize("o", "original size", V(1  , 1  ))
+addfontsize("d", "double size",   V(2  , 2  ))
+addfontsize("h", "half size",     V(0.5, 0.5))
+addfontsize("s", "3/2 size",      V(1.5, 1.5))
+addfontsize("w", "double width",  V(2  , 1  ))
+addfontsize("a", "half height",   V(1  , 0.5))
+addfontsize("e", "half width",    V(0.5, 1  ))
+addfontsize("t", "double height", V(1  , 2  ))
+
+addscreenres("0", "320x200",   V(320,  200 ))
+addscreenres("1", "640x400",   V(640,  400 ))
+addscreenres("2", "800x500",   V(800,  500 ))
+addscreenres("3", "1024x600",  V(1024, 600 ))
+addscreenres("4", "1280x800",  V(1280, 800 ))
+addscreenres("5", "1440x900",  V(1440, 900 ))
+addscreenres("6", "1600x1200", V(1600, 1200))
+addscreenres("7", "1920x1080", V(1920, 1080))
+
+function resizewindow(x, y)
+  if x == xscreen.size.x and y == xscreen.size.y then return end
+  local newsize = {s = V(x, y)}
+  pickresolution(newsize)
+  end
+
+--reqres = {sx=1024, sy=768}
+
+addtomenu(fontsmenu, "m", writechoicef(
+  function() 
+    if fscrmode then 
+      D.reqres.sfull = V.be(origvideomode())
+      return "current fullscreen mode: \vekeep the original resolution ("..xxy(reqres.sfull)..")"
+    else return "current fullscreen mode: \vechange to the window size"
+    end
+    end),
+  function() 
+    pickfull(fscr, not fscrmode)
+    viewmenu()
+    fontreshdr()
+    return true
+    end
+  )
+
+noteye_config_variable("fscr", false, "full screen?", {setter = function(x) pickfull(x == "true", fscrmode) end})
+noteye_config_variable("fscrmode", true, "full screen style", {setter = function(x) pickfull(fscr, x == "true") end})
+
+addtomenu(fontsmenu, "e", writechoice("switch fullscreen (also \veAlt+Enter\vp)"),
+  function() 
+    pickfull(not fscr, fscrmode) 
+    viewmenu()
+    fontreshdr()
+    return true
+    end
+  )
+
+addtomenu(fontsmenu,
+  "f", 
+  writechoice("Select the font"),
+  function()                   
+    menuexecute(fontsubmenu, 
+      dfthdr("Select the font\n\n")
+      )
+    return true
+    end
+  )
+
+addtomenu(fontsmenu,
+  "s", 
+  writechoice("Select font scaling"),
+  function()                   
+    function scalechoice(v) 
+      pickresolution({f = v}) 
+      end
+
+    tx = fscr and fscrmode and 
+      "Note: you are currently playing fullscreen on your original resolution\n"..
+      "("..xxy(reqres.sfull)..") -- NotEye will ignore this option and just pick the\n"..
+      "largest font that fits."
+    
+    tx = tx or ""
+      
+    menuexecute(fsmenu,
+      dfthdr("Select font scaling\n\n"..
+        "Select the scale of the font, and NotEye will automatically adjust the \n"..
+        "size of the window (or full screen resolution) to fit everything.\n\n"..
+        tx
+        )
+      )
+    return true
+    end
+  )
+
+guiscalingavailable = function() return gamename == "auto" end
+
+guiscalinghelp = 
+  "Scale of the font in the HUD. Works only in some games.\n"..
+  "Note that menus always try to use full screen.\n"
+
+addtomenu(fontsmenu,
+  "h", 
+  writechoice("Select HUD font scaling"),
+  function()
+    function scalechoice(v) pickguiscaling(v) end
+    menuexecute(fsmenu, 
+      dfthdr("Select HUD font scaling\n\n"..guiscalinghelp)
+      )
+    return true
+    end,
+  guiscalingavailable
+  )
+
+addtomenu(fontsmenu,
+  "w", 
+  writechoicef(
+    function()
+      return fscr and "Select resolution" or "Select the window size"
+      end),
+  function()
+    menuexecute(resmenu, 
+      dfthdr("Select the window size\n\n"..
+        "You can request a specific resolution here.\n"..
+        "The font will be scaled to fill the whole window.\n"
+        )
+      )
+    return true
+    end
+  )
+
+function fontreshdr()
+  menuy = 6
+  title = "Select your font and resolution"
+
+  scrwrite(IMG, 1, 1, title, Font, vgaget(10))
+  
+  local scrres = 
+    fscr and 
+      (
+       (fscrmode and "Using the original full screen resolution, will return to:") or
+      "Current screen resolution:" 
+      ) or "Current window size:"
+  
+  scrwrite(IMG, 1, 3, scrres, Font, vgaget(7))
+  
+  if reqres.s then
+    scrres = xxy(reqres.s).." (specific size requested)"
+  elseif reqres.f then
+    local winsize = reqres.f * (conssize+V(0,msgreserve)) * FontData.size
+    local resstr = msgreserve and "+"..msgreserve or ""
+    scrres = xxy(winsize).." (based on the "..xxy(FontData.size).." font, scaled "..xxy(reqres.f)..", "..xxy(conssize)..resstr.." characters)"
+  else 
+    scrres = "?"
+    end
+  
+  scrwrite(IMG, 1, 4, "\vf"..scrres, Font, vgaget(7))
+  end
+
+
+addtomenu(mainmenu, "r", writechoice("select font, resolution, and fullscreen mode"),
+  function()
+    menuexecute(fontsmenu, fontreshdr)
+    end
+  )
+
+function pickresolution(res, disable_fscrmode)
+  cfgscripts.res = function(file)
+    fontline = "pickresolution({"
+    if reqres.s then fontline = fontline.."s=V("..reqres.s.x..","..reqres.s.y..")," end
+    if reqres.f then fontline = fontline.."f=V("..reqres.f.x..","..reqres.f.y..")," end
+    -- for k,v in pairs(reqres) do fontline = fontline..k.."="..v.."," end
+    fontline = fontline.."cfg=1})\n"
+    file:write(fontline)
+    end
+  reqres = res
+  if disable_fscrmode then 
+    pickfull(fscr, fscrmode)
+  else
+    prepareconsole()
+    copymap()
+    end
+  end
+
+function pickguiscaling(res)
+  cfgscripts.guiscaling = function(file)
+    file:write("pickguiscaling(V("..res.x..","..res.y.."))\n")
+    end
+  D.guiscaling = res
+  prepareconsole()
+  copymap()
+  end
+
+noteye_config_variable("resolution", nil, "resolution", {type = "vector", 
+  getter = function() return reqres.s or V(0,0) end,
+  setter = function(x) pickresolution({s=parsevector(x)}, fscr) end})
+noteye_config_variable("font scaling", nil, "font scaling", {type = "vector", 
+  getter = function() return reqres.f or V(0,0) end,
+  setter = function(x) pickresolution({f=parsevector(x)}) end})
+-- noteye_config_variable("curfont", nil, "current font", {type = "pointer", fake = "yes", nopick** = true})
+noteye_config_variable("guiscaling", V(1,1), "GUI font scaling")
+noteye_config_variable("windowpos", V(SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED), "SDL window position")
+
+function pickfont(a, b, c, d)
+  cfgscripts.font = function(file)
+    local F = Fonts[curfont]
+    fontline = "pickfont(\""..F.name.."\", "..F.size.rx..", "..F.size.ry
+    fontline = fontline..", fontadj."..F.adjustername
+    fontline = fontline..")\n"
+    file:write(fontline)
+    end
+  selectfontfull(loadfont(a,b,c,d))
+  end
+
+noteye_config_variable("msgreserve", 0, "reserve lines below the ASCII map")
+
+function pickreserve(v)
+  cfgscripts.reserve = function(file)
+    file:write("pickreserve("..v..")\n")
+    end
+  msgreserve = v
+  --setvideomodex()
+  prepareconsole()
+  copymap()
+  end
+
+addtomenu(fontsmenu, "r", writechoicef(
+  function() 
+    return "reserve \ve"..msgreserve.."\vp lines below the screen for the messages and mini-map"
+    end ),
+  function()
+    pickreserve(asknum(msgreserve, "number of lines below the screen", msgreserve))
+    return true
+    end
+  )
+
+hexFFFFFF = tonumber("FFFFFF", 16)
+hex1000000 = tonumber("1000000", 16)
+
+function createborderversion(F)
+  local ax = (F.size.x+2)*32
+  local ay = (F.size.y+2)*8
+  F.bordimg = newimage(ax, ay, hexFFFFFF)
+  for c=0,255 do
+    local ch = string.format("%c", c)
+    local gch1 = fget(Font, ch)
+    local gch2 = tilerecolor(gch1, 0)
+    local cx = (c % 32) * (F.size.x+2)
+    local cy = math.floor(c / 32) * (F.size.y+2)
+    for x=0,2 do
+      for y=0,2 do
+        if (x-1)*(x-1)+(y-1)*(y-1) < 2 then
+          drawtile(F.bordimg, gch2, cx+x, cy+y, F.size.x, F.size.y)
+          end
+        end
+      end
+    end
+  if F.adjuster == fontSimple then
+    F.bordfont = newfont(F.bordimg, 32, 8, hexFFFFFF)
+  else
+    for x=0,ax-1 do for y=0,ay-1 do
+      local g = getpixel(F.bordimg, x, y)
+      g = (255 - bAND(g, 255)) * hex1000000
+      setpixel(F.bordimg, x, y, g)
+      end end
+    F.bordfont = newfont(F.bordimg, 32, 8, transAlpha)
+    end
+  end
+
+-- default config
+
+if not fontsize then
+  fontsize = {rx=32, ry=8}
+  end
+
+if not curfont then
+  curfont = "dejavu-20"
+  curfonttype = fontadj.simpleA
+  end
+
+if not reqres then
+  reqres = {f = V(1,1)}
+  end
+
+if havegfx == nil then havegfx = true end

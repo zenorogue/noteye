@@ -1,0 +1,644 @@
+-- Necklace of the Eye v8.2 roguelike frontend
+-- Copyright (C) 2010-2015 Zeno Rogue, see noteye.noe for details
+
+-- the menu subsystem
+
+-- == menu subsystem ==
+
+menuy = 1
+
+-- sleep(100) should not be very noticeable
+function menudelay()
+  -- do not count frames while the viewer/recorder is in menu
+  lastviewframe = nil
+  -- sleep for a longer time, to conserve CPU
+  sleep(10)
+  end
+
+menuitems = {}
+
+function makekey(key)
+  if type(key) == "string" then
+    local okey = key
+    if key >= "a" and key <= "z" then
+      key = KEYS[key]
+    elseif key >= "A" and key <= "Z" then
+      key = addshift(KEYS[string.char(string.byte(key,1)+32)])
+    elseif key >= "0" and key <= "9" then
+      key = KEYS["d"..key]
+    elseif key == "=" then
+      key = KEYS.EQUALS
+    elseif key == "-" then
+      key = KEYS.MINUS
+    else
+      logprint2(debug.traceback())
+      logprint2("warning: key not supported: "..key)
+      end
+    key.console = okey
+    end
+  return key
+  end
+
+function addtomenu(M, key, writer, act, hid)
+  if not M then 
+    logprint2("adding to no menu: ".. debug.traceback())
+    return
+    end
+  key = makekey(key)
+  local item = {key = key, displayAt = writer, action = act, hidden = hid}
+  table.insert(M, item)
+  return item
+  end
+
+function findbykey(M, key)
+  key = makekey(key)
+  for k,v in pairs(M) do
+    if v.key and iskey(v.key, key) then
+      return v
+      end
+    end
+  return nil
+  end
+
+function silent(M) end
+
+function keyname(k)
+  if not k then print(debug.traceback()) end
+  if k.keycode >= 97 and k.keycode <= 122 and not k.mod then
+    if k.shift then 
+      return string.char(k.keycode - 32)
+    else
+      return string.char(k.keycode)
+      end
+    end
+  smod = ""
+  if k.mod then
+    if bAND(k.mod, KMOD.LSHIFT) > 0 then smod = "LSHIFT+"..smod end
+    if bAND(k.mod, KMOD.RSHIFT) > 0 then smod = "RSHIFT+"..smod end
+    if bAND(k.mod, KMOD.LCTRL) > 0 then smod = "LCTRL+"..smod end
+    if bAND(k.mod, KMOD.RCTRL) > 0 then smod = "RCTRL+"..smod end
+    end
+  return smod..SDL_GetKeyName(k.keycode)
+  end
+
+function writechoice(x)
+  return function(M) 
+    menuitemat[menuy] = M
+    scrwrite(IMG, 1, menuy, "\ve"..keyname(M.key).."\vp\v7 - \vp"..x, Font, vgaget(15))
+    menuy = menuy + 1
+    end
+  end
+
+function writechoicef(x)
+  return function(M) 
+    menuitemat[menuy] = M
+    scrwrite(IMG, 1, menuy, "\ve"..keyname(M.key).."\vp\v7 - \vp"..x(), Font, vgaget(15))
+    menuy = menuy + 1
+    end
+  end
+
+function writeemptyline()
+  menuy = menuy + 1
+  end
+
+function writechoicecol(x, cf)
+  return function(M) 
+    menuitemat[menuy] = M
+    scrwrite(IMG, 1, menuy, "\ve"..M.key.."\vp\v7 - \vp"..x, Font, vgaget(cf()))
+    menuy = menuy + 1
+    end
+  end
+
+function dfthdr(title)
+  return function()
+    menuy = 1
+    titl = title .. "\n"
+    col = vgaget(10)
+    while titl ~= "" do
+      local i = string.find(titl, "\n")
+      if i>conssize.x then 
+        scrwrite(IMG, 1, menuy, string.sub(titl, 1, conssize.x-1), Font, col)
+        scrwrite(IMG, 0, menuy+1, "-", Font, vgaget(4))
+        titl = string.sub(titl, conssize.x)
+      else
+        scrwrite(IMG, 1, menuy, string.sub(titl, 1, i-1), Font, col)
+        titl = string.sub(titl, i+1)
+        col = vgaget(7)
+        end
+      menuy = menuy+1
+      end
+    menuy = menuy + 1
+    end
+  end
+
+function mainhdr()
+  menuy = 3
+  title = 
+    hydraonly and "Hydra Slayer "..hydraver
+    or "Necklace of the Eye "..noteyeversion.." - "..gamename
+  scrwrite(IMG, 1, 1, title, Font, vgaget(10))
+    
+  scrwrite(IMG, 1, 23, (gamename ~= "auto") and "press \veENTER\vp to resume playing" or "press \veENTER\vp to return to the main menu", Font, vgaget(7))
+  end
+
+if noteyelogo == nil then
+  noteyelogo = loadimage(gfxdir.."noteye-logo-dark.png")
+  noteyetile = addtile(noteyelogo, 0, 0, 400, 300, -1)
+  end
+
+function dftmenubackground()
+  drawtile(Gfx, noteyetile, 0, 0, xscrsize.x, xscrsize.y)
+  end
+
+drawmenubackground = dftmenubackground
+
+-- view the menu (stored in IMG) on the screen
+function viewmenu()
+  if havegfx then
+    delayed_videomode()
+    drawmenubackground()
+    
+    drawscreenx(Gfx, IMG, 0, 0, fontsize.x, fontsize.y, tmap_blacknbbig)
+    drawscreen(Gfx, IMG, 0, 0, fontsize.x, fontsize.y)
+    drawmessage()
+    updscr()
+    end
+  if haveascii then
+    if not mainscreen then
+      delayed_videomode()
+      end
+    scrcopy(IMG, 0, 0, mainscreen, 0,0, conssize.x, conssize.y, TMAP_COPY)
+    drawmessage()
+    refreshconsole()
+    end
+  end
+
+function menuexecute(M, hdr, tail)
+
+  -- do not hide the cursor in NotEye menus
+  SDL_ShowCursor(1)
+
+  drawmenubackground = dftmenubackground
+
+  scrfill(IMG, 0, 0, conssize.x, conssize.y, 0)
+
+  hdr()
+  
+  menuitemat = {}
+  for k,v in pairs(M) do
+    if not (v.hidden and v.hidden()) then
+      v.displayAt(v)
+      end
+    end
+  
+  if tail then tail() end
+
+  viewmenu()
+
+  while true do
+    inmenu = M
+
+    lev = getevent()
+
+    if lev.type == evMouseDown then
+      local y = math.floor(lev.y / fontsize.y)
+      local x = math.floor(lev.x / fontsize.x)
+      
+      local v = menuitemat[y]
+      cont = v and v.action(v, lev)
+      
+      if not cont then break end
+      return menuexecute(M, hdr, tail)
+
+    elseif lev.type == evKeyDown or lev.type == evKeyConsole then
+
+      textconsumed = true
+      userremap(lev)
+      local cont = modkey(lev)
+      
+      for k,v in pairs(M) do
+        if iskey(lev, v.key) and not (v.hidden and v.hidden()) then
+          cont = v.action(v, lev)
+          break
+          end
+        end
+      if not cont then break end
+      -- redraw the menu
+      return menuexecute(M, hdr, tail)
+    elseif checkstreams() then
+    elseif lev.type == evWindowEvent then
+      evhandlers[lev.type](lev)
+      -- in the resolution menu, this changes the header display
+      return menuexecute(M, hdr, tail)
+    elseif lev.type == 0 then
+      menudelay()
+      end
+    end
+  clrscr()
+  end
+
+-- == ask for string, and applymod ==
+
+serverwarning = {
+  "Warning: BE CAREFUL WHILE RUNNING AS A SERVER!",
+  "see the website for details: ",
+  "\vehttp://www.roguetemple.com/z/noteye.php\vp"
+  }  
+  
+function askstr(text, question, note, symbolfunction)
+
+  text = ""..text -- it was actually a number, convert to string
+  
+  local function redrawmenu()
+    scrfill(IMG, 0, 0, conssize.x, conssize.y, 0)
+
+    local function write(y, text)
+      scrwrite(IMG, 1, y, text, Font, vgaget(15))
+      end
+
+    write(1, question)
+    
+    write(3, text)
+    
+    write(5, "\veENTER\vp to submit, \veESC\vp to cancel, \veTAB\vp to erase")
+    
+    if note then for k,v in pairs(note) do
+      write(6+k, v)
+      end end
+    
+    viewmenu()
+    end
+    
+  while true do
+
+    redrawmenu()
+    inmenu = "askstr"
+    lev = getevent()
+    if lev.type == evKeyDown then
+      textconsumed = false
+--    print("sym = "..(lev.symbol).." ch = "..(lev.chr).." mod = "..(lev.mod))
+      userremap(lev)
+      local newtext = symbolfunction and symbolfunction(lev, text)
+      if newtext then 
+        text = ""..newtext
+        redrawmenu()
+      elseif iskey(lev, KEYS.ESCAPE) then 
+        return
+      elseif iskey(lev, KEYS.TAB) then 
+        text = ""
+        redrawmenu()
+      elseif iskey(lev, KEYS.RETURN) or iskey(lev, KEYS.KP_ENTER) then 
+        return text
+      elseif iskey(lev, KEYS.BACKSPACE) then 
+        text = string.sub(text, 0, #text-1)
+        redrawmenu()
+        end
+    elseif lev.type == evTextInput then
+      if not textconsumed then 
+        text = text .. tostring(lev.text)
+        end
+    elseif lev.type == evKeyUp then
+      userremap(lev)
+      local newtext = nil -- symbolfunction and symbolfunction(lev, text)
+      if newtext then 
+        text = ""..newtext
+        redrawmenu()
+        end
+    elseif checkstreams() then
+    elseif lev.type == evResize then  
+      resizewindow(lev)
+      viewmenu()
+    elseif lev.type == 0 then
+      menudelay()
+      end
+    end
+
+  end
+
+function asknum(num, question, default, note, symbolfunction)
+  local ret = askstr(num, question, note, symbolfunction)
+  if not ret or not tonumber(ret) then return default end
+  return tonumber(ret)
+  end
+
+function applymod(val, mod)
+  if bAND(mod, KMOD_LSHIFT + KMOD_RSHIFT) > 0 then
+    return val / 2
+  elseif bAND(mod, KMOD_LCTRL + KMOD_RCTRL) > 0 then
+    local ret = askstr(""..val, "Enter a new value:")
+    if ret and tonumber(ret) then return tonumber(ret)
+    else return val end
+  else
+    return val * 2
+    end
+  end
+
+-- == screenshots menu ==
+function gameonly() return gamename == "auto" end
+function nogameonly() return gamename ~= "auto" end
+
+shotsmenu = {}
+
+addtomenu(shotsmenu, "b", writechoice("BMP"), function()
+    copymap()
+    drawdisplay()
+    local fname = shotdir..curdate()..".bmp"
+    saveimage(D.output, fname)
+    end
+  )
+
+addtomenu(shotsmenu, "h", writechoice("HTML"), function()
+    scrsave(S, shotdir..curdate()..".html", 0)
+    end
+  )
+
+addtomenu(shotsmenu, "p", writechoice("phpBB"), function()
+    scrsave(S, shotdir..curdate()..".txt", 1)
+    end
+  )
+
+-- == tech menu ==
+
+techmenu = {}
+
+addtomenu(techmenu, "r", writechoice("refresh NotEye script files"),
+  function()
+    print "Refreshing configuration."
+    justrefreshing = true
+    dofile(commondir.."generic.noe")
+    prepareconsole()
+    copymap()
+    if gamename ~= "auto" then startbyname(gamename) end
+    backwardcompatible()
+    prepareconsole()
+    justrefreshing = false
+    end
+  )
+
+if file_exists(gfxdir.."vapors.png") or file_exists(gfxdir.."rltiles.png") then
+  addtomenu(techmenu, "t", writechoice("tile test"),
+    function()
+      dofile(commondir.."tiletest.noe")
+      end
+    )
+  end
+
+addtomenu(techmenu, "c", writechoice("console helper"),
+  function()
+    conshelp = not conshelp
+    end
+  )
+
+addtomenu(techmenu, "k", writechoice("crash the script"),
+  function() 
+    error("user crashed the script")
+    end
+  )
+
+local lasteval = ""
+local evalnote = {}
+evalnote[0] = "No evaluation yet."
+
+addtomenu(techmenu, "e", writechoice("evaluate"),
+  function() 
+    while true do
+      local s = askstr(lasteval, "Evaluate what?", evalnote)
+      if not s then break end
+      
+      lasteval = s
+      local status, lastret = pcall(function () 
+        print("loadstring : "..lasteval)
+        return assert(loadstring(lasteval))()
+        end)
+      evalnote = {}
+      evalnote[1] = "Result:"
+      evalnote[3] = tostring(status)
+      evalnote[5] = tostring(lastret)
+      end
+    end
+  )
+
+-- == main menu ==
+
+mainmenu = {}
+
+-- == ok, done ==
+
+function noteyemenu()
+  textconsumed = true
+  fps.stop = getticks()
+  clearmoveanimations()
+  
+  menuexecute(mainmenu, mainhdr)
+  fps_init()
+  maptocopy = true
+  end
+
+-- these menus should be added to the bottom of the main menu,
+-- so we call moremenus() after including all files which put
+-- something in the menu
+
+function moremenus()
+  menuitems.screenshot = addtomenu(mainmenu, "g", writechoice("grab a screenshot"),
+    function()
+      menuexecute(shotsmenu, dfthdr("Select the screenshot format:\n\n\v7Screenshots saved to:\n\ve"..shotdir))
+      end,
+    gameonly
+    )
+  
+  menuitems.techmenu = addtomenu(mainmenu, "d", writechoice("NotEye development functions"),
+    function()
+      menuexecute(techmenu, dfthdr("NotEye stats:\n\n"..noteyestats().."\n\vaDevelopment functions:"))
+      end
+    )
+    
+  addtomenu(mainmenu, "q", writechoice("stop viewing mode"),
+    function()
+      stoploop = true
+      end,
+    function() return not viewmode end
+    )
+
+  addtomenu(mainmenu, "s", 
+    writechoicef(function()
+      return "save changes to: \ve"..getgameconfigname() end),
+    function()
+      savegameconfig()
+      end
+    )
+  
+  addtomenu(mainmenu, "e", 
+    writechoicef(function()
+      if autosaveconfig then
+        return "NotEye configuration is automatically saved upon exit"
+      else
+        return "NotEye configuration is not saved automatically"
+        end
+      end),
+    function()
+      pickbool("autosaveconfig", not autosaveconfig)
+      end
+    )
+  
+  -- this is executed after adding everything (sounds, keys etc) to the menu
+  if usermenus then usermenus() end
+  end
+
+aboutNoteye = 
+  "Necklace of the Eye "..noteyeversion.."\n"..
+  "(C) Zeno Rogue, 2010-2014\n"..
+  "\vfhttp://roguetemple.com/z/noteye.php\vp\n\n"..
+  "Necklace of the Eye (NotEye for short) is a roguelike framework. It can be\n"..
+  "used as a library for developing new roguelikes (or enriching the old ones),\n"..
+  "or act as a frontend for console and libtcod roguelikes.\n\n"..
+  "NotEye provides lots of fancy graphical modes (classic DOS-like ASCII, tiles, \n"..
+  "FPP, TPP, isometric), mouse support, scripting, taking HTML/phpBB screenshots, \n"..
+  "fullscreen, smooth movement of sprites, recording and viewing videos, live \n"..
+  "streaming, sound, and many more.\n\n"
+  
+noteyeLicense = 
+  "NotEye is distributed under GNU General Public License version 3 or later.\n"..
+  "It comes with absolutely no warranty; see the file COPYING for details.\n\n"
+
+pressENTER = "Press \veENTER\vp to return.\n\n"  
+
+addtomenu(mainmenu, "a", writechoice("about NotEye"),
+  function()
+    menuexecute({ }, dfthdr(
+      aboutNoteye..noteyeLicense..pressENTER      
+      ))
+    end
+  )
+
+errormenu = {}
+
+ignoreerrors = {}
+ignoreerrorlevel = 0
+
+addtomenu(errormenu, "p", writechoicef(
+  function() return "try to continue playing "..gamename end),
+  function() 
+    lasterror.handled = true
+    end
+  )
+
+addtomenu(errormenu, "s", writechoice("enable the safe mode"),
+  function() 
+    enablesafemode()
+    lasterror.handled = true
+    end
+  )
+
+addtomenu(errormenu, "i", writechoice("ignore this error in the future"),
+  function() 
+    ignoreerrors[lasterror.full] = true
+    lasterror.handled = true
+    return true
+    end,
+  function() return lasterror.notignorable end
+  )
+
+addtomenu(errormenu, "a", writechoicef( 
+  function() return "ignore all "..errorlevelnames[lasterror.level].." errors in the future" end),
+  function() 
+    ignoreerrorlevel = lasterror.level
+    lasterror.handled = true
+    return true
+    end
+  )
+
+addtomenu(errormenu, "t", writechoice("panic (propagate the error to crash the script and restart NotEye)"),
+  function() 
+    error(lasterror.msg)
+    end
+  )
+
+addtomenu(errormenu, "m", writechoice("ignore errors and go to the NotEye menu"),
+  function() 
+    panicmenu = true
+    lasterror.handled = true
+    end
+  )
+
+addtomenu(errormenu, "w", writechoice("copy error message to a file"),
+  function() 
+    fname = askstr(userdir.."error.txt", "Enter the filename", {})
+    if fname then
+      local file = io.open(fname, "w")
+      file:write("NotEye "..errorlevelnames[lasterror.level].." error report\n")
+      file:write("Error location: "..lasterror.where.."\n")
+      file:write("Error message: "..lasterror.msg.."\n")
+      file:close()
+      end
+    end
+  )
+
+-- error levels
+
+elMinor = 1
+elSerious = 2
+elCritical = 3
+
+errorlevelnames = {"minor", "serious", "critical"}
+
+function enablesafemode()
+  -- switch to the ASCII mode
+  setmode(modeASCII)
+  -- remove any modals
+  currentmodal = nil
+  end
+
+indent = 0
+
+function addindent()
+  k = ""
+  for i=1,indent do k = k.." " end
+  return k
+  end
+
+function noteye_pcall(where, level, dft, f, ...)
+  -- logprint2(addindent().."where = "..where)
+  indent = indent + 2
+  local status, value = pcall(f, unpack(arg))
+  indent = indent - 2
+  -- logprint2(addindent().."completed = "..where)
+  if status then 
+    return value
+  else
+    noteye_logerror(where, value)
+    local full = where.."@"..tostring(value)
+    
+    if panicmenu then
+      return dft
+    elseif ignoreerrors[full] or ignoreerrorlevel >= level then 
+      return dft
+    else
+      lasterror = {
+        where = where,
+        msg = value,
+        full = full,
+        level = level
+        }
+      hdr = "Error in the NotEye script\n"
+      hdr = hdr..noteye_support_address
+      hdr = hdr.."Location: "..where.." ("..errorlevelnames[level]..")\n"
+      hdr = hdr..tostring(value).."\n\n"
+      hdr = hdr..
+        "The game is still running, but there is some problem in the NotEye script\n"..
+        "providing the graphical interface, so usually this is recoverable.\n"..
+        "You could try to continue playing and see if there are more errors.\n"..
+        "If this does not work, try to switch to the ASCII mode ('safe mode').\n"..
+        "This disables graphics, but often lets you continue playing.\n"..
+        "You can also try to ignore this error, or to crash the script to restart it."
+      while not lasterror.handled do 
+        menuexecute(errormenu, dfthdr(hdr))
+        end
+      return dft
+      end
+    end
+  end
+
+function noteye_logerror(where, msg)
+  logprint2("ERROR: "..tostring(msg).."\nAT: "..where.."\n")
+  end
+

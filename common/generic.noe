@@ -1,0 +1,25 @@
+-- Necklace of the Eye v7.6 roguelike frontend
+-- Copyright (C) 2010-2014 Zeno Rogue, see noteye.noe for details
+
+-- this file simply includes all the generic NotEye scripts
+
+-- print("<NotEye reloaded>")
+-- logprint("<NotEye reloaded>")
+
+dofile(commondir.."vectors.noe")
+dofile(commondir.."util.noe")
+dofile(commondir.."menu.noe")
+dofile(commondir.."viewmodes.noe")
+dofile(commondir.."fonts.noe")
+dofile(commondir.."truetype.noe")
+
+dofile(commondir.."graphopt.noe")
+dofile(commondir.."palettes.noe")
+dofile(commondir.."keymap.noe")
+dofile(commondir.."sounds.noe")
+dofile(commondir.."streams.noe")
+dofile(commondir.."running.noe")
+dofile(commondir.."readmap.noe")
+dofile(commondir.."backward.noe")
+
+moremenus()

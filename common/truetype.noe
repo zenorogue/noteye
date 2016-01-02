@@ -1,0 +1,146 @@
+FontRender = newimage(16, 16)
+
+-- note: do not forget the alpha channel!
+
+effectBorder = {flags = 3}
+effectOnBlack = {on = 0xFF000000}
+
+function rendertext(font, size, text, color, img, where, align, effects)
+  ttfrender(font, size, tostring(text), color, FontRender, effects and effects.flags or 0)
+  local si = V.be(imggetsize(FontRender))
+  where = where + si * align
+  local ti = addtile(FontRender, 0, 0, si.x, si.y, transAlpha)
+  if effects then
+    if effects.cropto then 
+      where = V.cropto(where, rectTB(effects.cropto.top, effects.cropto.bot - si))
+      end
+    if effects.on then
+      drawtile(img, tileshade(effects.on), where.x, where.y, si.x, si.y)
+      end
+    end
+  drawtile(img, ti, where.x, where.y, si.x, si.y)
+  return rectTS(where, si)
+  end
+
+function renderlongtext(font, size, text, color, img, box, align, effects)
+  local lastspace
+  local i = 0
+  
+  local bt = box.top
+  
+  text = text.."\n"
+  
+  align = align or 0
+  
+  local tilex = 64
+  local tiley = 48
+  local width = 0
+  
+  while true do
+    while text:sub(1,2) == "\v*" do
+      local li = text:find("\n", 1)
+      local s = text:sub(3, li-1)
+      text = text:sub(li+1)
+      
+      if s:sub(1,1) == "f" then
+        font = _G[s:sub(2)]
+      
+      elseif s:sub(1,1) == "s" then
+        size = tonumber(s:sub(2)) or size
+        
+      elseif s:sub(1,2) == "tx" then
+        tilex = tonumber(s:sub(3)) or tilex
+        
+      elseif s:sub(1,2) == "ty" then
+        tiley = tonumber(s:sub(3)) or tiley
+        
+      elseif s:sub(1,2) == "td" then
+        local i = tonumber(s:sub(3))
+        if i then
+          bt = V(box.top.x - (box.size.x - tilex) * align, bt.y)
+          V.drawtile(img, i, rectTS(bt, V(tilex, tiley)))
+          bt = bt + V(0, tiley)
+          end
+        
+      elseif s == "al" then align = 0
+      elseif s == "ac" then align = -0.5
+      elseif s == "ar" then align = -1
+        end
+      end
+      
+    i = i + 1
+    
+    local printtext
+    local sxy
+    local c = text:sub(i,i)
+    
+    if c == "\n" then
+      printtext = true
+      sxy = ttfgetsize(font, size, text:sub(1, i-1), effect and effect.flags or 0)
+      if lastspace and sxy.x > box.size.x then 
+        i = lastspace
+        end
+      end
+    
+    if c == " " then
+      sxy = ttfgetsize(font, size, text:sub(1, i-1), effect and effect.flags or 0)
+      -- print("sizing '"..text:sub(1,i-1).."' "..sxy.x)
+      if lastspace and sxy.x > box.size.x then 
+        printtext = true
+        i = lastspace
+      else
+        lastspace = i
+        end
+      end
+    
+    local lasttextline
+
+    if printtext then
+      if i>1 then
+        bt = V(box.top.x - box.size.x * align, bt.y)
+        lasttextline = rendertext(font, size, text:sub(1, i-1), color, img, bt, V(align, 0), effects)
+        width = math.max(width, lasttextline.size.x)
+        end
+      bt = bt + V(0, sxy and sxy.y or size)
+      if bt.y > box.bot.y then 
+        local ret = V(width, box.size.y)
+        ret.lasttextline = lasttextline
+        return ret 
+        end
+      text = text:sub(i+1)
+      if text == "" then 
+        local ret = V(width, bt.y - box.top.y)
+        ret.lasttextline = lasttextline
+        return ret
+        end
+      i = 0
+      lastspace = nil
+      end
+    end
+  end
+
+-- pre-rendered texts
+
+function create_prerenderer(a)
+  a.size = a.size or 12
+  a.flags = a.flags or 0
+  a.color = a.color or 0xFFFFFFFF
+  a.apply = apply_prerenderer
+  return a
+  end
+
+function apply_prerenderer(a, str)
+  local rn = a[str]
+  if rn then
+    return rn
+    end
+  local im = newimage(8,8)
+  ttfrender(a.font, a.size, str, a.color, im, a.flags)
+  local si = V.be(imggetsize(im))
+  local t = addtile(im, 0, 0, si.x, si.y, transAlpha)
+  rn = {t = t, pic = im, size = si}
+  if a.process then a.process(rn, str, a) end
+  a[str] = rn
+  return rn
+  end
+

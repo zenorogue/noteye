@@ -1,0 +1,579 @@
+-- Necklace of the Eye v8.2 roguelike frontend
+-- Copyright (C) 2010-2015 Zeno Rogue, see noteye.noe for details
+
+-- various basic utilities
+
+function mround(x)
+  return math.floor(x + 0.5)
+  end
+
+function renewscreen(S, x, y)
+  if S then
+    local oldsize = scrgetsize(S)
+    if oldsize.x ~= x or oldsize.y ~= y then
+      scrsetsize(S, x, y)
+      end
+    return S
+  else
+    S = newscreen(x, y)
+    return S
+    end
+  end
+
+function addfield(t, name, v)
+  t["name"] = v
+  return t
+  end
+
+function file_exists(name)
+   local f=io.open(name,"r")
+   if f~=nil then io.close(f) return true else return false end
+end
+
+function file_copy(srcname, dstname)
+  local srcf = io.open(srcname, "rb")
+  local dstf = io.open(dstname, "wb")
+  local size = 8192
+  while true do
+    local block = srcf:read(size)
+    if not block then break end
+    dstf:write(block)
+    end
+
+  srcf:close()
+  dstf:close()
+  end
+
+function boolonoff(x)
+  return x and "on" or "off"
+  end
+
+function boolyesno(x)
+  return x and "yes" or "no"
+  end
+
+function booltf(x)
+  return x and "true" or "false"
+  end
+
+function curdate()
+  return os.date("%Y-%m-%d-%H-%M-%S")
+  end
+
+function ashex(v)
+  return string.format("%02X", v)
+  end
+
+-- table utilities
+
+function table.copy(t)
+  local t2 = {}
+  for k,v in pairs(t) do
+    t2[k] = v
+  end
+  return t2
+end
+
+function table.merge(t2, t)
+  for k,v in pairs(t) do
+    t2[k] = v
+  end
+  return t2
+end
+
+-- ascii value
+
+function av(x)
+  return string.byte(x,1)
+  end
+
+function avf(x)
+  return string.byte(x,1)
+  end
+
+-- various cell transformations
+
+TFUN_COPY = 0 -- just copy
+
+function cellshade(x)
+  if x == 0 then return 0 end
+  return tilemerge(tileshade(gba(x)), fixgp2(x))
+  end
+
+tmap_shade = newmapping(cellshade)
+
+function celltrans(x)
+  return fixgp2(x)
+  end
+
+tmap_trans = newmapping(celltrans)
+
+function celltransorshade(x)
+  local ba = gba(x)
+  if x == 0 or gchv(x) == 0 then
+    return x
+  elseif ba < 0 or ba == vgaget(0) then
+    return fixgp2(x)
+  else
+    return tilemerge(tileshade(ba), fixgp2(x))
+    end
+  end
+
+tmap_transorshade = newmapping(celltransorshade)
+
+hex808080 = tonumber("808080", 16)
+hexFFFFFF = tonumber("FFFFFF", 16)
+hexC0C0C0 = tonumber("C0C0C0", 16)
+hexF000000 = tonumber("F000000", 16)
+hexFF000000 = tonumber("FF000000", 16)
+
+function cellblack(x)
+  if bAND(gco(x),hexF000000) == 0 then return 0
+  else
+    return tilecol(fixgp2(x), hexFF000000, recMult)
+    end
+  end
+
+function cellbigblack(x)
+  if bAND(gco(x),hexF000000) == 0 then return 0
+  else
+    return mapapply(tmap_bigaux, tilecol(fixgp2(x), 0, recDefault))
+    -- x)
+    end
+  end
+
+function fixgp2(x)
+  local z = gp2(x)
+  if z < 0 then return 0 end
+  return z
+  end
+
+tmap_black = newmapping(cellblack)
+tmap_bigaux = newmapping(cellbigaux)
+tmap_bigblack = newmapping(cellbigblack)
+
+function cellbigaux(x)
+  local ch = gch(x)
+  local fo = gimg(x)
+  for k,v in pairs(Fonts) do
+    if fo == v.png then 
+      if not v.bordfont then createborderversion(v) end
+      return tiletransform(fget(v.bordfont, ch), -1/(v.size.x+2), -1/(v.size.y+2), (v.size.x+2)/v.size.x, (v.size.y+2)/v.size.y)
+      end
+    end
+  return x
+  end
+
+
+function cellbackshade(x)
+  if x==0 then return 0 end
+  return tileshade(gba(x))
+  end
+
+tmap_backshade = newmapping(cellbackshade)
+
+function cellbackshade75(x)
+  if x==0 then return 0 end
+  return tilealpha(gba(x), hexC0C0C0)
+  end
+
+tmap_backshade75 = newmapping(cellbackshade75)
+
+function cellbackfull(x)
+  if x==0 then return 0 end
+  return tilefill(gba(x))
+  end
+
+tmap_backfull = newmapping(cellbackfull)
+
+function cellblacknb(x)
+  return tilecol(x, hexFF000000, recMult)
+  end
+
+tmap_blacknb = newmapping(cellblacknb)
+
+function cellblacknbbig(x)
+  return mapapply(tmap_bigaux, tilecol(x, 0, recDefault))
+  end
+
+tmap_blacknbbig = newmapping(cellblacknbbig)
+
+function getlayerX(val)
+  if val >= 0 and val < 16 then
+    return TMAP_LAYER + val
+  else
+    return function(x) return getlayer(x, val) end
+    end
+  end
+
+-- identity matrix
+ffid = freeformparam(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)
+
+-- two-sided identity matrix
+ffid_0 = freeformparam(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)
+freeformparamflags(ffid_0, 0, false)
+
+-- profiling
+
+if not profiling then profiling = {} profilingq = {} end
+
+function profstart(x)
+  if not profiling[x] then profiling[x] = 0 profilingq[x] = 0 end
+  profiling[x] = profiling[x] - os.clock()
+  profilingq[x] = profilingq[x] + 1
+end
+
+function profend(x)
+  profiling[x] = profiling[x] + os.clock()
+end
+
+function profinfo()
+  logprint2("profile results:\n")
+  for k,v in pairs(profiling) do
+    logprint2(k.."="..v.." ("..profilingq[k]..")\n")
+    end
+  logprint2("\n")
+  end
+
+-- functions and constants which were once in the NotEye engine,
+-- but were removed due to new features
+
+function tilefill(x)
+  return tilealpha(x, hexFFFFFF)
+  end
+
+function tileshade(x)
+  return tilealpha(x, hex808080)
+  end
+
+function tilerecolor(x, y)
+  return tilecol(x, y, recDefault)
+  end
+
+spIWall = spIWallL + spIWallR
+spWall = spWallN + spWallE + spWallS + spWallW
+
+function tiletransform(t1, dx,dy, sx,sy)
+  return tilexf(t1,dx,dy,sx,sy,0,0)
+  end
+
+function tilemerge3(a,b,c)
+  return tilemerge(tilemerge(a,b),c)
+  end
+
+function tilemerge4(a,b,c,d)
+  return tilemerge(tilemerge3(a,b,c),d)
+  end
+
+-- config scripts
+if not cfgscripts then
+  cfgscripts = {}
+  end
+
+function getgameconfigname()
+  return string.gsub(configfileformat, "GAMENAME", gamename)
+  end
+
+local delayconfig_table
+
+function delay_if_loading_config(name, action)
+  if delayconfig_table then
+    delayconfig_table[name] = action
+  else action()
+    end
+  end
+
+function loadgameconfig()
+  if not crashsafe then
+    local s = getgameconfigname()
+    if file_exists(s) then
+      delayconfig_table = { }
+
+      noteye_pcall("loadgameconfig", 1, nil, function() dofile(s) end)
+      for k,v in pairs(delayconfig_table) do v() end
+      end
+    end
+  end
+
+function savegameconfigonexit()
+  if autosaveconfig then
+    savegameconfig()
+    end
+  end
+
+function savegameconfig()
+  local s = getgameconfigname()
+  logprint2("saving the configuration to: "..s)
+  
+  local file = io.open(s, "w")
+  for k,v in pairs(cfgscripts) do
+    v(file)
+    end
+  file:close()
+  end
+
+function getnameintable(x, tab)
+  for k,v in pairs(tab) do
+    --print("check: "..k)
+    if x == v then return k
+      end
+    end
+  return nil
+  end
+
+function pickbool(title, value)
+  cfgscripts["bool_"..title] = function(file)
+    file:write("pickbool(\""..title.."\","..booltf(value)..")\n")
+    end
+  _G[title] = value
+  end
+
+function picknumber(title, value)
+  cfgscripts["number_"..title] = function(file)
+    file:write("picknumber(\""..title.."\","..value..")\n")
+    end
+  _G[title] = value
+  end
+
+pickinteger = picknumber
+
+function pickstring(title, value)
+  cfgscripts["string_"..title] = function(file)
+    if value then
+      file:write("pickstring(\""..title.."\",\""..value.."\")")
+    else
+      file:write("pickstring(\""..title.."\", nil)\n")
+      end
+    end
+  _G[title] = value
+  end
+
+function pickvector(title, value)
+  cfgscripts["vector_"..title] = function(file)
+    if value then
+      file:write("pickvector(\""..title.."\",V"..tostring(value)..")\n")
+    else
+      file:write("pickvector(\""..title.."\", nil)\n")
+      end
+    end
+  _G[title] = value
+  end
+
+-- key base
+
+dofile(commondir.."sdlkeys.noe")
+
+-- create the KEYS table
+
+KEYS = {}
+
+for k,v in pairs(SDLK) do
+  KEYS[k] = { keycode = v, scancode = SDL_GetScancodeFromKey(v) }
+  end
+
+keysmt = {}
+
+function keysmt.__index(t, index)
+  logprint2("WARNING: key not found: "..index)
+  return {keycode=0, scancode=0}
+  end
+
+setmetatable(KEYS, keysmt)
+
+function modshiftpressed(mod)
+  sh = false
+  if bAND(mod, KMOD.LSHIFT + KMOD.RSHIFT) > 0 then sh = true end
+  if bAND(mod, KMOD.CAPS) > 0 then sh = not sh end
+  return sh
+  end
+
+function conschar(pressed)
+  if pressed.char and type(pressed.char) == "number" then
+    i = pressed.char
+    if i<0 then i = i + 256 end
+    i = i % 256
+    return string.char(i)
+    end
+  return "?"
+  end
+
+function iskey(pressed, iswhat)
+  if pressed.type == evKeyConsole and iswhat.console then
+    return iswhat.console == conschar(pressed)
+    end
+  if not pressed then
+    logprint2(debug.traceback())
+    end
+  if iswhat.shift and not modshiftpressed(pressed.mod) then
+    return false
+    end
+  if iswhat.noshift and modshiftpressed(pressed.mod) then
+    return false
+    end
+  if iswhat.mod and iswhat.mod ~= pressed.mod then return false end
+  return pressed.scancode == iswhat.scancode
+  end
+
+function keychr(pressed)
+  if pressed.keycode and pressed.keycode > 0 and pressed.keycode < 128 then
+    return string.char(pressed.keycode)
+    end
+  return nil
+  end
+
+function createkeydown(what)
+  return {scancode = what.scancode, keycode = what.keycode, mod = what.mod or 0, type = evKeyDown}
+  end
+
+function createkeyup(what)
+  return {scancode = what.scancode, keycode = what.keycode, mod = what.mod or 0, type = evKeyUp}
+  end
+
+function nsendkeystr(text, t)
+  for k = 1, string.len(text) do
+    what = {keycode = string.byte(text, k), mod = 0}
+
+    if what.keycode >= 65 and what.keycode <= 90 then
+      what.keycode = what.keycode + 32
+      what.mod = KMOD_LSHIFT
+      end
+      
+    if what.keycode >= 1 and what.keycode <= 26 then
+      what.keycode = what.keycode + 96
+      what.mod = KMOD_LCTRL
+      end
+    
+    what.scancode = SDL_GetScancodeFromKey(what.keycode)
+    nsendkey2(what, t)
+    end
+  end
+
+function assignkey(ev, what)
+  ev.keycode = what.keycode
+  ev.scancode = what.scancode
+  ev.mod = what.mod or ev.mod
+  end
+
+-- to do: accept both mod keys
+function addmod(key, mod)
+  return {scancode = key.scancode, keycode = key.keycode, mod = mod}
+  end
+
+function addshift(key)
+  return {scancode = key.scancode, keycode = key.keycode, shift = true}
+  end
+
+function addnoshift(key)
+  return {scancode = key.scancode, keycode = key.keycode, noshift = true}
+  end
+
+function shiftpressed()
+  return getkeystate(SDLSCAN.LSHIFT) > 0 or getkeystate(SDLSCAN.RSHIFT) > 0
+  end
+
+function ctrlpressed()
+  return getkeystate(SDLSCAN.LCTRL) > 0 or getkeystate(SDLSCAN.RCTRL) > 0
+  end
+
+function altpressed()
+  return getkeystate(SDLSCAN.LALT) > 0 or getkeystate(SDLSCAN.RALT) > 0
+  end
+
+config_variables = {}
+
+config_variables_ordered = {}
+
+function noteye_config_variable(name, dft, text, moreinfo)
+  moreinfo = moreinfo or {}
+  config_variables[name] = moreinfo
+  moreinfo.name = name
+  moreinfo.type = moreinfo.type or type(dft)
+  moreinfo.dft = dft
+  moreinfo.description = text
+  moreinfo.getter = moreinfo.getter or default_getter
+  moreinfo.setter = moreinfo.setter or default_setter
+  if _G[name] == nil then
+    _G[name] = dft
+    end
+  table.insert(config_variables_ordered, name)
+  end
+
+function noteye_config_variable_listing()
+  for k,w in pairs(config_variables_ordered) do
+    local v = config_variables[w]
+    local s = v.name.." ("..v.type..")"
+    s = s..": "..v.description
+    if not v.fake then
+      s = s.." (default: "..tostring(v.dft)..")"
+      end
+    logprint2(s)
+    if v.options then 
+      for k,v in pairs(v.options) do
+        logprint2("  "..k.." : "..v)
+        end
+      end
+    end
+  end
+
+function printtable(t)
+  local s = ""
+  for k,v in pairs(t) do s = s .. k .. ": " .. tostring(v) .. "\n" end
+  return s
+  end
+
+function stringornil_setter(x, v)
+  if x == "" then x =  nil end
+  _G[v.name] = x
+  end
+
+function stringornil_getter(v)
+  if _G[v.name] then return _G[v.name] end
+  return ""
+  end
+
+function default_setter(x, v)
+  if v.type == "number" and tonumber(x) then
+    _G[v.name] = tonumber(x)
+    if not v.nosave then picknumber(v.name, tonumber(x)) end
+  elseif v.type == "string" then
+    _G[v.name] = x
+    if not v.nosave then pickstring(v.name, x) end
+  elseif v.type == "boolean" then
+    _G[v.name] = x == "true"
+    if not v.nosave then pickbool(v.name, x == "true") end
+  elseif v.type == "vector" and parsevector(x) then
+    local xv = parsevector(x)
+    _G[v.name] = xv
+    if not v.nosave then pickvector(v.name, xv) end
+    end
+  end
+
+function default_getter(v)
+  return tostring(_G[v.name])
+  end
+
+function noteye_config_variable_change(name, value)
+  local c = config_variables[name]
+  if c then
+    c.setter(value, c)
+    end
+  end
+
+function logprint2(x)
+  if not haveascii then print(x) end
+  logprint(x)
+  end
+
+noteye_config_variable("diaglayoutid", 7, "layout for diagonal keys (0-6)", c)
+
+noteye_config_variable("autosaveconfig", true, "save NotEye settings automatically?")
+
+function addusermod(x)
+  cfgscripts["addusermod_"..x] = function(file)
+    file:write("addusermod(\""..x.."\")\n")
+    end
+  status,value = pcall(function() dofile(userdir..x) end)
+  if not status then
+    logprint2("Error adding usermod: "..value)
+    end
+  end

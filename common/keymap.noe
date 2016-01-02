@@ -1,0 +1,735 @@
+-- Necklace of the Eye v8.2 roguelike frontend
+-- Copyright (C) 2010-2015 Zeno Rogue, see noteye.noe for details
+
+-- Various functions, related to keyboard input somehow
+
+keysmenu = {}
+
+-- directions and keys for them
+
+-- direction 0 is right, and then we go anti-clockwise
+
+keytabs = {}
+
+function addkeytab(name, t, kt)
+  t2 = {}
+  for k,v in pairs(t) do t2[k-1]=v end
+  t2.ktype = kt
+  keytabs[name] = t2
+  keytabs[name].name = name
+  end
+
+addkeytab("numpad", {KEYS.KP_6, KEYS.KP_9, KEYS.KP_8, KEYS.KP_7, KEYS.KP_4, KEYS.KP_1, KEYS.KP_2, KEYS.KP_3, KEYS.KP_5}, 8)
+addkeytab("number", {KEYS.d6, KEYS.d9, KEYS.d8, KEYS.d7, KEYS.d4, KEYS.d1, KEYS.d2, KEYS.d3, KEYS.d5}, 8)
+addkeytab("arrow", {KEYS.RIGHT, KEYS.PAGEUP, KEYS.UP, KEYS.HOME, KEYS.LEFT, KEYS.END, KEYS.DOWN, KEYS.PAGEDOWN}, 4)
+addkeytab("vi", {KEYS.l, KEYS.u, KEYS.k, KEYS.y, KEYS.h, KEYS.b, KEYS.j, KEYS.n}, 8)
+addkeytab("vidot", {KEYS.l, KEYS.u, KEYS.k, KEYS.y, KEYS.h, KEYS.b, KEYS.j, KEYS.n, KEYS.PERIOD}, 8)
+addkeytab("pseudovi", {KEYS.j, KEYS.i, KEYS.u, KEYS.y, KEYS.h, KEYS.b, KEYS.n, KEYS.m}, 8)
+addkeytab("left", {KEYS.d, KEYS.e, KEYS.w, KEYS.q, KEYS.a, KEYS.z, KEYS.x, KEYS.c}, 8)
+addkeytab("wasd", {KEYS.d, KEYS.u, KEYS.w, KEYS.y, KEYS.a, KEYS.b, KEYS.s, KEYS.n}, 4)
+
+dirkeys = keytabs.numpad
+
+keymaps = {}
+gotKeymaps = {}
+
+function addkeymap(name, dname, map, extra)
+  local K = {}
+  K.name = name
+  K.dname = dname
+  K.map = map
+  K.extra = extra
+  table.insert(gotKeymaps, K)
+  keymaps[name] = K
+  end
+
+addkeymap("none", "none", nil, nil)
+addkeymap("vi", "YUHJKLBN (VI keys)", keytabs.vi, nil)
+addkeymap("pseudovi", "YUIHJBNM (pseudo VI)", keytabs.pseudovi, nil)
+addkeymap("pseudoviR", "YUIHJBNM + remap KL", keytabs.pseudovi, switchKL)
+addkeymap("wasd", "WASD", keytabs.wasd, nil)
+addkeymap("wasdR", "WASD + remaps", keytabs.wasd, switchWASD)
+addkeymap("qweadzxc", "QWEADZXC", keytabs.left, nil)
+addkeymap("qweadzxcR", "QWEADZXC + remaps", keytabs.left, switchLeft)
+
+currentKeymap = initialKeymap or keymaps.none
+lastKeymap = nil
+
+-- DIRECTION KEY PREPROCESSING 
+--=============================
+
+-- facing, for the FPP display
+
+facedir = 0
+
+-- change face by 'd'
+function changeface(d, type)
+  ofd = facedir
+  if gamefourdir or (gamehexdir and ((ofd+d) % 4 ==2)) then 
+    d = 2*d
+    end
+  
+  if type == evKeyDown or type == evKeyDownText or type == evKeyBoth or type == evKeyBothText then
+    facedir = ofd + d
+    setfacedir(facedir)
+    end
+  end
+
+-- name, diagleft, diagright, diagpandora, combo
+
+diaglayouts = {
+  {"L/R \vp+\ve both shift/ctrl", true, true, false, 0},
+  {"L/R \vp+\ve left shift/ctrl", true, false, false, 0},
+  {"L/R \vp+\ve right shift/ctrl", false, true, false, 0},
+  {"U/D \vp+\ve right shift/ctrl (Pandora)", false, false, true, 0},
+  {"off", false, false, false, 0},
+  {"L/R plus U/D (arrow keys only)", false, false, false, 4},
+  {"L/R plus U/D (arrow keys and numpad)", false, false, false, 8}
+  };
+
+local c = {options = {}}
+for k=1,7 do c.options[k] = diaglayouts[k][1] end
+
+noteye_config_variable("diaglayoutid", 7, "layout for diagonal keys (0-6)", c)
+
+function namediag()
+  return diaglayouts[diaglayoutid][1]
+  end
+
+diaglayoutmenu = {}
+
+for i,v in pairs(diaglayouts) do
+  addtomenu(diaglayoutmenu, string.char(96+i),
+    writechoice(diaglayouts[i][1]),
+    function()
+      picknumber("diaglayoutid", i)
+      end
+    )
+  end
+
+addtomenu(keysmenu, "d", writechoicef(function() return "diagonal movement with arrow keys: \ve"..namediag() end),
+  function ()
+    -- diaglayoutid = diaglayoutid + 1
+    -- if not diaglayouts[diaglayoutid] then diaglayoutid = 1 end
+    menuexecute(diaglayoutmenu, dfthdr("pick your diagonal movement layout:"))
+    return false
+    end
+  )
+
+-- modifier key used for diagonal movement
+-- (usually depends on config, returns 0 if this config option is off)
+
+function upmodifier()
+  return (diaglayouts[diaglayoutid][2] and KMOD.LSHIFT or 0) + (diaglayouts[diaglayoutid][3] and KMOD.RSHIFT or 0)
+  end
+
+function downmodifier()
+  return (diaglayouts[diaglayoutid][2] and KMOD.LCTRL or 0) + (diaglayouts[diaglayoutid][3] and KMOD.RCTRL or 0)
+  end                                           
+
+function leftmodifier()
+  return (diaglayouts[diaglayoutid][4] and KMOD.RSHIFT or 0)
+  end
+
+function rightmodifier()
+  return (diaglayouts[diaglayoutid][4] and KMOD.RCTRL or 0)
+  end
+
+-- is the modifier key (e.g., KMOD_LALT for the left ALT) active? 
+function modon(ev, x)
+  return bAND(ev.mod, x) > 0 
+  end
+
+-- should we add up/down to a cursor because Shift/Ctrl has been pressed,
+-- and the respective config option is on?
+
+function modup(ev)
+  return modon(ev, upmodifier())
+  end
+
+function moddn(ev)
+  return modon(ev, downmodifier())
+  end
+
+function modleft(ev)
+  return modon(ev, leftmodifier())
+  end
+
+function modright(ev)
+  return modon(ev, rightmodifier())
+  end
+
+-- left/right keys + shift/ctrl = diagonal movement
+
+function keytranslate(ev, from, mod, to)
+  if iskey(ev, from) and mod(ev) then
+    assignkey(ev, to)
+    ev.mod = 0
+    end
+  end
+
+function modupdown(ev)
+  keytranslate(ev, KEYS.RIGHT, modup, KEYS.PAGEUP)
+  keytranslate(ev, KEYS.RIGHT, moddn, KEYS.PAGEDOWN)
+  keytranslate(ev, KEYS.LEFT, modup, KEYS.HOME)
+  keytranslate(ev, KEYS.LEFT, moddn, KEYS.END)
+  
+  keytranslate(ev, KEYS.UP, modleft, KEYS.HOME)
+  keytranslate(ev, KEYS.UP, modright, KEYS.PAGEUP)
+  keytranslate(ev, KEYS.DOWN, modleft, KEYS.END)
+  keytranslate(ev, KEYS.DOWN, modright, KEYS.PAGEDOWN)
+  end
+
+-- should we rotate keys entered?
+
+function dorotate(ev)
+  return mapon
+  end
+
+function modeRotatable()
+  return (mode == modeFPP) or (mode == modeTPP and tppAutoFacing)
+  end
+
+function allowcombos(dirmap)
+  return dirmap.ktype <= diaglayouts[diaglayoutid][5] 
+    and not modeRotatable()
+  end
+
+diagcombo = V(0,0)
+diagcombo_in = {}
+diagcombo_repeat = false
+
+function usefordiagcombo(ev, x)
+  if ev.type == evKeyDownText then
+    --for k,v in pairs(ev) do print(k.."="..tostring(v)) end
+    if x == 0 and diagcombo.x<1 then diagcombo.x = diagcombo.x + 1 end
+    if x == 2 and diagcombo.y>-1 then diagcombo.y = diagcombo.y - 1 end
+    if x == 4 and diagcombo.x>-1 then diagcombo.x = diagcombo.x - 1 end
+    if x == 6 and diagcombo.y<1 then diagcombo.y = diagcombo.y + 1 end
+    if x == 0 or x == 2 or x == 4 or x == 6 then diagcombo_in[x] = true end
+    if ev.repeated then
+      local d = vectodir(diagcombo, 0)
+      ev.type = evKeyBothText
+      diagcombo_repeat = true
+      return d
+      end
+    ev.type = evKeyIgnore
+
+  elseif ev.type == evKeyUp then
+    if x == 0 or x == 4 or x == 2 or x == 6 then diagcombo_in[x] = nil end
+    local empty = true
+    for k,v in pairs(diagcombo_in) do empty = false end
+    if empty then
+      if diagcombo_repeat then
+        diagcombo_repeat = false
+        diagcombo = V(0,0)
+      else
+        local d = vectodir(diagcombo, 0)
+        diagcombo = V(0,0)
+        ev.type = evKeyBothText
+        return d
+        end
+      end
+    ev.type = evKeyIgnore
+  
+  else
+    logprint2("warning: ev.type not supported by usefordiagcombo")
+    end
+  end
+
+evKeyBoth = {}
+evKeyIgnore = {}
+evKeyBothText = {}
+evKeyDownText = {}
+
+function evHasKeyDown(ev)
+  return ev.type == evKeyDown or ev.type == evKeyBoth or ev.type == evKeyBothText or ev.type == evKeyDownText
+  end
+
+function evHasKeyUp(ev)
+  return ev.type == evKeyUp or ev.type == evKeyBoth or ev.type == evKeyBothText
+  end
+
+function sayev(ev)
+  t = ""
+  for k,v in pairs(ev) do 
+    t = t .. "; "..k.." = "..tostring(v)
+    end
+  return t
+  end
+
+function move_in_direction(ev, x)
+  assignkey(ev, dirkeys[x])
+  end
+
+function rotatekey_dir(ev, x, kt)
+  if mode == modeTiles or mode == modeASCII or mode == modeMini or mode == modeMed or not mapon then
+    setfacedir(x)
+    move_in_direction(ev, x)
+    return 1
+  elseif mode == modeISO then
+    move_in_direction(ev, (1+x)%8)
+    return 1
+  elseif mode == modeTPP and not tppAutoFacing then
+    local idx = math.floor((facedir+6+x)%8)
+    move_in_direction(ev, idx)
+    return 1
+  elseif x == 4 and kt == 4 then changeface(1, ev.type) ev.type = evKeyIgnore return 2
+  elseif x == 0 and kt == 4 then changeface(-1, ev.type) ev.type = evKeyIgnore return 2
+  elseif x == 1 then changeface(-1, ev.type) ev.type = evKeyIgnore return 2
+  elseif x == 3 then changeface( 1, ev.type) ev.type = evKeyIgnore return 2
+  elseif x == 5 then changeface( 2, ev.type) ev.type = evKeyIgnore return 2
+  elseif x == 7 then changeface(-2, ev.type) ev.type = evKeyIgnore return 2
+  else 
+    if x == -1 then x = 8 end
+    local idx = math.floor((facedir+6+x)%8)
+    if not dirkeys[idx] then return 2 end
+    move_in_direction(ev, idx)
+    return 1
+    end
+  end
+
+-- adjust the direction key entered to the current perspective  
+function rotatekey_dirmap(ev, dirmap)
+  if not dirmap then return end
+  for x=0,8 do 
+    if dirmap[x] and iskey(ev, dirmap[x]) then
+      consumetext(ev)
+      
+      if x == 8 then
+        move_in_direction(ev, x)
+        return 1
+        end
+          
+      if allowcombos(dirmap) and (x%2 == 0) then
+        x = usefordiagcombo(ev, x)
+        
+        if x == 8 or x == -1 then
+          move_in_direction(ev, 8)
+          return 1
+          end
+          
+        if not x then return 1 end
+        end
+      
+      return rotatekey_dir(ev, x, dirmap.ktype)
+      end
+    end
+  if dirmap[8] and iskey(ev, dirmap[8]) then
+     return 1
+    end
+  return nil
+  end
+
+-- preprocess and send the direction key to the game/server
+function rotatekey_all(ev)
+  modupdown(ev)
+  if dorotate(ev) then
+    return
+      rotatekey_dirmap(ev, currentKeymap.map) or 
+      (rotatenumpad and rotatekey_dirmap(ev, keytabs.numpad)) or 
+      (rotatearrowkeys and rotatekey_dirmap(ev, keytabs.arrow)) or
+      (currentKeymap.extra and currentKeymap.extra(ev))
+    end
+  end
+
+function switchKL(ev)
+  if iskey(ev, KEYS.k) then assignkey(ev, KEYS.m) end
+  if iskey(ev, KEYS.l) then assignkey(ev, KEYS.i) end
+  return 0
+  end
+
+function switchLeft(ev)
+  if iskey(ev, KEYS.y) then assignkey(ev, KEYS.q) end
+  if iskey(ev, KEYS.u) then assignkey(ev, KEYS.e) end
+  if iskey(ev, KEYS.b) then assignkey(ev, KEYS.z) end
+  if iskey(ev, KEYS.n) then assignkey(ev, KEYS.c) end
+  if iskey(ev, KEYS.h) then assignkey(ev, KEYS.a) end
+  if iskey(ev, KEYS.j) then assignkey(ev, KEYS.x) end
+  if iskey(ev, KEYS.k) then assignkey(ev, KEYS.w) end
+  if iskey(ev, KEYS.l) then assignkey(ev, KEYS.d) end
+  return 0
+  end
+
+function switchWASD(ev)
+  if iskey(ev, KEYS.h) then assignkey(ev, KEYS.a) end
+  if iskey(ev, KEYS.j) then assignkey(ev, KEYS.s) end
+  if iskey(ev, KEYS.k) then assignkey(ev, KEYS.w) end
+  if iskey(ev, KEYS.l) then assignkey(ev, KEYS.d) end
+  return 0
+  end
+
+havemusic = true
+havebrogue = true
+
+useuserremaps = gotuserremaps and not remapsoff
+
+cphase = 0
+
+menuF4 = true
+menuBracket = true
+menuCtrlM = true
+
+function ismenukey(ev)
+  if menuF4 and ev.type == evKeyDown and iskey(ev, KEYS.F4) then
+    return true
+  elseif menuBracket and ev.type == evKeyDown and ev.keycode == 29 then
+    return true
+  elseif menuBracket and ev.type == evKeyConsole and ev.char == 29 then
+    return true
+  elseif menuCtrlM and ev.type == evKeyDown and iskey(ev, KEYS.m) and ctrlpressed() then
+    return true
+    end
+  return false
+  end
+
+function isfullscreenkey(ev)
+  return ev.type == evKeyDown and iskey(ev, KEYS.RETURN) and altpressed()
+  end
+
+function applyfullscreenkey(ev)
+  pickfull(not fscr, fscrmode)
+  end
+
+-- user configurable keymapping
+
+if not userkeyremaps then
+  userkeyremaps = {}
+  end
+
+function remapkey(_orig, _new, _cond)
+  gotuserremaps = true
+  useuserremaps = not remapsoff
+  table.insert(userkeyremaps, {orig = _orig, new = _new, cond = _cond})
+  end
+
+function ingame(G) return function(ev) return gamename == G and not inmenu end end
+function inallgames(ev) return not inmenu end
+function inallmenus(ev) return inmenu end
+function onlymenu(M) return function(ev) return inmenu == M end end
+function onlymap(c) return function(ev) return mapon and c(ev) end end
+
+function userremap(ev)
+  if not useuserremaps then return end
+  for k,v in pairs(userkeyremaps) do
+    if iskey(ev, v.orig) and v.cond(ev) then
+      assignkey(ev, v.new)
+      return
+      end
+    end
+  end
+
+-- is the key a modifier key?
+function modkey(key)
+  return 
+    iskey(key, KEYS.LSHIFT) or 
+    iskey(key, KEYS.LCTRL) or
+    iskey(key, KEYS.RSHIFT) or 
+    iskey(key, KEYS.RCTRL) or
+    iskey(key, KEYS.LALT) or 
+    iskey(key, KEYS.RALT)
+  end
+
+-- == keys menu ==
+
+menuitems.letterinput =
+addtomenu(keysmenu, "k", writechoicef(function() return "letters as directions: \ve"..currentKeymap.dname end),
+  function ()
+    if lastkeymap and not keymapidx then
+      currentKeymap,lastkeymap = lastkeymap, currentKeymap
+      keymapidx = (currentKeymap == gotKeymaps[1]) and 1 or 0
+      pickkeymap(currentKeymap)
+    else
+      if not lastkeymap then lastkeymap = currentKeymap end
+      if not keymapidx then 
+        keymapidx = (currentKeymap == gotKeymaps[1]) and 1 or 0
+        end
+      keymapidx = keymapidx + 1
+      if keymapidx > #gotKeymaps then keymapidx = 1 end
+      currentKeymap = gotKeymaps[keymapidx]
+      pickkeymap(currentKeymap)
+      end
+    return true
+    end
+  )
+
+function pickkeymap(ckm)
+  cfgscripts.keymap = function(file)
+    file:write("pickkeymap(keymaps."..ckm.name..")\n")
+    end
+  currentKeymap = ckm
+  end
+
+addtomenu(keysmenu, "r", writechoicef(function() return "user keymap (config.noe): \ve"..boolonoff(useuserremaps) end),
+  function()
+    useuserremaps = not useuserremaps
+    return 1
+    end,
+  function() return not gotuserremaps end
+  )
+
+menuitems.rotatenumpad =
+addtomenu(keysmenu, "n", writechoicef(function() return "rotate/translate numpad: \ve"..boolonoff(rotatenumpad) end),
+  function ()
+    pickrotate(not rotatenumpad, rotatearrowkeys)
+    return true
+    end
+  )
+
+menuitems.rotatearrowkeys =
+addtomenu(keysmenu, "a", writechoicef(function() return "rotate/translate arrowkeys: \ve"..boolonoff(rotatearrowkeys) end),
+  function ()
+    pickrotate(rotatenumpad, not rotatearrowkeys)
+    return true
+    end
+  )
+
+function pickrotate(rnp, rak)
+  cfgscripts.rotate = function(file)
+    file:write("pickdiag("..booltf(rnp)..","..booltf(rak)..")\n")
+    end
+  rotatenumpad = rnp
+  rotatearrowkeys = rak
+  end
+
+
+menuitems.keyconfig = addtomenu(mainmenu, "k", writechoice("configure keyboard input"),
+  function()
+    keymapidx = nil
+    menuexecute(keysmenu, dfthdr(
+      "NotEye is able to preprocess the keyboard input for you.\n\n"..
+      "When playing in the Isometric or FPP mode, you probably want the direction\n"..
+      "keys to act intuitively. NotEye rotates them for you.\n\n"..
+      "Many modern keyboards lack the numpad, and thus lack an easy way to move\n"..
+      "diagonally in roguelikes. NotEye can solve that by allowing diagonal\n"..
+      "movement with \veShift/Ctrl + Left/Right arrow\vp, combinations of two arrow\n"..
+      "keys, or by using a letter layout (such as \veQWEADZXC\vp, \veYUIHJBNM\vp, \n"..
+      "or the \veVI keys\vp).\n\n"..
+      "NotEye will output directions in the way expected by the roguelike.\n"..
+      "For example, if a roguelike understands only the VI keys, then arrow\n"..
+      "keys, numpad, and/or letter layout will be translated to VI keys.\n\n"..
+      "Configure input:"
+      ))
+    end
+  )
+
+function sendvector(v)
+  local maxmoves = 500
+  while maxmoves > 0 and (v.x ~= 0 or v.y ~= 0) do
+    maxmoves = maxmoves - 1
+    d = vectodir(v, 0)
+    -- print("v relative: "..tostring(v).." d="..d)
+    if d and d ~= -1 then
+      nsendkey2(dirkeys[d], evKeyBothText)
+      -- sendrotated(ev)
+      v = v - dirtovec[d]
+      end
+    end
+  end
+
+-- joystick handling
+
+joypos = V(0,0)
+joymax = V(0,0)
+joyscroll = V(0,0)
+
+joythreshold = joythreshold or 6000
+joyathreshold = joyathreshold or 3000
+joyscrollthreshold = joyscrollthreshold or 1000
+joyballfactor = joyballfactor or 0.1
+spdJoyScrolling = spdJoyScrolling or 10000
+
+joystickEnabled = joystickEnabled or false
+enablejoysticks(joystickEnabled)
+
+menuitems.joystick = addtomenu(keysmenu, "j", writechoice("configure joysticks (experimental)"),
+  function ()
+    menuexecute(joysmenu, dfthdr(
+      "Configure joysticks\n\n"..
+      "If you have analog joysticks or gamepads,\n"..
+      "you can use them to control the game or scroll the screen.\n\n"..
+      "This is an experimental feature. Development in progress."
+      ))
+    return true
+    end
+  )
+
+joysmenu = {}
+
+addtomenu(joysmenu, "e", writechoicef(
+  function() 
+    return "joystick support enabled: \ve"..boolonoff(joystickEnabled)
+    end),
+  function()
+    pickbool("joystickEnabled", not joystickEnabled)
+    enablejoysticks(joystickEnabled)
+    return joystickEnabled
+    end
+  )
+
+addtomenu(joysmenu, "j", writechoicef(
+  function() 
+    return "joystick threshold: \ve"..joythreshold.."\vp auto = \ve"..(joyathreshold or "OFF")
+    end),
+  function()
+    scrollhelp = {
+      "You can use an analog joystick to move.\n"..
+      "Smaller threshold values make the joystick more sensitive.\n"..
+      "If the 'auto-threshold' value is not set,\n"..
+      "  just push the joystick into some direction and press the button.\n"..
+      "Otherwise, push the joystick into some direction and back\n"..
+      "  (you cannot use the joystick to skip turns in this mode).\n"
+      }
+    picknumber("joythreshold", asknum(joythreshold, "joystick threshold", 6000))
+    picknumber("joyathreshold", asknum(joyathreshold or 3000, "joystick auto-threshold", nil))
+    return true
+    end
+  )
+
+addtomenu(joysmenu, "s", writechoicef(
+  function() 
+    return "joystick scroll-threshold: \ve"..joyscrollthreshold.."\vp speed = \ve"..spdJoyScrolling.."\vp"
+    end),
+  function()
+    scrollhelp = {
+      "If you have two analog joysticks, you can use the second one for scrolling.\n"..
+      "Smaller threshold values make the joystick more sensitive.\n"
+      }
+    picknumber("joyscrolllthreshold", asknum(joyscrollthreshold, "joystick scroll-threshold", 1000,
+      scrollhelp
+      ))
+    picknumber("spdJoyScrolling", asknum(spdJoyScrolling, "joystick scrolling speed", 10000,
+      scrollhelp))
+    return true
+    end
+  )
+
+addtomenu(joysmenu, "b", writechoicef(
+  function() 
+    return "trackball scrolling bactor: \ve"..joyballfactor
+    end),
+  function()
+    picknumber("joyballfactor", asknum(joyballfactor, "joystick ball-factor", 0.1, 
+      {"If your joystick has a trackball, you can scroll with it."}))
+    return true
+    end
+  )
+
+function handlejoy(ev)
+  if not joystickEnabled then return end
+  if ev.type == evJoyAxis and ev.which % 2 == 0 then
+    if ev.axis == 0 then joypos.x = ev.value end
+    if ev.axis == 1 then joypos.y = ev.value end
+    if V.norm(joypos) > V.norm(joymax) then joymax = V.copy(joypos) end
+    if joyathreshold and V.norm(joypos) < joyathreshold*joyathreshold and V.norm(joymax) > joythreshold*joythreshold then
+      local x = vectodir(joymax, 0)
+      joymax = V(0,0)
+      if tryrotate_dir(x, ev, 8) == 1 then
+        ev.type = evKeyDown
+        ev.mod = 0
+        nsendkey(ev)
+        ev.type = evKeyUp
+        nsendkey(ev)
+        end
+      end
+
+  elseif ev.type == evJoyAxis and ev.which % 2 == 1 then
+    if ev.axis == 0 then joyscroll.x = ev.value end
+    if ev.axis == 1 then joyscroll.y = ev.value end
+    joyscrollon = V.norm(joyscroll) > joyscrollthreshold * joyscrollthreshold
+
+  elseif ev.type == evJoyDown or ev.type == evJoyUp then
+    local x = vectodir(joypos, joythreshold)
+    if tryrotate_dir(x, ev, 8) == 1 then
+      ev.type = ev.type == evJoyDown and evKeyDown or evKeyUp
+      ev.mod = 0
+      nsendkey(ev)
+      end
+
+  elseif ev.type == evBall then
+    scrolltoplayer = false
+    scrollmaphorizontal(ev.xrel * joyballfactor)
+    scrollmapvertical(ev.yrel * joyballfactor)
+    end
+  end
+
+-- == key event handling ==
+
+-- ignore the key event (i.e., do not send it further)
+dosendkey = false
+
+-- ignore the following TextInput event
+-- (true by default, because we want to ignore textinput when reloading the scripts)
+textconsumed = true
+
+function consumetext(ev)
+  if ev.type == evKeyDown then
+    ev.type = evKeyDownText
+    textconsumed = true
+    end
+  end
+
+-- return 'true' if handled
+function handlespecialkeys(ev)
+  if ev.type == evKeyUp and (iskey(ev, KEYS.LCTRL) or iskey(ev, KEYS.RCTRL)) then
+    ctrlzoomingactive = false
+    scrollmanual = false
+    end
+
+  if ismenukey(ev) then
+    ev.type = evKeyUp
+    if getkeystate(SDLSCAN.LCTRL) > 0 then
+      nsendkey2(KEYS.LCTRL, evKeyUp)
+      end
+    if getkeystate(SDLSCAN.RCTRL) > 0 then
+      nsendkey2(KEYS.RCTRL, evKeyUp)
+      end
+    noteyemenu()
+    drawandrefresh()
+    return true
+
+  elseif ev.type == evKeyDown and iskey(ev, KEYS.F2) and quickshots then
+    local fname = shotdir..curdate()..".bmp"
+    saveimage(D.output, fname)
+    return true
+
+  elseif isfullscreenkey(ev) then
+    applyfullscreenkey(ev)
+    drawandrefresh()
+    return true
+
+  elseif modeconfigactive then
+    handlemodeconfig(ev)
+    return true
+    end
+  end
+
+function handlekeyevent(ev)
+
+  -- print(addindent().."currentmodal")
+  if currentmodal and currentmodal.handlekey and currentmodal.handlekey(ev) then
+    return
+    end
+  
+  if ev.type == evTextInput then
+    if textconsumed then return end
+    nsendtext(ev.text)
+    return
+    end
+    
+  if ev.type == evKeyUp or ev.type == evKeyDown or ev.type == evKeyConsole then
+    dosendkey = true
+    textconsumed = false
+    userremap(ev)
+    
+    if handlespecialkeys(ev) then
+      return
+      end
+
+    rotatekey_all(ev)
+    nsendkey(ev)
+    end
+
+  -- print(addindent().."currentmodal done")
+  end
+

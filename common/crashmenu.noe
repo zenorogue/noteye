@@ -1,0 +1,65 @@
+-- Necklace of the Eye v8.2 roguelike frontend
+-- Copyright (C) 2010-2015 Zeno Rogue, see noteye.noe for details
+
+-- what to do on NotEye crash in NotEye-integrated roguelikes
+-- such as "sample" and ADOM
+
+screentorestore = getcrashstring("screensaver")
+
+crashmenu = {}
+
+crashoff = true
+
+addtomenu(crashmenu, "p", writechoice("try to continue playing "..game_to_launch),
+  function() 
+    havemain = false
+    startbyname(game_to_launch)
+    crashoff = false
+    end
+  )
+
+addtomenu(crashmenu, "s", writechoice("enable the safe mode"),
+  function() 
+    havemain = false
+    crashsafe = true
+    startbyname(game_to_launch)
+    crashoff = false
+    end
+  )
+
+addtomenu(crashmenu, "r", writechoice("reload NotEye scripts (fix the problem first)"),
+  function() 
+    -- reset the engine's "crashed" flag...
+    setcrashval(0)
+    -- and cause the error to reload it
+    error("reloading the scripts")
+    end
+  )
+
+addtomenu(crashmenu, "w", writechoice("copy error message to a file"),
+  function() 
+    fname = askstr(userdir.."error.txt", "Enter the filename", {})
+    if fname then
+      local file = io.open(fname, "w")
+      file:write("NotEye crash error report\n")
+      file:write(geterrormsg())
+      file:close()
+      end
+    end
+  )
+
+prepareconsole()
+
+while crashoff do 
+  menuexecute(crashmenu, 
+    dfthdr(
+      "The NotEye script has crashed\n"..
+      noteye_support_address..
+      "The game is still running, but there is some problem in the NotEye script\n"..
+      "providing the graphical interface, so usually this is recoverable.\n"..
+      "You could try to continue playing and see if there are more errors.\n"..
+      "If this does not work, try to switch to the ASCII mode ('safe mode').\n"..
+      "This disables graphics etc., but often lets you continue playing.\n\n"..
+      geterrormsg())
+    )
+  end

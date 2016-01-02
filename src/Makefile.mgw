@@ -1,0 +1,49 @@
+all: ../hydra.exe ../noteye.exe
+
+CFLAGS=-g
+#CFLAGS=-g
+DEF=-DHYDRA -DWINDOWS -DOPENGL
+
+noteye-ho.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp windows.cpp opengl.cpp
+	g++ libnoteye.cpp -c -o noteye-ho.o -DOPENGL -DWINDOWS -DINTERNALONLY -DHYDRAONLY -DNOCONSOLE -DAVOID_NET $(CFLAGS)
+
+noteye-hn.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp windows.cpp opengl.cpp
+	g++ libnoteye.cpp -c -o noteye-hn.o -DOPENGL -DWINDOWS $(CFLAGS)
+
+hydra-mingw.o: noteye-curses.h ../hydra/classes.cpp ../hydra/hydra.cpp ../hydra/mainmenu.cpp ../hydra/ui.cpp ../hydra/tutorial.cpp ../hydra/weapons.cpp ../hydra/data.cpp ../hydra/save.cpp ../hydra/achieve.cpp
+	g++ ../hydra/hydra.cpp -c -o hydra-mingw.o -DNOTEYE -DMINGW $(CFLAGS)
+
+noteye-jni-mingw.o: noteye-jni.cpp
+	g++ -fpic -I. noteye-jni.cpp -c -o noteye-jni-mingw.o $(CFLAGS) $(DEF)
+
+../noteye.dll: noteye-hn.o noteye-jni-mingw.o
+	g++ -shared noteye-hn.o noteye-jni-mingw.o -o ../noteye.dll -lSDL2 -lSDL2_image -lopengl32 ../lua51.dll -lSDL2_net -lz -lcurses -lSDL2_mixer --enable-runtime-pseudo-relocs -lSDL2_ttf
+
+../hydraslayer.dll: hydra-mingw.o ../noteye.dll
+	g++ -shared hydra-mingw.o -o ../hydraslayer.dll ../noteye.dll
+
+#../noteye.exe: ../noteye.dll hydra-mingw.o noteye.res noteye-main.cpp
+#	g++ -DHYDRA noteye-main.cpp hydra-mingw.o noteye.res -o ../noteye.exe ../noteye.dll
+#	strip ../noteye.exe
+
+../noteye.exe: ../noteye.dll noteye.res noteye-main.cpp ../hydraslayer.dll
+	g++ -DHYDRA -DOPENGL noteye-main.cpp noteye.res -o ../noteye.exe ../noteye.dll ../hydraslayer.dll
+	strip ../noteye.exe
+
+../noteyefull.exe: noteye.res noteye-main.cpp noteye-hn.o hydra-mingw.o
+	echo NOT WORKING
+	g++ -DHYDRA -DOPENGL noteye-main.cpp noteye.res noteye-hn.o hydra-mingw.o -o ../noteyefull.exe  -lSDL -lSDL_image ../lua51.dll ../SDL_net.dll -lz -lcurses -lSDL_mixer
+	strip ../noteyefull.exe
+
+../hydra.exe: hydra-mingw.o ../noteye.dll ../hydraslayer.dll ../hydra/hydra.res
+	g++ -DHYDRA -DHYDRAONLY -DOPENGL noteye-main.cpp ../hydra/hydra.res -o ../hydra.exe ../noteye.dll ../hydraslayer.dll -mwindows
+	strip ../hydra.exe
+
+../hydra/hydra.res: ../hydra/hydra.rc ../hydra/hydra.ico
+	windres ../hydra/hydra.rc -O coff -o ../hydra/hydra.res
+
+noteye.res: noteye.rc noteye.ico
+	windres noteye.rc -O coff -o noteye.res
+
+clean:
+	rm -rf *.o

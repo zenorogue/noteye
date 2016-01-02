@@ -1,0 +1,35 @@
+-- Necklace of the Eye v7.6 roguelike frontend
+-- Copyright (C) 2010-2014 Zeno Rogue, see noteye.noe for details
+
+-- this file loads the OLD hydra slayer sounds.
+
+function loadsounds() 
+  if not Sounds then
+    local hodir = sounddir.."hydra-old/"
+    
+    SndBone    = loadsound(hodir.."bone.ogg")
+    SndChaos   = loadsound(hodir.."chaos.ogg")
+    SndCut     = loadsound(hodir.."cut.ogg")
+    SndDeath   = loadsound(hodir.."death.ogg")
+    SndDrink   = loadsound(hodir.."drink.ogg")
+    SndFire    = loadsound(hodir.."fire.ogg")
+    SndGold    = loadsound(hodir.."gold.ogg")
+    SndIce     = loadsound(hodir.."ice.ogg")
+    SndMenu    = loadsound(hodir.."menu.ogg")
+    SndMystery = loadsound(hodir.."mystery.ogg")
+    SndPhase   = loadsound(hodir.."phase.ogg")
+    SndPickup  = loadsound(hodir.."pickup.ogg")
+    SndPoison  = loadsound(hodir.."poison.ogg")
+    SndQuake   = loadsound(hodir.."quake.ogg")
+    SndRune    = loadsound(hodir.."rune.ogg")
+    SndSilver  = loadsound(hodir.."silver.ogg")
+    SndSmash1  = loadsound(hodir.."smash1.ogg")
+    SndSmash2  = loadsound(hodir.."smash2.ogg")
+    SndSmash3  = loadsound(hodir.."smash3.ogg")
+    SndSmash4  = loadsound(hodir.."smash4.ogg")
+    SndSplash  = loadsound(hodir.."splash.ogg")
+    SndStorm   = loadsound(hodir.."storm.ogg")
+    SndTada    = loadsound(hodir.."tada.ogg")
+    SndWoof    = loadsound(hodir.."woof.ogg")
+    end
+  end

@@ -1,0 +1,10 @@
+-- Necklace of the Eye v7.6 roguelike frontend
+-- Copyright (C) 2010-2014 Zeno Rogue, see noteye.noe for details
+
+-- open log file disabled in Hydra Slayer
+
+print("Hydra Slayer v"..hydraver.." (C) 2010-2012 Zeno Rogue");
+
+logopen("hydra.log")
+game_to_launch = "hydra"
+dofile "common/noteye.noe"

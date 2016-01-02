@@ -1,0 +1,141 @@
+-- Necklace of the Eye v7.6 roguelike frontend
+-- Copyright (C) 2010-2014 Zeno Rogue, see noteye.noe for details
+
+-- prevent calling multiple times
+if HydraPNG == nil then
+
+  HydraPNG = loadimage(gfxdir.."hydra.png")
+  hydraback = getpixel(HydraPNG, 32, 32)
+  
+  function tfloor(x)
+    return tilespatial(x, spFlat + spFloor + spIFloor)
+    end
+  
+  FloorCeil = addtile(HydraPNG, 0, 0, 32, 32, -1)
+  Floor = tfloor(FloorCeil)
+  Ceil = tilespatial(FloorCeil, spCeil)
+  
+  Wall = tilespatial(addtile(HydraPNG, 32, 0, 32, 32, -1), spFlat + spWall + spIWall + spICeil)
+  
+  function at(x, y)
+    return addtile(HydraPNG, x*32, y*32, 32, 32, hydraback)
+    end
+  
+  function atfloor(x, y)
+    return tfloor(at(x,y))
+    end
+  
+  function atmon(x, y)
+    return tilespatial(at(x,y), spMonst + spFlat + spIItem)
+    end
+  
+  function atwall(x, y)
+    return tilespatial(at(x,y), spWall + spFlat + spIWall)
+    end
+  
+  function atitem(x, y)
+    return tilespatial(at(x,y), spItem + spFlat + spIItem)
+    end
+  
+  Down = tilespatial(at(3,1), spFlat + spIItem + spIFloor + spFloor)
+  DownF = tilespatial(at(3,1), spFlat + spIFloor)
+  DownX = at(3,1)
+  UpX = at(4,1)
+  Up = tilespatial(UpX, spFlat + spCeil + spIItem)
+  Blood = atfloor(2,7)
+  
+  Slayer = atmon(2,0)
+  SlayerNaga = atmon(0,11)
+  SlayerCentaur = atmon(1,11)
+  SlayerDead = atmon(2,11)
+  Twin = atmon(3,8)
+  Twinbody = tilerecolor(SlayerDead, vgaget(12))
+  Corpse = atmon(1,7)
+  Mushroom = {}
+
+  for i=1,8 do 
+    Mushroom[i] = atmon(i-1, 6)
+    end
+  Mushroom[9] = atmon(0, 7)
+  Hydra = {}
+  for i=1,35 do 
+    Hydra[i] = atmon((i+4) % 8, 1 + math.floor((i+4)/8))
+    end
+  Ettin = {}
+  Ettin[2] = atmon(5, 7)
+  Ettin[1] = atmon(6, 7)
+  Ettin[3] = atmon(7, 7)
+  
+  Sword = atitem(3,0)
+  Divisor = atitem(4,0)
+  Mace = atitem(5,0)
+  Star = atitem(6,0)
+  Shield = atitem(7,0)
+  Rune = atitem(0,1)
+  Scroll = atitem(1,1)
+  Potion = atitem(2,1)
+  Erado = atitem(3,7)
+  Logger = atitem(0,8)
+  Deco = atitem(1,8)
+  Bow = atitem(2,8)
+  Dance = atitem(4,8)
+  Prec = atitem(5,8)
+  Quake = atitem(6,8)
+  Pickaxe = atitem(7,8)
+  Trident = atitem(0,9)
+  Axe = atitem(1,9)
+  Disk = atitem(2,9)
+  Stone = atitem(3,9)
+  Wand = atitem(4,9)
+  Target = atmon(5,9)
+  
+  AsciiMap = atmon(6,9)
+  NoteyeMenu = atmon(7,9)
+  SystemMenu = atmon(0,10)
+  FirstPP = atmon(1,10)
+  HelpIcon = atmon(2,10)
+  WpnDrop = atmon(3,10)
+  WpnInfo = atmon(4,10)
+  Recycle = atmon(5,10)
+  AutoExplore = atmon(6,10)
+  
+  Lightfloor = tilemerge(Floor, Ceil)
+  Darkfloor = tilerecolor(Lightfloor, 0x8202020)
+
+  TinyStar = addtile(HydraPNG, 229, 325, 5, 5, 0x00FF00)
+
+  HydraTitleJPG = loadimage(gfxdir.."hydraslayer-draw.jpeg")
+  HydraTitleTile = addtile(HydraTitleJPG, 0, 0, 640, 480, -100)
+
+  ShadowPNG = newimage(96, 64)
+  shadtable = {0xC0, 0x80, 0x40}
+  for x=0,31 do 
+    local shad = (shadtable[x+1] or 0) * 0x1000000 + 0x101010
+    for y=0,31 do
+      setpixel(ShadowPNG, x, y, shad)
+      setpixel(ShadowPNG, y+32, x, shad)
+      setpixel(ShadowPNG, 63-x, 63-y, shad)
+      setpixel(ShadowPNG, 31-y, 63-x, shad)
+      end
+    end
+  ssFloor = spFree + spFlat + spIFloor
+  ShadowW = tilespatial(addtile(ShadowPNG, 0,  0,  32, 32, transAlpha), ssFloor)
+  ShadowN = tilespatial(addtile(ShadowPNG, 32, 0,  32, 32, transAlpha), ssFloor)
+  ShadowS = tilespatial(addtile(ShadowPNG, 0,  32, 32, 32, transAlpha), ssFloor)
+  ShadowE = tilespatial(addtile(ShadowPNG, 32, 32, 32, 32, transAlpha), ssFloor)
+
+  for x=0,31 do for y=0,31 do
+    local rad = x*(31-x)+y*(31-y)
+    rad = rad - 300
+    rad = rad / 2
+    if rad < 0 then rad = 0 end
+    setpixel(ShadowPNG, 64+x, y, rad * 0x1000000 + 0x101010)
+    setpixel(ShadowPNG, 64+x, 48+y/2, rad * 0x1000000 + 0x101010)
+    end end
+  
+  ShadowD = 
+    tilemerge(
+      tilespatial(addtile(ShadowPNG, 64,  0, 32, 32, transAlpha), spFree + spIFloor),
+      tilespatial(addtile(ShadowPNG, 64, 32, 32, 32, transAlpha), spFlat)
+      )
+  end
