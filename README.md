@@ -50,7 +50,7 @@ Clone the GitHub project with:
     git clone https://github.com/zenorogue/noteye noteye
 
 Install the dependencies:
-    sudo apt-get install libsdl1.2-dev liblua5.1.0-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-net1.2-dev libncurses5-dev
+    sudo apt-get install libsdl2-dev liblua5.1-0-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev libncurses5-dev
 
 Change the directory:
     cd noteye
