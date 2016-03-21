@@ -21,6 +21,10 @@ if HydraPNG == nil then
     return addtile(HydraPNG, x*32, y*32, 32, 32, hydraback)
     end
   
+  function at2(x, y)
+    return addtile(HydraPNG, x*16, y*16, 16, 16, hydraback)
+    end
+  
   function atfloor(x, y)
     return tfloor(at(x,y))
     end
@@ -48,10 +52,18 @@ if HydraPNG == nil then
   SlayerNaga = atmon(0,11)
   SlayerCentaur = atmon(1,11)
   SlayerDead = atmon(2,11)
+  SlayerTitan = atmon(3,11)
   Twin = atmon(3,8)
   Twinbody = tilerecolor(SlayerDead, vgaget(12))
   Corpse = atmon(1,7)
   Mushroom = {}
+  
+  Machete = atitem(0,12)
+  Dagger = atitem(1,12)
+  Nullsector = atitem(2,12)
+  Vorpal = atitem(3,12)
+  GiantBlade = atitem(4,12)  
+  Goldcut = atitem(5,12)
 
   for i=1,8 do 
     Mushroom[i] = atmon(i-1, 6)
@@ -90,19 +102,37 @@ if HydraPNG == nil then
   Target = atmon(5,9)
   
   AsciiMap = atmon(6,9)
+  FirstPP = atmon(1,10)
+
   NoteyeMenu = atmon(7,9)
   SystemMenu = atmon(0,10)
-  FirstPP = atmon(1,10)
   HelpIcon = atmon(2,10)
   WpnDrop = atmon(3,10)
   WpnInfo = atmon(4,10)
   Recycle = atmon(5,10)
   AutoExplore = atmon(6,10)
+
+  SmHelpIcon = at2(12, 22)
+  SmWpnInfo = at2(13, 22)
+  SmWpnDrop = at2(12, 23)
+  SmSystemMenu = at2(13, 23)
+  SmRecycle = at2(15, 22)
+  SmInvIcon = at2(14, 22)
+  SmNoteyeMenu = at2(14, 23)
+  SmTargetIcon1 = at2(15, 23)
+  SmTargetIcon2 = at2(15, 21)
+  SmTwinControl = at2(15, 20)
+  SmTwinSelect  = at2(14, 21)
+  SmAutoExplore = at2(14, 20)
+  
+  BladeTrap = atmon(0,13)
+  DivTrap = atmon(1,13)
+  RockTrap = atmon(2,13)
   
   Lightfloor = tilemerge(Floor, Ceil)
   Darkfloor = tilerecolor(Lightfloor, 0x8202020)
 
-  TinyStar = addtile(HydraPNG, 229, 325, 5, 5, 0x00FF00)
+  TinyStar = addtile(HydraPNG, 247, 401, 5, 5, 0x00FF00)
 
   HydraTitleJPG = loadimage(gfxdir.."hydraslayer-draw.jpeg")
   HydraTitleTile = addtile(HydraTitleJPG, 0, 0, 640, 480, -100)

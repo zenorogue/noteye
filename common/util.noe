@@ -522,6 +522,13 @@ function printtable(t)
   return s
   end
 
+function printtableline(t)
+  local s = "{"
+  local sep = ""
+  for k,v in pairs(t) do s = s .. sep .. k .. "=" .. tostring(v); sep = ", " end
+  return s.."}"
+  end
+
 function stringornil_setter(x, v)
   if x == "" then x =  nil end
   _G[v.name] = x

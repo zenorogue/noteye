@@ -486,7 +486,7 @@ addtomenu(keysmenu, "a", writechoicef(function() return "rotate/translate arrowk
 
 function pickrotate(rnp, rak)
   cfgscripts.rotate = function(file)
-    file:write("pickdiag("..booltf(rnp)..","..booltf(rak)..")\n")
+    file:write("pickrotate("..booltf(rnp)..","..booltf(rak)..")\n")
     end
   rotatenumpad = rnp
   rotatearrowkeys = rak
@@ -709,6 +709,14 @@ function handlekeyevent(ev)
   -- print(addindent().."currentmodal")
   if currentmodal and currentmodal.handlekey and currentmodal.handlekey(ev) then
     return
+    end
+  
+  if ev.repeated and cleanupRepeatedKeys then
+    delayedKeyEvent = ev
+    return
+    end
+  if ev.type == evKeyUp then
+    delayedKeyEvent = nil
     end
   
   if ev.type == evTextInput then

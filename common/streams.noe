@@ -327,6 +327,12 @@ function nsendkey(ev)
     luag.sendkey(ev)
   elseif P then 
     -- print(addindent().."sending a key")
+    if ev.type == evKeyDown then 
+      handlePendingAnimations(speedupQuickKeys, 1) 
+      if speedupQuickKeys ~= 0 and speedupQuickKeys < 100 then
+        cleanupRepeatedKeys = true
+        end
+      end
     sendkey(P, ev) 
     -- print(addindent().."a key sent")
     uisleep2()

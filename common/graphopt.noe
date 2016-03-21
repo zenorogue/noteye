@@ -128,7 +128,7 @@ addtomenu(animsmenu, "a", writechoice("set monster attack animation speed"),
 
 noteye_config_variable("spdMissile", 100, "animation speed: missile")
 
-addtomenu(animsmenu, "p", writechoicef(function() return "projectile animation speed: \ve"..spdval(spdMissile) end), 
+menuitems.missilespd = addtomenu(animsmenu, "p", writechoicef(function() return "projectile animation speed: \ve"..spdval(spdMissile) end), 
   function()
     pickinteger("spdMissile", asknum(spdMissile, "Projectile animation speed", 10000, {
       "This value controls the speed of missile animations, for games which support ",
@@ -141,6 +141,29 @@ addtomenu(animsmenu, "p", writechoicef(function() return "projectile animation s
 
 -- tools for movement animation
 
+function checkmonstershift2(Data, gxy, targetxy)
+  if not Data.animxy then
+    Data.animxy = V.copy(gxy)
+    Data.lasttick = scrollTick
+  elseif (Data.animxy ~= gxy or targetxy ~= gxy) and scrollTick then
+    if V.norm(Data.animxy-gxy) > 25 then
+      Data.animxy = gxy
+      return nil
+      end
+    local newtick = scrollTick
+    local sval = (newtick - Data.lasttick) * spdMoveanim * speedup / 40000
+    Data.lasttick = newtick
+    -- local shift = Data.animxy - gxy
+    local s1 = Data.animxy
+    Data.animxy = scrollfv(Data.animxy, targetxy, sval)
+    if Data.animxy == gxy then return nil end
+    pendingAnimations = true
+    return Data.animxy - gxy
+  else
+    Data.lasttick = scrollTick
+    end
+  end
+
 function checkmonstershift(ID)
   if ID and global_x and global_y then
     local gxy = V(global_x, global_y)
@@ -150,24 +173,7 @@ function checkmonstershift(ID)
       Data = {}
       moveanimations[ID] = Data
       end
-    if not Data.animxy then
-      Data.animxy = V.copy(gxy)
-      Data.lasttick = scrollTick
-    elseif (Data.animxy ~= gxy or targetxy ~= gxy) and scrollTick then
-      if V.norm(Data.animxy-gxy) > 25 then
-        Data.animxy = gxy
-        return nil
-        end
-      local newtick = scrollTick
-      local sval = (newtick - Data.lasttick) * spdMoveanim / 40000
-      Data.lasttick = newtick
-      -- local shift = Data.animxy - gxy
-      Data.animxy = scrollfv(Data.animxy, targetxy, sval)
-      if Data.animxy == gxy then return nil end
-      return Data.animxy - gxy
-    else
-      Data.lasttick = scrollTick
-      end
+    return checkmonstershift2(Data, gxy, targetxy)
     end
   end
 
@@ -176,7 +182,7 @@ amsmul = V(1,1)
 bobval = -0.04
 
 function applymoveshift(T, ID, bob)
-
+ 
   if mode == modeFPP or mode == modeTPP then
     T = simulateSpAuto(T)
     end
@@ -443,12 +449,13 @@ noteye_config_variable("spdMonsterAttackAnim", 250, "animation speed: monster at
 function monsterfinelocation(ID, gxy)
   local anim = monster_attack_animations[ID]
   if anim then
-    local t = getticks() - anim.time
+    local t = (getticks() - anim.time) * speedup
     -- print("t = "..t.." ID = "..ID)
     if t < spdMonsterAttackAnim then
       local v
       t = t / spdMonsterAttackAnim
       if t > 0.5 then t = 1-t end
+      pendingAnimations = true
       return gxy + anim.vector * t
     else
       monster_attack_animations[ID] = nil
@@ -456,3 +463,73 @@ function monsterfinelocation(ID, gxy)
     end
   return gxy
   end
+
+speedup = 1
+
+function cancelPendingAnimations()
+  monster_attack_animations = {}
+  moveanimations = {}
+  end
+  
+function handlePendingAnimations(sup, stat)
+  if sup >= 100 then
+    cancelPendingAnimations()
+  elseif sup > 0 then
+    copymapall()
+    drawandrefresh()
+    while pendingAnimations do
+      speedupState = stat
+      speedup = sup
+      evhandlers[0]() -- ignore events
+      speedup = 1
+      speedupState = nil
+      end
+    end
+  pendingAnimations = true
+  end
+
+noteye_config_variable("speedupQuickKeys", 5, "speedup animations while pressing keys quickly")
+noteye_config_variable("speedupAutoexplore", 10, "speedup animations while autoexploring")
+
+speedupHelp = {
+  "?",
+  "Possible values:",
+  "0 -- careless mode (don't synchronize animations with the game)",
+  "1 -- don't speedup",
+  "3 -- three times faster",
+  "100: don't animate in this case"
+  }
+
+function speedupval(x)
+  if x == 0 then return "careless"
+  elseif x == 1 then return "1 (normal speed)"
+  elseif x < 1 then return x.." (slow them down)"
+  elseif x >= 100 then return "instant"
+  elseif x >= 10 then return x.." (very fast)"
+  elseif x >= 5 then return x.." (faster)"
+  elseif x >= 2 then return x.." (fast)"
+  elseif x >= 1 then return x.." (slightly faster)"
+  end end
+
+menuitems.speedupAutoexplore = addtomenu(graphmenu, "x", writechoicef(
+  function() 
+    return "animations while autoexploring: \ve"..speedupval(speedupAutoexplore)
+    end),
+  function()
+    speedupHelp[1] = "How do you want to handle animations while auto-exploring?"
+    pickinteger("speedupAutoexplore", 
+      asknum(speedupAutoexplore, "Animations while autoexploring: ", 100, speedupHelp))
+    end
+  )
+
+menuitems.speedupQuickKeys = addtomenu(graphmenu, "q", writechoicef(
+  function() 
+    return "animations while pressing keys quickly: \ve"..speedupval(speedupQuickKeys)
+    end),
+  function()
+    speedupHelp[1] = "How do you want to handle pending animations while pressing keys quickly?"
+    pickinteger("speedupQuickKeys", 
+      asknum(speedupQuickKeys, "Animations while pressing keys quickly: ", 100, speedupHelp))
+    end
+  )
+

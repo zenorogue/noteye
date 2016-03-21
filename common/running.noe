@@ -202,6 +202,11 @@ function savecpu()
   end
   
 evhandlers[0] = function(ev)
+  cleanupRepeatedKeys = false
+  if delayedKeyEvent and not speedupState then 
+    handlekeyevent(delayedKeyEvent)
+    -- delayedKeyEvent = nil
+    end
   if VIEW and viewpause <= 0 then
     if neof(VIEW) then
       delete(VIEW)
@@ -225,10 +230,17 @@ evhandlers[0] = function(ev)
     -- print(addindent().."savecpu")
     savecpu()
     end
+  return 2
+  end
+
+function animateAutoexplore()
+  inAnimation = true
+  handlePendingAnimations(speedupAutoexplore, 2)
+  inAnimation = false
   end
 
 function uisleep2()
-  if threaded then
+  if threaded and not inAnimation then
     -- print(addindent().."UI coroutine yields.")
     uisleep()
     -- print(addindent().."UI coroutine is resumed.")
@@ -342,7 +354,7 @@ evhandlers[evJoyHat] = joywrapper
 
 protectevents = false
 
-function mainloopcyc()
+function mainloopcyc_small()
   inmenu = nil
   -- print(addindent().."getevent")
   
@@ -367,6 +379,15 @@ function mainloopcyc()
   --return 
   --  noteye_pcall("event type "..ev.type, elSerious, 1, function() return handler(ev) end)
   --  or 1
+  end
+
+function mainloopcyc()
+  local l
+  while not stoploop do
+    l = mainloopcyc_small()
+    if l ~= 1 then return l end
+    end
+  return 0
   end
 
 calldepth = 0

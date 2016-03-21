@@ -284,7 +284,7 @@ function setvideomodex()
     D.screen = rectTS((D.xscreen.size-D.rscrsize) * D.reloffset, D.scrsize)
     D.rscreen = rectTS((D.xscreen.size-D.rscrsize) * D.reloffset, D.rscrsize)
 
-    print("set screen = "..tostring(screen))
+    -- print("set screen = "..tostring(screen))
   
   elseif hadgfx then
     closevideomode()
@@ -335,6 +335,11 @@ function delayed_videomode()
     end
   end
 
+function calc_realmap()
+  D.realmapsize = D.map.size
+  D.realmapshift = V(0,0)
+  end
+
 function prepareconsole()
 
   -- print(debug.traceback())
@@ -363,8 +368,10 @@ function prepareconsole()
   
   MAP = V.renewscreen(MAP, D.map.size)
   
-  Tiles = V.renewscreen(Tiles, D.map.size)
-  scrset(Tiles, 999, 999, OutOfMap)  
+  calc_realmap()
+  
+  Tiles = V.renewscreen(Tiles, D.realmapsize)
+  scrset(Tiles, 999, 999, OutOfMap)
   
   D.mmapsize = D.map.size + V(2,2)
   
@@ -536,7 +543,7 @@ function miniZoom()
   end
 
 function animated_playerpos()
-  xtile(scrget(IMG, playerpos.x, playerpos.y), playerpos.x, playerpos.y)
+  xtile(scrget(MAP, playerpos.x, playerpos.y), playerpos.x, playerpos.y)
   local masp = moveanimations["player"]
   if masp then return masp.animxy or playerpos end
   return playerpos
@@ -603,9 +610,10 @@ function miniReal()
     end
   
   if mode == modeTiles and tilectr then
-    local rtop = ((maparea.top - tilectr) / tilesize + mapcenter) + 1.5
+    local f = framearea()
+    local rtop = ((f.top - tilectr) / tilesize + mapcenter) + 1.5
     rtop = rtop * minimapsize + cmini.top
-    local minirect = rectTS(rtop, maparea.size / tilesize * D.minimapsize)
+    local minirect = rectTS(rtop, f.size / tilesize * D.minimapsize)
     minirect.top = V.max(minirect.top, D.cmini.top)
     minirect.bot = V.min(minirect.bot, D.cmini.bot)
     minirect.size = minirect.bot - minirect.top
@@ -613,6 +621,10 @@ function miniReal()
     end
 
   return true
+  end
+
+function framearea()
+  return rmaparea
   end
 
 minimap_frame = tonumber("F808080", 16)
@@ -701,18 +713,18 @@ function adjusttileext()
 
 function recentermap()
   if (not D.rmaparea) or (not D.tilectr) or (not D.mapcenter) or (not D.tilesize) or ctrlzoomingactive then
-    return 
+    return
     end
   
-  local tm = rectTS(D.tilectr - (D.mapcenter + .5) * D.tilesize, D.tilesize * D.map.size)
+  local tm = rectTS(D.tilectr - (D.mapcenter + .5 + D.realmapshift) * D.tilesize, D.tilesize * D.realmapsize)
   
   for k in pairs(V.xy) do 
     if tm.size[k] < D.rmaparea.size[k] then 
-      mapcenter[k] = (D.tilectr[k] - D.rmaparea.ctr[k]) / D.tilesize[k] - .5 + D.map.size[k] / 2
+      mapcenter[k] = (D.tilectr[k] - D.rmaparea.ctr[k]) / D.tilesize[k] - .5 - D.realmapshift[k] + D.realmapsize[k] / 2
     elseif tm.top[k] > D.rmaparea.top[k] then
-      mapcenter[k] = (D.tilectr[k] - D.rmaparea.top[k]) / D.tilesize[k] - .5
+      mapcenter[k] = (D.tilectr[k] - D.rmaparea.top[k]) / D.tilesize[k] - .5 - D.realmapshift[k]
     elseif tm.bot[k] < D.rmaparea.bot[k] then
-      mapcenter[k] = (D.tilectr[k] - D.rmaparea.bot[k]) / D.tilesize[k] - .5 + D.map.size[k]
+      mapcenter[k] = (D.tilectr[k] - D.rmaparea.bot[k]) / D.tilesize[k] - .5 - D.realmapshift[k] + D.realmapsize[k]
       end
     end
   end
@@ -805,6 +817,7 @@ drawmap[modeFPP] = function()
     fppFacing = fppFacing or (facedir * 45)
     end
   
+  if playerpos then mapcenter = animated_playerpos() end
   simFacing = be360(fppFacing)
   tppAngleRound = nil
   V.scrcopy(MAP, 0, Tiles, 0, D.map.size, xtile)
@@ -838,15 +851,16 @@ drawmap[modeTPP] = function()
   fppvar.camerazoom  = tppZoom
 
   local lastmc = mapcenterTPP
+  if playerpos then mapcenter = animated_playerpos() end
   
   mapcenterTPP = mapcenter - 
     V(math.cos(angle) * tppDistance * math.cos(tppAngleRad) / (fppvar.xz or 1),
      -math.sin(angle) * tppDistance * math.cos(tppAngleRad))
   
   fppbackground(fppvar, facedir * 45)
-  V.scrcopy(MAP, 0, Tiles, 0, D.map.size, xtile)  
+  V.scrcopy(MAP, realmapshift*-1, Tiles, 0, D.realmapsize, xtile)
   
-  fpp(fppvar, mapcenterTPP.x, mapcenterTPP.y, tppFacing, Tiles)
+  fpp(fppvar, mapcenterTPP.x + realmapshift.x, mapcenterTPP.y + realmapshift.y, tppFacing, Tiles)
   
   return getAxCommon()
   end
@@ -1043,6 +1057,7 @@ function drawmessageTemp()
   end
   
 function drawandrefresh()
+  pendingAnimations = false
   if haveascii then
     if not mainscreen then
       delayed_videomode()
@@ -1398,13 +1413,17 @@ function scrollmap()
     end
   scrollTick = getticks()
   local scrolldelta = scrollLastTick and (scrollTick - scrollLastTick) or 0
-
-  local rotateval = scrolldelta * spdRotateanim / 40000
+  
+  local rotateval = scrolldelta * spdRotateanim * speedup / 40000
   
   fppFacing = scrollfr(fppFacing, facedir * 45, rotateval)
+  if mode == modeFPP and fppFacing ~= facedir*45 then pendingAnimations = true end
+
   if tppAutoFacing then
     tppFacing = scrollfr(tppFacing, facedir * 45, rotateval)
+    if mode == modeTPP and tppFacing ~= facedir*45 then pendingAnimations = true end
     end
+
   
   if modeconfigactive then applymodeconfig(scrolldelta) end
   
@@ -1412,7 +1431,7 @@ function scrollmap()
   
   calcAutocenter()
   
-  local ascrollval = scrolldelta * spdAutocenter / 40000
+  local ascrollval = scrolldelta * spdAutocenter * speedup / 40000
   local mscrollval = scrolldelta * spdScrolling / 10000
   if scrolltoplayer then
     mapcenter = scrollfv(mapcenter, playerpos, ascrollval, autocenteringNow)
