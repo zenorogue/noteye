@@ -252,6 +252,10 @@ void noteye_addchx(int ch) {
           false
           );
   P->curx++;
+  if (P->curx >= P->s->sx) {
+    P->curx = 0;
+    if(P->cury < P->s->sy-1) P->cury++;
+  }
   }
 
 void noteye_addch(char ch) {

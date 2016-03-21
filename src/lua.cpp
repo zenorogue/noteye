@@ -311,10 +311,9 @@ void initLua() {
   
 #ifndef INTERNALONLY
   noteye_globalfun("newprocess", lh_newProcess);
-#endif
-
 #ifdef LINUX
   noteye_globalfun("ansidebug", lh_ansidebug);
+#endif
 #endif
 
   noteye_globalfun("processactive", lh_processActive);
@@ -472,7 +471,7 @@ void initLua() {
   noteye_globalstr("noteyeversion", NOTEYEVERSION);
   noteye_globalint("NOTEYEVER", NOTEYEVER);
   noteye_globalstr("noteyepatch", NOTEYEPATCHSTR);
-  noteye_globalstr("NOTEYEPATCH", NOTEYEPATCH);
+  noteye_globalint("NOTEYEPATCH", NOTEYEPATCH);
   noteye_globalint("nepScreen", nepScreen);
   noteye_globalint("nepWait",   nepWait);
   noteye_globalint("nepKeyNew", nepKeyNew);

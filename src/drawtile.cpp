@@ -59,7 +59,8 @@ void blitImage(Image *dest, int x, int y, TileImage *TI) {
   else {
     for(int y=0; y<srcrect.h; y++)
     for(int x=0; x<srcrect.w; x++)
-      qpixel(dest->s, destrect.x+x, destrect.y+y) = qpixel(TI->i->s, srcrect.x+x, srcrect.y+y);
+      if((qpixel(TI->i->s, srcrect.x+x, srcrect.y+y) & 0xFFFFFF) != (TI->trans & 0xFFFFFF))
+        qpixel(dest->s, destrect.x+x, destrect.y+y) = qpixel(TI->i->s, srcrect.x+x, srcrect.y+y);
     }
 
   }

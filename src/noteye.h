@@ -24,8 +24,8 @@
 
 #define NOTEYEVERSION "8.3"
 #define NOTEYEVER 0x830
-#define NOTEYEPATCH 0
-#define NOTEYEPATCHSTR ""
+#define NOTEYEPATCH 2
+#define NOTEYEPATCHSTR "P2"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -657,9 +657,12 @@ struct NStream *openTCPStream(void *skt);
 
 void noteye_initnet();
 
+int addTile(Image *i, int ox, int oy, int sx, int sy, int trans);
 int addMerge(int t1, int t2, bool over);
 int addRecolor(int t1, int color, int mode);
 int addFill(int color, int alpha);
+int addTransform(int t1, double dx, double dy, double sx, double sy, double dz, double rot);
+int addLayer(int t1, int layerid);
 
 int getFppDown(struct TileImage *T);
 

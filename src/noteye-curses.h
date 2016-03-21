@@ -99,6 +99,19 @@ extern "C" { namespace noteye {
 
 #ifdef __cplusplus
   }}
+
+namespace noteyetranslate {
+  inline void move(int y, int x) { noteye::noteye_move(y,x); }
+  inline void erase() { noteye::noteye_erase(); }
+  inline void addch(char ch) { noteye::noteye_addch(ch); }
+  inline void addstr(const char *buf) { noteye::noteye_addstr(buf); }
+  inline void refresh() { noteye::noteye_refresh(); }
+  inline void clrtoeol() { noteye::noteye_clrtoeol(); }
+  inline void endwin() { noteye::noteye_endwin(); }
+  inline void cbreak() { noteye::noteye_cbreak(); }
+  inline void halfdelay(int i) { noteye::noteye_halfdelay(i); }
+  }
+
 #endif
 
 #define NOCURSES

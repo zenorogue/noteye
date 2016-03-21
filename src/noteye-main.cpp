@@ -31,6 +31,10 @@ int main(int argc, char **argv) {
   addHydraToLua();
 #endif
 
+#ifdef ASCII
+  noteye_globalint("asciiexec", 1);
+#endif
+
 #ifdef HYDRAONLY  
   noteye_run("common/hydraslayer.noe", true);
 #else
