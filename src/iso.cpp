@@ -98,23 +98,94 @@ int lh_isosizes(lua_State *L) {
   return 1;
   }
 
-int lh_iso(lua_State *L) {
-  checkArg(L, 2, "isoproject");
-  IsoParam *P = luaO(2, IsoParam);
-  
+int getIso(lua_State *L, int ti, IsoParam *P) {
   int t0;
-  int ti = luaInt(1);
   t0 = addFreeform(tmIFloor->apply(ti), P->Floor);
   t0 = addMerge(t0, addFreeform(addRecolor(tmIWallL->apply(ti), 0xFF808080, recMult), P->WalL), false);
   t0 = addMerge(t0, addFreeform(addRecolor(tmIWallR->apply(ti), 0xFFC0C0C0, recMult), P->WalR), false);
-//t0 = addMerge(t0, addFreeform(distill(ti, spIWallL), P->WalL), false);
-//t0 = addMerge(t0, addFreeform(distill(ti, spIWallR), P->WalR), false);
+  t0 = addMerge(t0, addFreeform(distill(ti, spIWallL), P->WalL), false);
+  t0 = addMerge(t0, addFreeform(distill(ti, spIWallR), P->WalR), false);
   t0 = addMerge(t0, addFreeform(tmICeil->apply(ti), P->Ceil), false);
   t0 = addMerge(t0, addFreeform(tmIItem->apply(ti), P->Item), false);
   
-  return noteye_retInt(L, t0);
+  return t0;
   // return noteye_retInt(L, renderAsIso(luaInt(1), spIFloor | spIItem | spIWallL | spIWallR | spICeil, luaO(2, IsoParam)));
   }
+
+int lh_iso(lua_State *L) {
+  checkArg(L, 2, "isoproject");
+  IsoParam *P = luaO(2, IsoParam);
+  int ti = luaInt(1);
+  return getIso(L, ti, P);
+  }
+
+/*
+  local dminx = math.floor(rect.top.x + rect.top.y) - 2
+  local dminy = math.floor(rect.top.y - rect.bot.x) - 2
+  local dmaxx = math.ceil(rect.bot.x + rect.bot.y) + 2
+  local dmaxy = math.ceil(rect.bot.y - rect.top.x) + 2
+  
+  print("draw "..getticks())
+  for dx=dminx,dmaxx do
+  for dy=dminy,dmaxy do
+    local dr = V(tcs.x+isi.floor*(dx-dy), tcs.y+isi.floor*(dx+dy)/2)
+    if dr > D.maparea.top - isi and dr < D.maparea.bot then
+      local sg = scrget(Tiles, mcf.x+dx, mcf.y+dy)
+      local ip = isoproject(sg, IsoParam)
+      V.drawtile(D.output, ip, rectTS(dr, isi))
+      end
+    end end
+
+  print("done "..getticks())
+*/
+
+int lh_drawScreenIso(lua_State *L) {
+  checkArg(L, 15, "drawscreenIso");
+  Screen *scr = luaO(2, Screen);
+  Image *dest = luaO(1, Image);
+  IsoParam *P = luaO(3, IsoParam);
+  double x0 = luaNum(4);
+  double y0 = luaNum(5);
+  double x1 = luaNum(6);
+  double y1 = luaNum(7);
+  int xc = luaInt(8);
+  int yc = luaInt(9);
+  int xm = luaInt(10);
+  int ym = luaInt(11);
+  int rx0 = luaInt(12);
+  int ry0 = luaInt(13);
+  int rx1 = luaInt(14);
+  int ry1 = luaInt(15);
+
+  int dminx = (int) floor(x0 + y0) - 2;
+  int dminy = (int) floor(y0 - x1) - 2;
+  int dmaxx = (int) ceil(x1 + y1) + 2;
+  int dmaxy = (int) ceil(y1 - x0) + 2;
+
+  drawmatrix M;
+  M.tx = P->sx; M.ty = P->sy;
+  M.txy = M.tyx = M.tzx = M.tzy = 0;
+  
+  rx0 -= P->sx; ry0 -= P->sy;
+  rx0 -= P->floor; ry0 -= P->floor;
+  rx1 += P->floor; ry1 += P->floor;
+
+  for(int dx=dminx; dx<=dmaxx; dx++)
+  for(int dy=dminy; dy<=dmaxy; dy++) {
+    M.x = xc + P->floor * (dx-dy);
+    M.y = yc + P->floor * (dx+dy)/2;
+  
+    if(M.x >= rx0 && M.x <= rx1 &&
+       M.y >= ry0 && M.y <= ry1) {
+      int sg = scr->get(xm+dx, ym+dy);
+      int ip = getIso(L, sg, P);
+      drawTile(dest, M, ip);
+      }
+    }
+  
+  return 1;
+  }
+
 #endif
 
 }

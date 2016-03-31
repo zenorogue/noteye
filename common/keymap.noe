@@ -262,13 +262,19 @@ function move_in_direction(ev, x)
   assignkey(ev, dirkeys[x])
   end
 
+function getisorot()
+  return 1
+  end
+
 function rotatekey_dir(ev, x, kt)
   if mode == modeTiles or mode == modeASCII or mode == modeMini or mode == modeMed or not mapon then
     setfacedir(x)
     move_in_direction(ev, x)
     return 1
   elseif mode == modeISO then
-    move_in_direction(ev, (1+x)%8)
+    x = (getisorot()+x)%8
+    setfacedir(x)
+    move_in_direction(ev, x)
     return 1
   elseif mode == modeTPP and not tppAutoFacing then
     local idx = math.floor((facedir+6+x)%8)

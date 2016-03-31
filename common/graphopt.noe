@@ -151,12 +151,18 @@ function checkmonstershift2(Data, gxy, targetxy)
       return nil
       end
     local newtick = scrollTick
-    local sval = (newtick - Data.lasttick) * spdMoveanim * speedup / 40000
+    local oldtick = Data.lasttick
+    local sval = (newtick - oldtick) * spdMoveanim * speedup / 40000
     Data.lasttick = newtick
     -- local shift = Data.animxy - gxy
     local s1 = Data.animxy
     Data.animxy = scrollfv(Data.animxy, targetxy, sval)
-    if Data.animxy == gxy then return nil end
+    if Data.animxy == gxy and s1 ~= gxy and speedupState and oldtick then
+      Data.lasttick = oldtick + (newtick - oldtick) * 
+        scrollpartv(s1, targetxy, sval)
+    elseif Data.animxy == gxy then 
+      return nil 
+      end
     pendingAnimations = true
     return Data.animxy - gxy
   else
@@ -471,13 +477,20 @@ function cancelPendingAnimations()
   moveanimations = {}
   end
   
+maxAnimation = 5000
+
 function handlePendingAnimations(sup, stat)
   if sup >= 100 then
     cancelPendingAnimations()
   elseif sup > 0 then
     copymapall()
     drawandrefresh()
+    tic = getticks() + maxAnimation
     while pendingAnimations do
+      if getticks() > tic then
+        print("Warning: animations pending for too much time")
+        break
+        end
       speedupState = stat
       speedup = sup
       evhandlers[0]() -- ignore events

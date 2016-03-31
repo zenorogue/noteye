@@ -886,20 +886,13 @@ drawmap[modeISO] = function()
 
   local rect = (D.maparea - tcs) / V(2*isi.floor, isi.floor)
   
-  local dminx = math.floor(rect.top.x + rect.top.y) - 2
-  local dminy = math.floor(rect.top.y - rect.bot.x) - 2
-  local dmaxx = math.ceil(rect.bot.x + rect.bot.y) + 2
-  local dmaxy = math.ceil(rect.bot.y - rect.top.x) + 2
+  drawscreenIso(
+    D.output, Tiles, IsoParam,
+    rect.top.x, rect.top.y, rect.bot.x, rect.bot.y, 
+    tcs.x, tcs.y, mcf.x, mcf.y,
+    maparea.top.x, maparea.top.y, maparea.bot.x, maparea.bot.y
+    )
   
-  for dx=dminx,dmaxx do
-  for dy=dminy,dmaxy do
-    local dr = V(tcs.x+isi.floor*(dx-dy), tcs.y+isi.floor*(dx+dy)/2)
-    if dr > D.maparea.top - isi and dr < D.maparea.bot then
-      local sg = scrget(Tiles, mcf.x+dx, mcf.y+dy)
-      local ip = isoproject(sg, IsoParam)
-      V.drawtile(D.output, ip, rectTS(dr, isi))
-      end
-    end end
   return getAxCommon()
   end
 
@@ -1313,7 +1306,23 @@ function scrollmapvertical(v)
     end
   end
 
+function scrollpartf(cx, tx, sval)
+  return math.abs((tx-cx) / sval / 2)
+  end
+
 function scrollf(cx, tx, sval)
+  local cx0 = cx
+  if speedupState then 
+    if cx < tx then
+      cx = cx + sval * 2
+      if cx > tx then return tx end
+      end
+    if cx > tx then
+      cx = cx - sval * 2
+      if cx < tx then return tx end
+      end
+    return cx
+    end
   if cx < tx then 
     cx = cx + sval * (1 + tx - cx)
     if cx > tx then return tx end
@@ -1325,9 +1334,17 @@ function scrollf(cx, tx, sval)
   return cx
   end
 
+function angleEqual(a1, a2)
+  a1 = a1 - a2
+  a1 = a1 % 360
+  if a1 > 180 then a1 = a1 - 360 end
+  return a1 > -.01 and a1 < .01
+  end
+
 function scrollfr(cur, tgt, sval)
   if not cur then return tgt end
   cur = cur % 360
+  tgt = tgt % 360
   if tgt > cur+540 then tgt = tgt - 1080 end
   if tgt < cur-540 then tgt = tgt + 1080 end
   if tgt > cur+180 then tgt = tgt - 360 end
@@ -1342,6 +1359,14 @@ function scrollfv(cur, tgt, sval, cxy)
   return V(
     cxy.x and scrollf(cur.x, tgt.x, sval) or cur.x, 
     cxy.y and scrollf(cur.y, tgt.y, sval) or cur.y
+    )
+  end
+
+function scrollpartv(cur, tgt, sval, cxy)
+  if not cxy then cxy = trutru end
+  return math.max(
+    cxy.x and scrollpartf(cur.x, tgt.x, sval) or 1, 
+    cxy.y and scrollpartf(cur.y, tgt.y, sval) or 1
     )
   end
 
@@ -1415,15 +1440,18 @@ function scrollmap()
   local scrolldelta = scrollLastTick and (scrollTick - scrollLastTick) or 0
   
   local rotateval = scrolldelta * spdRotateanim * speedup / 40000
-  
+
+  local fof = fppFacing or -666
   fppFacing = scrollfr(fppFacing, facedir * 45, rotateval)
-  if mode == modeFPP and fppFacing ~= facedir*45 then pendingAnimations = true end
+  
+--if mode == modeFPP and not angleEqual(fppFacing, facedir*45) then 
+--  pendingAnimations = true 
+--  end
 
   if tppAutoFacing then
     tppFacing = scrollfr(tppFacing, facedir * 45, rotateval)
-    if mode == modeTPP and tppFacing ~= facedir*45 then pendingAnimations = true end
+--  if mode == modeTPP and not angleEqual(tppFacing, facedir*45) then pendingAnimations = true end
     end
-
   
   if modeconfigactive then applymodeconfig(scrolldelta) end
   
@@ -1433,10 +1461,17 @@ function scrollmap()
   
   local ascrollval = scrolldelta * spdAutocenter * speedup / 40000
   local mscrollval = scrolldelta * spdScrolling / 10000
+  local lastmapcenter = mapcenter
   if scrolltoplayer then
     mapcenter = scrollfv(mapcenter, playerpos, ascrollval, autocenteringNow)
     end
-  scrollLastTick = scrollTick
+  if mapcenter ~= lastmapcenter and mapcenter == playerpos and speedupState and scrollLastTick 
+    and mode ~= modeFPP and mode ~= modeTPP then
+    scrollLastTick = scrollLastTick + (scrollTick - scrollLastTick) * 
+      scrollpartv(lastmapcenter, playerpos, ascrollval, autocenteringNow)
+  else
+    scrollLastTick = scrollTick
+    end
   setmaparea()
   local scrollarea = getscrollarea()
   if mousepos and mouse_inside and scrollarea and mode ~= modeFPP and mode ~= modeTPP then

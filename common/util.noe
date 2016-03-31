@@ -517,12 +517,14 @@ function noteye_config_variable_listing()
   end
 
 function printtable(t)
+  if type(t) ~= "table" then return "("..type(t)..": "..tostring(t)..")" end
   local s = ""
   for k,v in pairs(t) do s = s .. k .. ": " .. tostring(v) .. "\n" end
   return s
   end
 
 function printtableline(t)
+  if type(t) ~= "table" then return "("..type(t)..": "..tostring(t)..")" end
   local s = "{"
   local sep = ""
   for k,v in pairs(t) do s = s .. sep .. k .. "=" .. tostring(v); sep = ", " end

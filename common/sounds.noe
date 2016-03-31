@@ -192,6 +192,10 @@ function stopmusic()
   fadeoutmusic(1000)
   end
 
+function stopmusic_lostfocus()
+  stopmusic()
+  end
+
 Sounds = {}
 SoundsTime = {}
 

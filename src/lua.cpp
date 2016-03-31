@@ -172,9 +172,13 @@ char *noteyeStats() {
     "Hashtable collisions: %d/%d\n"
     "Write compression: %d B -> %d B\n"
     "Read compression: %d B -> %d B\n"
-    "Total size of images: %lld pixels (including %lld pixels in cache)\n",
+    "Total size of images: %d %06d pixels (including %d %06d pixels in cache)\n",
     size(objs), hashcol, hashok, writeUnc, writeCmp, 
-    readUnc, readCmp, totalimagesize, totalimagecache
+    readUnc, readCmp, 
+    int(totalimagesize/1000000), 
+    int(totalimagesize%1000000), 
+    int(totalimagecache/1000000),
+    int(totalimagecache%1000000)
     );
 
   return buf;
@@ -278,6 +282,7 @@ void initLua() {
   noteye_globalfun("scrfill", lh_scrfill);
   noteye_globalfun("drawscreen", lh_drawScreen);
   noteye_globalfun("drawscreenx", lh_drawScreenX);
+  noteye_globalfun("drawscreenIso", lh_drawScreenIso);
   noteye_globalfun("drawtile", lh_drawTile);
   noteye_globalfun("scrsave", lh_scrsave);
   noteye_globalfun("scrsetsize", lh_scrsetsize);

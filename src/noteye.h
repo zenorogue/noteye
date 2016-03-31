@@ -1,4 +1,4 @@
-// Necklace of the Eye v8.2
+// Necklace of the Eye v8.3
 // roguelike frontend
 // Copyright (C) 2010-2016 Zeno Rogue, see 'noteye.h' for details
 
@@ -24,8 +24,8 @@
 
 #define NOTEYEVERSION "8.3"
 #define NOTEYEVER 0x830
-#define NOTEYEPATCH 2
-#define NOTEYEPATCHSTR "P2"
+#define NOTEYEPATCH 4
+#define NOTEYEPATCHSTR "P4"
 
 #include <stdio.h>
 #include <unistd.h>
