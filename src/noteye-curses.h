@@ -40,8 +40,6 @@
 #define cbreak    noteye_cbreak
 #endif
 
-typedef struct lua_State lua_State;
-
 union SDL_Event;
 
 #ifdef __cplusplus

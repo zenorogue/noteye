@@ -214,3 +214,15 @@ function playsoundfromfile(filename, relvol)
     playsound(s, (volsound * relvol + 66) / 100)
     end
   end
+
+musicbyname = {}
+
+function playmusicbyname(x)
+  if not musicbyname[x] then 
+    musicbyname[x] = loadmusic(x)
+    end
+  if musicbyname[x] then 
+    musicvolume(volmusic)
+    playmusic(musicbyname[x]) 
+    end
+  end

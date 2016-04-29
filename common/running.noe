@@ -580,11 +580,22 @@ function mousesendsvector()
   end
 
 function movetowards(ev, whereto, direction)
-  if mousesendsvector() then
+  if mousesendsvector() and whereto then
     sendvector(V.floor(whereto) - playerpos - map.top)
 
   elseif direction then
 
+    if mode == modeFPP or mode == modeTPP then
+      ev.scancode = 0                         
+      ev.keycode = 0                          
+      ev.mod = 0                              
+      ev.type = 0                             
+      ev.type = evKeyBoth                     
+      rotatekey_dir(ev, direction, 8)         
+      nsendkey(ev)                            
+      return                                  
+      end
+      
     if ev.type == evMouseWheel and ev.dy > 0 and direction ~= -1 then
       direction = (direction+4) % 8
       end
@@ -644,7 +655,7 @@ function caller3(name, x)
   end
 
 function rungamex(cmdline)
-  P = newprocess(S, Font, cmdline)
+  P = newprocess(S, FixedFont or Font, cmdline)
   end
 
 function rungame2(cmdline)
@@ -694,7 +705,7 @@ function rungame(cmdline)
 
     function rungamex(cmdline)
 
-      P = internal(S, Font, cmdline)
+      P = internal(S, FixedFont or Font, cmdline)
       end
     
     function rg()

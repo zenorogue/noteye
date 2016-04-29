@@ -4,7 +4,8 @@
 -- this file loads the OLD hydra slayer sounds.
 
 function loadsounds() 
-  if not Sounds then
+  if not HydraSounds then
+    HydraSounds = true
     local hodir = sounddir.."hydra-old/"
     
     SndBone    = loadsound(hodir.."bone.ogg")

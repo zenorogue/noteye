@@ -122,6 +122,15 @@ displaymodenames[modeMini] = "Mini-tiles"
 displaymodenames[modeMed] = "Double mini-tiles"
 displaymodenames[modeTPP] = "TPP"
 
+menumodenames = {}
+menumodenames[modeASCII] = "plain ASCII only (look at the map)"
+menumodenames[modeTiles] = "tile mode"
+menumodenames[modeFPP] = "first person perspective"
+menumodenames[modeISO] = "isometric projection"
+menumodenames[modeMini] = "mini-tile mode"
+menumodenames[modeMed] = "double mini-tiles"
+menumodenames[modeTPP] = "third person perspective"
+
 noteye_config_variable("mode", modeASCII, "map display mode", {options = displaymodenames, setter = pickmode})
 
 if not tppDistance then
@@ -319,8 +328,8 @@ function setfontsize()
 
     Font = ttf_getAtSize(FontData, fontsize.x, fontsize.y).font
     GuiFont = ttf_getAtSize(FontData, guifontsize.x, guifontsize.y).font
-    if P then setfont(P, Font)
-    elseif S then setfont(S, Font) end
+    if P then setfont(P, FixedFont or Font)
+    elseif S then setfont(S, FixedFont or Font) end
     end
     
   GuiFont = GuiFont or Font
@@ -1149,7 +1158,7 @@ function addgraphmode(key, text, m, menu)
   local item = addtomenu(menu or modesmenu,
     key,
     writechoicef(function() return 
-      ((mode == m) and "\ve("..starchar()..")\vp " or "\v7( )\vp ")..text end),
+      ((mode == m) and "\ve("..starchar()..")\vp " or "\v7( )\vp ")..menumodenames[m] end),
     function () 
       pickmode(m) 
       modeconfigactive = true
@@ -1380,7 +1389,7 @@ function getscrollarea()
 
 local autocenteringNow = {x = true, y = true}
 
-function calcAutocenter()
+function calcAutocenter(centpos)
 
   if (not D.rmaparea) or (not D.tilectr) or (not D.mapcenter) or (not D.tilesize) or ctrlzoomingactive then
     return 
@@ -1409,7 +1418,7 @@ function calcAutocenter()
   local smallpart = 1-bigpart
   
   for k in pairs(V.xy) do 
-    if playerpos[k] < mapcenter[k] - 1e-6 then
+    if centpos[k] < mapcenter[k] - 1e-6 then
       -- want to scroll DOWN
       if tm.top[k] >= D.rmaparea.top[k] - 1e-6 then
         -- no more scrolling
@@ -1417,12 +1426,12 @@ function calcAutocenter()
       elseif nobot or playerpos[k] < pbot[k]*smallpart + ptop[k]*bigpart then
         autocenteringNow[k] = true
         end
-    elseif playerpos[k] > mapcenter[k] + 1e-6 then
+    elseif centpos[k] > mapcenter[k] + 1e-6 then
       -- want to scroll UP
       if tm.bot[k] <= D.rmaparea.bot[k] + 1e-6 then
         -- no more scrolling
         autocenteringNow[k] = false
-      elseif nobot or playerpos[k] > pbot[k]*bigpart + ptop[k]*smallpart then
+      elseif nobot or centpos[k] > pbot[k]*bigpart + ptop[k]*smallpart then
         autocenteringNow[k] = true
         end
     else
@@ -1456,19 +1465,21 @@ function scrollmap()
   if modeconfigactive then applymodeconfig(scrolldelta) end
   
   local mapcenter0 = V.copy(mapcenter)
-  
-  calcAutocenter()
-  
+
+  local centpos = centerwhere()
+  calcAutocenter(centpos)
+    
   local ascrollval = scrolldelta * spdAutocenter * speedup / 40000
   local mscrollval = scrolldelta * spdScrolling / 10000
   local lastmapcenter = mapcenter
+
   if scrolltoplayer then
-    mapcenter = scrollfv(mapcenter, playerpos, ascrollval, autocenteringNow)
+    mapcenter = scrollfv(mapcenter, centpos, ascrollval, autocenteringNow)
     end
-  if mapcenter ~= lastmapcenter and mapcenter == playerpos and speedupState and scrollLastTick 
+  if mapcenter ~= lastmapcenter and mapcenter == centpos and speedupState and scrollLastTick 
     and mode ~= modeFPP and mode ~= modeTPP then
     scrollLastTick = scrollLastTick + (scrollTick - scrollLastTick) * 
-      scrollpartv(lastmapcenter, playerpos, ascrollval, autocenteringNow)
+      scrollpartv(lastmapcenter, centpos, ascrollval, autocenteringNow)
   else
     scrollLastTick = scrollTick
     end

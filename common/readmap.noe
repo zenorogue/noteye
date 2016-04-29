@@ -204,7 +204,7 @@ function copymap()
 
   findpc()
   moveonwheel = true
-  
+
   if mapon then
     -- yeah, there he is!
     playerpos = ncursor - D.map.top
@@ -228,9 +228,13 @@ function copymap()
     end
   end
 
+function centerwhere()
+  return V.copy(playerpos)
+  end
+
 function recenterOnPlayer()
   oplayerpos = V.copy(playerpos)
-  mapcenter = V.copy(playerpos)
+  mapcenter = centerwhere()
   scrollmanual = false
   end
 

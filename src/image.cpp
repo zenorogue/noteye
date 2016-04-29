@@ -18,6 +18,7 @@ Image::~Image() {
 
 SDL_Surface *convertSurface(SDL_Surface* s) {
   SDL_PixelFormat fmt;
+  fmt.format = SDL_PIXELFORMAT_BGRA8888;
   fmt.BitsPerPixel = 32;
   fmt.BytesPerPixel = 4;
 
@@ -53,8 +54,10 @@ void Image::convert() {
   else s2 = convertSurface(s);
 
   // SDL_DisplayFormat(s);
-  if(!s2)
+  if(!s2) {
+    fprintf(stderr, "error = %s\n", SDL_GetError());
     noteyeError(0, "could not change image to display format", NULL);
+    }
 
   SDL_FreeSurface(s);
   s = s2;

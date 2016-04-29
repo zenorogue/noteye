@@ -1,9 +1,20 @@
 -- which version of NotEye is this noe-file compatible with
 gamenoteyever = 0x750
 
+if not noteyeloaded then
+  if getcrashval() == 1 then
+    noteyecrash = true
+    end
+  setcrashval(1)
+  threaded = true
+  game_to_launch = "brogue"
+  dofile ((noteyedir or "") .. "common/noteye.noe")
+  return
+  end
+
 loadfont("BrogueFont5", 16, 16, fontadj.brogue)
 
-haveTiles = file_exists("gfx/font-10_anim.png")
+haveTiles = file_exists(noteyedir.."gfx/font-10_anim.png")
 
 if haveTiles then
   loadfont("font-10_anim", 16, 48, fontadj.brogue)
@@ -19,7 +30,7 @@ else
   end
 
 dofile(commondir.."generic-tile.noe")
-conssize = V(100, 34)
+conssize = V(brogue_sizex or 100, brogue_sizey or 34)
 map = rectXY(21, 3, 100, 32)
 minipos = V(1, 0.95)
 
@@ -200,7 +211,14 @@ function addbb(x)
   return tilemerge( tilefill(0x404040), x)
   end
 
-function sendmouse(ev)
+lhandlemouse = handlemouse2
+function handlemouse2(ev)
+
+  if ctrlpressed() then
+    lhandlemouse(ev)
+    return
+    end
+  
   -- handle the buttons
   V.be(ev)
   mousepos = ev
@@ -208,15 +226,22 @@ function sendmouse(ev)
   local evy = ev.y
   local ex = evx / fontsize.x
   local ey = evy / fontsize.y
-  if not itemcnt then itemcnt = 0 end
-  if not invst then invst = 0 end
-  if not ylast then ylast = 0 end
-  if (ex < map.top.x or ey < map.top.y or ey >= map.bot.y) then
+
+  if cmini and inrect(ev, cmini) then
+    local v = minipixeltoprocess(ev)
+    ev.x = v.x+map.top.x ev.y = v.y+map.top.y
+
+  elseif (ex < map.top.x or ey < map.top.y or ey >= map.bot.y) or not mapon or 
+    (brogue_textbox and inrect(V(ex,ey), brogue_textbox)) or 
+    (brogue_inv and inrect(V(ex,ey), brogue_inv)) then
     ev.x = ex
     ev.y = ey
+
   else
     pixeltoproc(ev)
     end
+
+  brogue_sendmouse(ev.x, ev.y, ev.type, ev.button or 0)
   netsendmouse(ev)
   ev.x = evx
   ev.y = evy
@@ -231,22 +256,72 @@ function nonemp(tile)
   return gchv(tile) ~= 32 and gba(tile) ~= gco(tile)
   end
 
+lfindpc = findpc
+function findpc()
+  if not brogue_data then return lfindpc() end
+  if not brogue_data.ingame then mapon = false return end
+  mapon = true
+  ncursor = V(brogue_data.player_x, brogue_data.player_y) + map.top
+  end
+
 lcopymap = copymap
 function copymap()
+  if brogue_getdata then
+    brogue_data = brogue_getdata()
+    end
   lcopymap()
-  itemcnt = 0
   usingTiles = gchv(scrget(S, 1, 0)) > 128
   if usingTiles then
     StreamSetFont = 0
     end
+      
   if pcursor then pcursor.x = -1 end
-  if mapon and mode ~= modeASCII and mode ~= modeMini and usingTiles then
+  
+  local restoremap = false
+  
+  if mapon and brogue_data and brogue_data.inv_minx > 0 then
+    brogue_inv = rectXY(
+      brogue_data.inv_minx, brogue_data.inv_miny, 
+      brogue_data.inv_maxx, brogue_data.inv_maxy
+      )
+    
+    restoremap = true
+
+    V.scrcopy(S, brogue_inv.top, IMG, brogue_inv.top, brogue_inv.size, TMAP_COPY)
+
+  else brogue_inv = nil 
+    end
+
+  if mapon and brogue_data and brogue_data.textbox_minx > 0 then
+    brogue_textbox = rectXY(
+      brogue_data.textbox_minx, brogue_data.textbox_miny, 
+      brogue_data.textbox_maxx, brogue_data.textbox_maxy
+      )
+    
+    print("textbox = "..tostring(brogue_textbox))
+    
+    restoremap = true
+
+    V.scrcopy(S, brogue_textbox.top, IMG, brogue_textbox.top, brogue_textbox.size, TMAP_COPY)
+
+  else brogue_textbox = nil 
+    end
+
+  if (not brogue_data) and mapon and mode ~= modeASCII and mode ~= modeMini and usingTiles then
     scrcopy(
       S,map.top.x,map.top.y,
       IMG, map.top.x,map.top.y, 
       map.size.x, map.size.y, lettercheck
       )
     end
+  
+  if mapon and restoremap then
+    scrcopy(MAP2, 0,0, MAP, 0,0, map.size.x, map.size.y, 0)
+  elseif mapon then
+    MAP2 = renewscreen(MAP2, map.size.x, map.size.y)
+    scrcopy(MAP, 0,0, MAP2, 0,0, map.size.x, map.size.y, 0)
+    end
+    
   end
 
 msgbox = {x0=21, x1=100, y0=0,y1=3}
@@ -328,5 +403,8 @@ function gotgmessage(s)
 
 setwindowtitle("Brogue")
 defaultmodep(modeTiles, 6)
+
+axSemitransparent = {tmap_backshade88, tmap_bigblack, tmap_trans}
+axInMap = axSemitransparent
 
 rungame("whatever")

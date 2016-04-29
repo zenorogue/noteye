@@ -124,6 +124,7 @@ tmap_transorshade = newmapping(celltransorshade)
 hex808080 = tonumber("808080", 16)
 hexFFFFFF = tonumber("FFFFFF", 16)
 hexC0C0C0 = tonumber("C0C0C0", 16)
+hexE0E0E0 = tonumber("E0E0E0", 16)
 hexF000000 = tonumber("F000000", 16)
 hexFF000000 = tonumber("FF000000", 16)
 
@@ -177,7 +178,14 @@ function cellbackshade75(x)
   return tilealpha(gba(x), hexC0C0C0)
   end
 
+function cellbackshade88(x)
+  if x==0 then return 0 end
+  return tilealpha(gba(x), hexE0E0E0)
+  end
+
 tmap_backshade75 = newmapping(cellbackshade75)
+
+tmap_backshade88 = newmapping(cellbackshade88)
 
 function cellbackfull(x)
   if x==0 then return 0 end

@@ -161,8 +161,8 @@ function selectfontfull(fname)
     selectfont(fname)
     -- {x = Fonts[fname].size.x*2, y = Fonts[fname].size.y*2 }
     prepareconsole()
-    if P then setfont(P, Font)
-    elseif S then setfont(S, Font) end
+    if P then setfont(P, FixedFont or Font)
+    elseif S then setfont(S, FixedFont or Font) end
     copymap()
     end
   end
