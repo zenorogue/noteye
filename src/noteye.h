@@ -551,6 +551,7 @@ struct MainScreen : public Screen {
   };
 
 // sound
+#ifndef NOAUDIO
 struct Sound : Object {
   Mix_Chunk *chunk;
   ~Sound();
@@ -563,6 +564,7 @@ struct Music : Object {
   ~Music();
   void play(int loops);
   };
+#endif
 
 #else
 struct Object;
