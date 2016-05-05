@@ -243,10 +243,13 @@ function initrec(X)
 
 function initviewer(X)
 
-  if P and not savescr then
+  if P then
     sgs = scrgetsize(S)
-    savescr = renewscreen(ssavescr, sgs.x, sgs.y)
+    Scopy = S
+    savescr = renewscreen(savescr, sgs.x, sgs.y)
     scrcopy(S, 0, 0, savescr, 0, 0, sgs.x, sgs.y, TMAP_COPY)
+    S = savescr
+    print("Scopy = "..Scopy.." savescr = "..savescr.." S = "..S)
     end
   
   StreamType = nreadstr(X)
@@ -443,9 +446,11 @@ netmenu = {}
 
 function finishviewer()
   if not VIEW and not SERVER and sgs then
-    scrsetsize(S, sgs.x, sgs.y)
-    scrcopy(savescr, 0, 0, S, 0, 0, sgs.x, sgs.y, TMAP_COPY)
-    savescr = nil
+    -- scrsetsize(S, sgs.x, sgs.y)
+    -- scrcopy(savescr, 0, 0, S, 0, 0, sgs.x, sgs.y, TMAP_COPY)
+    -- savescr = nil
+    S = Scopy
+    print("Scopy = "..Scopy.." savescr = "..savescr.." S = "..S)
     end
   end
 

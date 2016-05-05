@@ -668,6 +668,7 @@ drawmini[modeASCII] = miniReal
 
 function drawMiniMap()
   if minimapoff() then 
+     cmini = nil
      return false
      end
   inmini = true

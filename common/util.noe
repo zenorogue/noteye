@@ -178,7 +178,7 @@ function cellbackshade75(x)
   return tilealpha(gba(x), hexC0C0C0)
   end
 
-function cellbackshade88(x)
+function cellbackshade88(x,dx,dy)
   if x==0 then return 0 end
   return tilealpha(gba(x), hexE0E0E0)
   end
