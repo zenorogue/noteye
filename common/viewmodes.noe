@@ -544,9 +544,6 @@ function miniZoom()
   savecopy("rmaparea",  rmaparea)
   savecopy("tilectr",  tilectr)
   
-  print("playerpos = "..tostring(playerpos))
-  print("mapcenter = "..tostring(mapcenter))
-  
   drawmap[mode]()
 
   for k,v in pairs(copies) do D[k] = v end
