@@ -590,7 +590,7 @@ function movetowards(ev, whereto, direction)
       ev.keycode = 0                          
       ev.mod = 0                              
       ev.type = 0
-      ev.type = evKeyBoth
+      ev.type = evKeyBothText
       rotatekey_dir(ev, direction, 8)
       nsendkey(ev)
       return                                  
