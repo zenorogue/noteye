@@ -589,10 +589,10 @@ function movetowards(ev, whereto, direction)
       ev.scancode = 0                         
       ev.keycode = 0                          
       ev.mod = 0                              
-      ev.type = 0                             
-      ev.type = evKeyBoth                     
-      rotatekey_dir(ev, direction, 8)         
-      nsendkey(ev)                            
+      ev.type = 0
+      ev.type = evKeyBoth
+      rotatekey_dir(ev, direction, 8)
+      nsendkey(ev)
       return                                  
       end
       

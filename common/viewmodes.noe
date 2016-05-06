@@ -484,7 +484,7 @@ function setupMiniMap()
   end
 
 function getminipos(size)
-  if (D.minipos and D.minipos.y >= 0.99) or msgreserve * fontsize.y >= size.y-8 then 
+  if (D.minipos and D.minipos.y >= 0.99 and D.minipos.x >= 0.99) or msgreserve * fontsize.y >= size.y-8 then 
     return D.rscreen.bot - size
     end
   if D.minipos then 
@@ -535,13 +535,17 @@ function miniZoom()
     end
 
   if mode == minimode then 
-    savecopy("tilesize", D.tilesize * 2)
+    savecopy("tilesize", D.tilesize*2)
     end
   
   savecopy("output", ZoomCache)
   savecopy("mode", minimode)
   savecopy("maparea",  maparea)
+  savecopy("rmaparea",  rmaparea)
   savecopy("tilectr",  tilectr)
+  
+  print("playerpos = "..tostring(playerpos))
+  print("mapcenter = "..tostring(mapcenter))
   
   drawmap[mode]()
 
@@ -566,6 +570,7 @@ function miniFPP()
     D[name] = val
     end
   savecopy("maparea",  maparea)
+  savecopy("rmaparea",  rmaparea)
   savecopy("tilectr",  tilectr)
   
   V.scrcopy(MAP, 0, Tiles, 0, D.map.size, xtile)
@@ -601,6 +606,7 @@ function miniFPP()
   fpp(fppvar, D.mapcenter.x, D.mapcenter.y, fd, Tiles)
   
   D.mapcenter = mc
+  for k,v in pairs(copies) do D[k] = v end
   
   mode = m
   return true
@@ -1475,6 +1481,7 @@ function scrollmap()
   local lastmapcenter = mapcenter
 
   if scrolltoplayer then
+    local mc = tostring(mapcenter)
     mapcenter = scrollfv(mapcenter, centpos, ascrollval, autocenteringNow)
     end
   if mapcenter ~= lastmapcenter and mapcenter == centpos and speedupState and scrollLastTick 
