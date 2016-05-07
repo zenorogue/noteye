@@ -41,11 +41,33 @@ install: ../noteye
 	install -D -m 755 calleri.sh "$(DESTDIR)/caller.sh"
 	install -D -m 755 rogue.sh "$(DESTDIR)/rogue"
 	mkdir -p $(DESTDIR)/gfx
+	mkdir -p $(DESTDIR)/gfx/dawnlike
+	mkdir -p $(DESTDIR)/gfx/dawnlike/Items
+	mkdir -p $(DESTDIR)/gfx/dawnlike/Objects
+	mkdir -p $(DESTDIR)/gfx/dawnlike/Characters
+	mkdir -p $(DESTDIR)/gfx/dawnlike/GUI
 	mkdir -p $(DESTDIR)/sound
+	mkdir -p $(DESTDIR)/sound/hydra-old
+	mkdir -p $(DESTDIR)/sound/hydra-new
+	mkdir -p $(DESTDIR)/sound/hydra-new/other
+	mkdir -p $(DESTDIR)/sound/hydra-new/elements
+	mkdir -p $(DESTDIR)/sound/hydra-new/hydras
+	mkdir -p $(DESTDIR)/sound/hydra-new/weapons
 	mkdir -p $(DESTDIR)/common
 	mkdir -p $(DESTDIR)/games
-	bash -c "cd ../gfx; install -D -m 744 -t \"$(DESTDIR)/gfx/\" *.png *.jpeg"
-	bash -c "cd ../sound; install -D -m 744 -t \"$(DESTDIR)/sound/\" *.ogg"
+	bash -c "cd ../gfx; install -D -m 744 -t \"$(DESTDIR)/gfx/\" *.png *.jpeg *.ttf *.otf"
+	bash -c "cd ../gfx/dawnlike; install -D -m 744 -t \"$(DESTDIR)/gfx/dawnlike/\" README.txt"
+	bash -c "cd ../gfx/dawnlike/Items/; install -D -m 744 -t \"$(DESTDIR)/gfx/dawnlike/Items/\" *.png"
+	bash -c "cd ../gfx/dawnlike/Objects/; install -D -m 744 -t \"$(DESTDIR)/gfx/dawnlike/Objects/\" *.png"
+	bash -c "cd ../gfx/dawnlike/Characters/; install -D -m 744 -t \"$(DESTDIR)/gfx/dawnlike/Characters/\" *.png"
+	bash -c "cd ../gfx/dawnlike/GUI/; install -D -m 744 -t \"$(DESTDIR)/gfx/dawnlike/GUI/\" *.png"
+	#bash -c "cd ../sound; install -D -m 744 -t \"$(DESTDIR)/sound/\" *.ogg"
+	bash -c "cd ../sound/hydra-old; install -D -m 744 -t \"$(DESTDIR)/sound/hydra-old/\" *.ogg"
+	bash -c "cd ../sound/hydra-new; install -D -m 744 -t \"$(DESTDIR)/sound/hydra-new/\" *.ogg"
+	bash -c "cd ../sound/hydra-new/other; install -D -m 744 -t \"$(DESTDIR)/sound/hydra-new/other/\" *.ogg"
+	bash -c "cd ../sound/hydra-new/elements; install -D -m 744 -t \"$(DESTDIR)/sound/hydra-new/elements/\" *.ogg"
+	bash -c "cd ../sound/hydra-new/hydras; install -D -m 744 -t \"$(DESTDIR)/sound/hydra-new/hydras/\" *.ogg"
+	bash -c "cd ../sound/hydra-new/weapons; install -D -m 744 -t \"$(DESTDIR)/sound/hydra-new/weapons/\" *.ogg"
 	bash -c "cd ..; install -D -m 744 -t \"$(DESTDIR)/common\" common/*.noe"
 	bash -c "cd ..; install -D -m 744 -t \"$(DESTDIR)/games\" games/*.noe"
 	touch "$(DESTDIR)/hydrascores.sav"
