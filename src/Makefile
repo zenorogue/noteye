@@ -55,6 +55,7 @@ install: ../noteye
 	mkdir -p $(DESTDIR)/sound/hydra-new/weapons
 	mkdir -p $(DESTDIR)/common
 	mkdir -p $(DESTDIR)/games
+	ln -s /usr/share/noteye/libnoteye.so /usr/lib/libnoteye.so
 	bash -c "cd ../gfx; install -D -m 744 -t \"$(DESTDIR)/gfx/\" *.png *.jpeg *.ttf *.otf"
 	bash -c "cd ../gfx/dawnlike; install -D -m 744 -t \"$(DESTDIR)/gfx/dawnlike/\" README.txt"
 	bash -c "cd ../gfx/dawnlike/Items/; install -D -m 744 -t \"$(DESTDIR)/gfx/dawnlike/Items/\" *.png"
