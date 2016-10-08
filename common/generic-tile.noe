@@ -23,10 +23,16 @@ function createbord()
   
   hex8000 = tonumber("8000", 16)
   
+  local fname = "cp437-16"
+  if not Fonts[fname] then 
+    loadfont(fname, 32, 8, fontadj.simpleA)
+    end
+  local F = Fonts[fname].font
+
   FontBordered = newimage(20*32, 36*8, hex8000)
   for c=0,255 do
     local ch = string.format("%c", c)
-    local gch1 = fget(Font, ch)
+    local gch1 = fget(F, ch)
     local gch2 = tilerecolor(gch1, 0)
     local cx = (c % 32) * 20
     local cy = math.floor(c / 32) * 36

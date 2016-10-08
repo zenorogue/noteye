@@ -153,10 +153,14 @@ function dftmenubackground()
 drawmenubackground = dftmenubackground
 
 -- view the menu (stored in IMG) on the screen
-function viewmenu()
+function viewmenu(menucursory)
   if havegfx then
     delayed_videomode()
     drawmenubackground()
+    
+    if menucursory and menuitemat[menucursory] then
+      V.drawtile(Gfx, tileshade(0xC0C0C0), rectXY(0, fontsize.y * menucursory, xscreen.bot.x, fontsize.y*(menucursory+1)))
+      end
     
     drawscreenx(Gfx, IMG, 0, 0, fontsize.x, fontsize.y, tmap_blacknbbig)
     drawscreen(Gfx, IMG, 0, 0, fontsize.x, fontsize.y)
@@ -185,15 +189,19 @@ function menuexecute(M, hdr, tail)
   hdr()
   
   menuitemat = {}
-  for k,v in pairs(M) do
+  for k,v in pairs(M) do if k ~= "menucursory" then
     if not (v.hidden and v.hidden()) then
       v.displayAt(v)
       end
-    end
+    end end
   
   if tail then tail() end
+  
+  if not M.menucursory then
+    for y=0,25 do if menuitemat[y] then M.menucursory = y break end end
+    end
 
-  viewmenu()
+  local redraw = true  
 
   while true do
     inmenu = M
@@ -210,28 +218,80 @@ function menuexecute(M, hdr, tail)
       if not cont then break end
       return menuexecute(M, hdr, tail)
 
+    elseif lev.type == evMouseMotion then
+      M.menucursory = math.floor(lev.y / fontsize.y)
+      redraw = true
+
     elseif lev.type == evKeyDown or lev.type == evKeyConsole then
 
       textconsumed = true
       userremap(lev)
       local cont = modkey(lev)
       
-      for k,v in pairs(M) do
+      local handled = false
+      
+      for k,v in pairs(M) do if k ~= "menucursory" then
         if iskey(lev, v.key) and not (v.hidden and v.hidden()) then
           cont = v.action(v, lev)
+          handled = true
           break
           end
+        end end
+      
+      if not handled and iskey(lev, KEYS.RETURN) and M.menucursory then 
+        local v = menuitemat[M.menucursory]
+        if v then
+          cont = v.action(v, lev)
+          end
+        break
+        end        
+
+      if not handled and (iskey(lev, KEYS.PAGEDOWN) or iskey(lev, KEYS.KP_3)) then 
+        M.menucursory = 100
+        while M.menucursory > 0 and not menuitemat[M.menucursory] do 
+          M.menucursory = M.menucursory - 1 end
+        redraw = true
+      
+      elseif not handled and iskey(lev, KEYS.PAGEUP) or iskey(lev, KEYS.KP_9) then 
+        M.menucursory = 0
+        while M.menucursory < 100 and not menuitemat[M.menucursory] do M.menucursory = M.menucursory + 1 end
+        redraw = true
+      
+      elseif not handled and iskey(lev, KEYS.DOWN) or iskey(lev, KEYS.KP_8) then        
+        for i = 1, 120 do
+          M.menucursory = M.menucursory + 1
+          if M.menucursory == 100 then M.menucursory = 0 end
+          if menuitemat[M.menucursory] then break end
+          end
+        redraw = true
+      
+      elseif not handled and iskey(lev, KEYS.UP) or iskey(lev, KEYS.KP_2) then 
+        for i = 1, 120 do
+          M.menucursory = M.menucursory - 1
+          if M.menucursory == -1 then M.menucursory = 100 end
+          if menuitemat[M.menucursory] then break end
+          end
+        redraw = true
+      
+      else
+        if not cont then break end
+        -- redraw the menu
+        return menuexecute(M, hdr, tail)
         end
-      if not cont then break end
-      -- redraw the menu
-      return menuexecute(M, hdr, tail)
+
     elseif checkstreams() then
     elseif lev.type == evWindowEvent then
       evhandlers[lev.type](lev)
       -- in the resolution menu, this changes the header display
       return menuexecute(M, hdr, tail)
     elseif lev.type == 0 then
-      menudelay()
+      if redraw then
+        viewmenu(M.menucursory)
+        redraw = false
+      else
+        menudelay()
+        end
+
       end
     end
   clrscr()
@@ -398,6 +458,19 @@ addtomenu(techmenu, "k", writechoice("crash the script"),
 local lasteval = ""
 local evalnote = {}
 evalnote[0] = "No evaluation yet."
+
+addtomenu(techmenu, "p", writechoice("profiling on/off"),
+  function()
+    if profilingon then
+      profiler.stop()
+      profilingon = false
+    else
+      require "profiler"
+      profilingon = true
+      profiler.start()
+      end
+    end
+  )
 
 addtomenu(techmenu, "e", writechoice("evaluate"),
   function() 
@@ -596,11 +669,11 @@ function addindent()
   return k
   end
 
-function noteye_pcall(where, level, dft, f, ...)
+function noteye_pcall(where, level, dft, f)
   -- logprint2(addindent().."where = "..where)
   indent = indent + 2
   --profstart(where)
-  local status, value = pcall(f, unpack(arg))
+  local status, value = pcall(f, nil)
   --profend(where)
   indent = indent - 2
   -- logprint2(addindent().."completed = "..where)

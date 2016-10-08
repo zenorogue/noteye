@@ -51,6 +51,10 @@ function V.mt.__mul(a,b)
     logprint2("b = "..tostring(b))
     print(debug.traceback())
     vecerror()
+  elseif not V.isvec(a) then
+    logprint2("a = "..tostring(a))
+    print(debug.traceback())
+    vecerror()
     end
   if not a.x or not b.x then
     print(debug.traceback())
@@ -84,7 +88,7 @@ function V.mt.__le(a, b)
   end
 
 function V.mt.__tostring(a)
-  return "("..a.x..","..a.y..")"
+  return "("..tostring(a.x)..","..tostring(a.y)..")"
   end
 
 function V.be(v)

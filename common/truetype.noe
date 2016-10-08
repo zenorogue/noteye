@@ -6,6 +6,7 @@ effectBorder = {flags = 3}
 effectOnBlack = {on = 0xFF000000}
 
 function rendertext(font, size, text, color, img, where, align, effects)
+  if not text or string.len(text) == 0 then return end
   ttfrender(font, size, tostring(text), color, FontRender, effects and effects.flags or 0)
   local si = V.be(imggetsize(FontRender))
   where = where + si * align

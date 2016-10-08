@@ -8,6 +8,10 @@ CFLAGS=-O9 -Wall
 TGT=
 #TGT=-m32
 
+#link with lua or luajit?
+#LUAVER=-llua5.1
+LUAVER=-lluajit-5.1
+
 # note: for Raspberry Pi (and possibly others) add -DRASPBERRY_FIX
 DEF=-DHYDRA -DLINUX -DOPENGL -O9
 
@@ -20,8 +24,13 @@ libnoteye.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.
 noteye-jni.o: noteye-jni.cpp noteye.h
 	g++ -fpic -I. noteye-jni.cpp -c -o noteye-jni.o $(CFLAGS) $(DEF)
 
+# dynamic library (used for development)
 ../libnoteye.so: libnoteye.o noteye-jni.o
-	g++ -shared -Wl,-soname,libnoteye.so -o ../libnoteye.so libnoteye.o noteye-jni.o -lSDL2 -lSDL2_image -llua5.1 -lutil -lSDL2_mixer -lSDL2_net -lGL -lGLU $(TGT) -lz -lcurses -lSDL2_ttf
+	g++ -shared -Wl,-soname,libnoteye.so -o ../libnoteye.so libnoteye.o noteye-jni.o -lSDL2 -lSDL2_image $(LUAVER) -lutil -lSDL2_mixer -lSDL2_net -lGL -lGLU $(TGT) -lz -lcurses -lSDL2_ttf
+
+# static library (used for Steam version)
+../libnoteye.a: libnoteye.o noteye-jni.o
+	ar rcs ../libnoteye.a libnoteye.o noteye-jni.o
 
 hydra.o: noteye-curses.h ../hydra/classes.cpp ../hydra/hydra.cpp ../hydra/mainmenu.cpp ../hydra/ui.cpp ../hydra/tutorial.cpp ../hydra/weapons.cpp ../hydra/data.cpp ../hydra/save.cpp ../hydra/achieve.cpp ../hydra/utils.cpp ../hydra/level.cpp ../hydra/monster.cpp ../hydra/drawhydras.cpp
 	g++ ../hydra/hydra.cpp -c -o hydra.o -DNOTEYE $(CFLAGS) $(TGT) $(DEF)

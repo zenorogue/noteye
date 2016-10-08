@@ -501,7 +501,7 @@ function handlePendingAnimations(sup, stat)
   pendingAnimations = true
   end
 
-noteye_config_variable("speedupQuickKeys", 5, "speedup animations while pressing keys quickly")
+noteye_config_variable("speedupQuickKeys", 0, "speedup animations while pressing keys quickly")
 noteye_config_variable("speedupAutoexplore", 10, "speedup animations while autoexploring")
 
 speedupHelp = {
@@ -524,7 +524,7 @@ function speedupval(x)
   elseif x >= 1 then return x.." (slightly faster)"
   end end
 
-menuitems.speedupAutoexplore = addtomenu(graphmenu, "x", writechoicef(
+menuitems.speedupAutoexplore = addtomenu(graphmenu, "u", writechoicef(
   function() 
     return "animations while autoexploring: \ve"..speedupval(speedupAutoexplore)
     end),
