@@ -47,20 +47,33 @@ remember about the licensing secion in the dev guide!
 ##For Linux (Ubuntu)
 
 Clone the GitHub project with:
-    git clone https://github.com/zenorogue/noteye noteye
+~~~~
+git clone https://github.com/zenorogue/noteye noteye
+~~~~
 
 Install the dependencies:
-    sudo apt-get install libsdl2-dev liblua5.1-0-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev libncurses5-dev
+~~~~
+sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev libncurses5-dev libluajit-5.1-dev libsdl2-ttf-dev
+~~~~
+
+(Note: since Oct 2016 LuaJIT is used instead of the standard Lua, for efficiency -- if you want to
+use the standard Lua, you need liblua5.1-0-dev and edit the Makefile)
 
 Change the directory:
-    cd noteye
-    cd src
+~~~~
+cd noteye
+cd src
+~~~~
 
 Create the "noteye" executable (and the "hydraslayer" script):
-    make
+~~~~
+make
+~~~~
 
 Install both NotEye and Hydra Slayer on your system:
-    make install
+~~~~
+make install
+~~~~
 
 If you want to use NotEye for the game you are developing, please read the 
 [dev guide](http://www.roguetemple.com/z/noteye/dev.php). Also, please

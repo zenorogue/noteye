@@ -669,11 +669,11 @@ function addindent()
   return k
   end
 
-function noteye_pcall(where, level, dft, f)
+function noteye_pcall(where, level, dft, f, argument)
   -- logprint2(addindent().."where = "..where)
   indent = indent + 2
   --profstart(where)
-  local status, value = pcall(f, nil)
+  local status, value = pcall(f, argument)
   --profend(where)
   indent = indent - 2
   -- logprint2(addindent().."completed = "..where)
