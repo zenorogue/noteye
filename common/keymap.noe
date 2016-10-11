@@ -125,19 +125,19 @@ addtomenu(keysmenu, "d", writechoicef(function() return "diagonal movement with 
 -- (usually depends on config, returns 0 if this config option is off)
 
 function upmodifier()
-  return gamefourdir or 0 and ((diaglayouts[diaglayoutid][2] and KMOD.LSHIFT or 0) + (diaglayouts[diaglayoutid][3] and KMOD.RSHIFT or 0))
+  return gamefourdir and 0 or ((diaglayouts[diaglayoutid][2] and KMOD.LSHIFT or 0) + (diaglayouts[diaglayoutid][3] and KMOD.RSHIFT or 0))
   end
 
 function downmodifier()
-  return gamefourdir or 0 and ((diaglayouts[diaglayoutid][2] and KMOD.LCTRL or 0) + (diaglayouts[diaglayoutid][3] and KMOD.RCTRL or 0))
+  return gamefourdir and 0 or ((diaglayouts[diaglayoutid][2] and KMOD.LCTRL or 0) + (diaglayouts[diaglayoutid][3] and KMOD.RCTRL or 0))
   end                                           
 
 function leftmodifier()
-  return gamefourdir or 0 and (diaglayouts[diaglayoutid][4] and KMOD.RSHIFT or 0)
+  return gamefourdir and 0 or (diaglayouts[diaglayoutid][4] and KMOD.RSHIFT or 0)
   end
 
 function rightmodifier()
-  return gamefourdir or 0 and (diaglayouts[diaglayoutid][4] and KMOD.RCTRL or 0)
+  return gamefourdir and 0 or (diaglayouts[diaglayoutid][4] and KMOD.RCTRL or 0)
   end
 
 -- is the modifier key (e.g., KMOD_LALT for the left ALT) active? 
