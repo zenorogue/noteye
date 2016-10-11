@@ -133,7 +133,7 @@ function downmodifier()
   end                                           
 
 function leftmodifier()
-  return gamefourdir or 0 and (diaglayouts[diaglayoutid][4] and KMOD.RSHIFT or 0))
+  return gamefourdir or 0 and (diaglayouts[diaglayoutid][4] and KMOD.RSHIFT or 0)
   end
 
 function rightmodifier()
