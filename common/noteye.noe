@@ -132,7 +132,7 @@ function createmainscr()
     scrwrite(IMG, x, y, text, Font, Col)
     end
   
-  write(1, "Welcome to Necklace of the Eye v"..noteyeversion.."!")
+  write(1, "Welcome to Necklace of the Eye v"..noteyeversion..noteyepatch..scriptpatch.."! ")
 
   Col = vgaget(7)
   write(2, "Copyright (C) 2010-2015 Zeno Rogue")
@@ -316,9 +316,10 @@ function noteyemain()
         end
       redrawmenu()
 
-    elseif lev.type == evTextInput then
+    elseif lev.type == evTextInput or lev.type == evKeyConsole then
 
       userremap(lev)
+      lev.text = lev.text or (lev.char and string.char(lev.char))
       local mgame = lev.text and menugames[lev.text]
 
       if lev.text == "q" then break

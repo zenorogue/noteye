@@ -71,6 +71,8 @@ function ttf_getAtSize(F, sx, sy)
     rendertext(F.ttfont, ts, string.char(c), hexFF0000FF, P, V(sx/2, sy*c+sy/2), V(-.5,-.5))
     end
 
+  rendertext(F.ttfont, ts, "ą", hexFF0000FF, P, V(sx/2, sy*128+sy/2), V(-.5,-.5))
+
   F2.png = P
   F2.alias = imagealias(P, F.name..".ttf")
   F2.font = fontadj.simpleA(P,1,256,Psize.x,Psize.y)

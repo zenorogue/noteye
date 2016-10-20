@@ -4,10 +4,63 @@
 
 namespace noteye {
 
+/*
+int utf8_numbytes(const char *s) {
+  int res = 0;
+  for(int i = 7; i > 0; --i)
+    if(*s & (1 << i)) res++;
+      else break;
+  return res;
+  }
+
+int utf8_ofs[5] = {0, 0x80, 0x2080, 0x82080, 0x2082080};
+
+int utf8_encode(const char *s) {
+  int nb = 0;
+  for(int i = 7; i > 0; --i) {
+    if(*s & (1 << i)) { nb++; continue; }
+    int res = *s & ((1 << i) - 1);
+    s++; nb--;
+    int ofs = utf8_ofs[nb];
+    while(nb) {
+      res <<= 7;
+      res += (*s) & 127;
+      s++; nb--;
+      }
+    return res + ofs;
+    }
+  }
+
+typedef std::array<char, 6> myuchar;
+
+myuchar utf8_decode(int i) {
+  myuchar res;
+  for(int k=0; k<6; k++) res[k] = 0;
+  if(i < 0x80) { res[0] = i; return res; } else i -= 0x80;
+  if(i < 0x2000) { res[0] = 128 + (i>>7); res[1] = 0x80 + (i & 127); return res; }
+  else i -= 0x2000;
+  if(i < 0x80000) { res[0] = 192 + (i >> 14); res[1] = 0x80 + ((i>>7) & 127); res[2] = 0x80 + (i&127); return res; }
+  else i -= 0x80000;
+  if(i < 0x2000000) { 
+    res[0] = 224 + (i >> 21); 
+    res[1] = 0x80 + ((i>>14) & 127); 
+    res[2] = 0x80 + ((i>>7)  & 127); 
+    res[3] = 0x80 + ((i>>0)  & 127); 
+    return res; 
+    }
+  res[0] = 240 + (i >> 28); 
+  res[1] = 0x80 + ((i>>21) & 127); 
+  res[2] = 0x80 + ((i>>14) & 127); 
+  res[3] = 0x80 + ((i>>7)  & 127); 
+  res[4] = 0x80 + ((i>>0)  & 127); 
+  return res; 
+  }
+*/
+
 // -- bitmap fonts --
 
-Font *newFont(Image *base, int inx, int iny, int trans) {
-  Font *F = new Font;
+BitmapFont *newFont(Image *base, int inx, int iny, int trans) {
+  BitmapFont *F = new BitmapFont;
   int sx = base->s ? base->s->w : 0;
   int sy = base->s ? base->s->h : 0;
   int dx = sx / inx;
@@ -23,6 +76,30 @@ Font *newFont(Image *base, int inx, int iny, int trans) {
   return F;
   }
 
+int BitmapFont::gettile(int i) {
+  if(i < 0 || i >= cnt) return 0;
+  return ti[i];
+  }
+
+int BitmapFont::gettile(const char *s) {
+  return gettile((unsigned char) s[0]);
+  }
+
+/*
+// -- TTB fonts --
+
+int TTBFont::gettile(const char *s) {
+  return gettile(utf8_encode(s));
+  }
+
+int TTBFont::gettile(int i) {
+  if(ti.count(i)) return ti[i];
+  myuchar uc = utf8_encode(i);
+  if(i < 0 || i >= cnt) return 0;
+  return noteye_retInt(L, ti[i]);
+  }
+*/
+
 #ifdef USELUA
 int lh_newfont(lua_State *L) {
   checkArg(L, 4, "newfont");
@@ -31,15 +108,12 @@ int lh_newfont(lua_State *L) {
 
 int lh_getchar(lua_State *L) {
   checkArg(L, 2, "getchar");
-  return noteye_retInt(L, luaO(1, Font)->ti[(unsigned char) (luaStr(2)[0])]);
+  return noteye_retInt(L, luaO(1, Font)->gettile(luaStr(2)[0]));
   }
 
 int lh_getcharav(lua_State *L) {
-  checkArg(L, 2, "getchar");
-  int i = luaInt(2);
-  Font *f = luaO(1, Font);
-  if(i < 0 || i >= f->cnt) return 0;
-  return noteye_retInt(L, f->ti[i]);
+  checkArg(L, 2, "getcharav");
+  return noteye_retInt(L, luaO(1, Font)->gettile(luaInt(2)));
   }
 #endif
 
@@ -117,7 +191,7 @@ int lh_ttfgetsize(lua_State *L) {
       if(bufpos) {
         buf[bufpos] = 0;
         int w, h;
-        TTF_SizeText(tf, buf, &w, &h);
+        TTF_SizeUTF8(tf, buf, &w, &h);
         w += iix; h = max(h, iiy);
         totx = max(w, totx);
         toty += h;
@@ -226,7 +300,7 @@ int lh_ttfrender(lua_State *L) {
         col.g = (ncolor >> 8 ) & 255;
         col.b = (ncolor >> 0 ) & 255;
         buf[bufpos] = 0;
-        appendImage(cline, TTF_RenderText_Blended(tf, buf, col), true, aaHorizontal);
+        appendImage(cline, TTF_RenderUTF8_Blended(tf, buf, col), true, aaHorizontal);
         bufpos = 0;
         }
       if(str[ii] == '\n') {

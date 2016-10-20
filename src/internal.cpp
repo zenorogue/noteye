@@ -248,7 +248,7 @@ void noteye_addchx(int ch) {
     P->s->get(P->curx, P->cury) = 
         addMerge(
           P->brushback,
-          addRecolor(P->f->ti[ch], P->fore, recDefault),
+          addRecolor(P->f->gettile(ch), P->fore, recDefault),
           false
           );
   P->curx++;
@@ -406,7 +406,7 @@ void InternalProcess::setColor(int _fore, int _back) {
   back = _back;
   fore = _fore;
   brushback = addFill(back, 0xffffff);
-  int rec = addRecolor(f->ti[32], fore, 0xffffff);
+  int rec = addRecolor(f->gettile(32), fore, 0xffffff);
   brush0 = addMerge(brushback, rec, false);
   }
 

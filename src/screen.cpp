@@ -58,7 +58,7 @@ void Screen::write(int x, int y, const char *buf, Font *f, int color) {
       }
       
     int& c(get(x,y));
-    int ti = f->ti[ch];
+    int ti = f->gettile(ch);
     c = addRecolor(ti, color, recDefault);
     x++;
     }

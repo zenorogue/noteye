@@ -25,7 +25,7 @@
 #define NOTEYEVERSION "8.3"
 #define NOTEYEVER 0x830
 #define NOTEYEPATCH 6
-#define NOTEYEPATCHSTR "P6"
+#define NOTEYEPATCHSTR "P7"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -330,10 +330,25 @@ struct TileFill : Tile {
 
 // font
 struct Font : Object {
+  virtual int gettile(int id) = 0;
+  virtual int gettile(const char* chr) = 0;
+  };
+
+struct BitmapFont : Font {
   int *ti;
   int cnt;
-  ~Font() { delete[] ti; }
+  ~BitmapFont() { delete[] ti; }
+  int gettile(int id);
+  int gettile(const char* chr);
   };
+
+/* struct TTBFont : Font { 
+  int sizex, sizey;
+  TTFont *base;
+  map<int, int> ti;
+  int gettile(int id);
+  int gettile(const char* chr);
+  }; */
 
 #ifndef NOTTF
 // TrueType font
@@ -637,7 +652,7 @@ void noteye_wrongclass(int id, struct lua_State *L);
 // make Curses calls refer to Prc, and call the object at stack position 'spos'
 // on ghch
 
-struct Font *newFont(struct Image *base, int inx, int iny, int trans);
+struct BitmapFont *newFont(struct Image *base, int inx, int iny, int trans);
 
 int registerObject(struct Object* o);
 

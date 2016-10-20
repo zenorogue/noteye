@@ -28,6 +28,8 @@ MainScreen::MainScreen() {
   getmaxyx(stdscr, maxy, maxx);
   setSize(maxx, maxy);
   
+  refresh();
+  
   mscr = this;
   }
 
@@ -96,34 +98,63 @@ void redirectStd(FILE* f, int which, char *mode) {
 #endif
 
 #ifdef USELUA
+
+#define TRUECOLOR 0
+
 int lh_refreshconsole(lua_State *L) {
+  if(TRUECOLOR)
+    puts("\x1b[?25l");  
   for(int y=0; y<mscr->sy; y++)
   for(int x=0; x<mscr->sx; x++) {
-    move(y, x);
     int ic = mscr->get(x,y);
     
     int ch = getChar(ic);
     int ba24 = getBak(ic);
     int cl24 = getCol(ic);
 
-    int ba = ba24 == -1 ? -1 : findcol(ba24, 8, -1);
-    int cl = cl24 == -1 ? 7 : (ba24 != cl24) ? findcol(cl24, 16, ba) : ba;
-    
-    // fprintf(stderr, "ba24 = %x cl24 = %x ba = %d cl =%d\n", ba24, cl24, ba, cl);
-    
-    col(cl, ba);
-    // if(ba >= 0) bkgdset(COLOR_PAIR(16 + (ba & 7)));
     if(ch < 2) ch = 32;
     if(ch == 183) ch = '.';
     if(ch < 32) ch = '$';
     if(ch >= 128) ch = '?';
-    addch(ch);
+  
+    if(TRUECOLOR) {
+      if(x==0) printf("\x1b[%d;1H", y+1);
+      printf("\x1b[100m");
+      if(cl24 != -1)
+        printf("\x1b[38;2;%d;%d;%dm", (cl24>>16)&255, (cl24>>8)&255, (cl24>>0)&255);
+      if(ba24 != -1)
+        printf("\x1b[48;2;%d;%d;%dm", (ba24>>16)&255, (ba24>>8)&255, (ba24>>0)&255);
+      putchar(ch);
+      }
+    else {
+      move(y, x);
+      int ba = ba24 == -1 ? -1 : findcol(ba24, 8, -1);
+      int cl = cl24 == -1 ? 7 : (ba24 != cl24) ? findcol(cl24, 16, ba) : ba;
+      
+      // fprintf(stderr, "ba24 = %x cl24 = %x ba = %d cl =%d\n", ba24, cl24, ba, cl);
+      
+      col(cl, ba);
+      // if(ba >= 0) bkgdset(COLOR_PAIR(16 + (ba & 7)));
+      addch(ch);
+      }
     }
   if(lua_gettop(L) >= 2) {
-    move(luaInt(1), luaInt(2));
+    if(TRUECOLOR)
+      printf("\x1b[%d;%dH", luaInt(2)+1, luaInt(1)+1);
+    else
+      move(luaInt(1), luaInt(2));
     }
-  if(lua_gettop(L) >= 3) curs_set(luaInt(3));
-  refresh();
+  if(lua_gettop(L) >= 3) {
+    if(TRUECOLOR) {
+      if(luaInt(3))
+        puts("\x1b[?25h");
+      else
+        puts("\x1b[?25l");
+      }
+    else
+      curs_set(luaInt(3));
+    }
+  if(!TRUECOLOR) refresh();
   return 0;
   }
 

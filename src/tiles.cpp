@@ -381,7 +381,7 @@ int getBak(int x) {
 
 int tileSetFont(int x, Font *f) {
   Get(TileImage, TI, x);
-  if(TI && TI->chid >= 0 && TI->chid < 256) return f->ti[TI->chid];
+  if(TI && TI->chid >= 0 && TI->chid < 256) return f->gettile(TI->chid);
 
   Get(TileRecolor, TR, x);
   if(TR) return addRecolor(tileSetFont(TR->t1, f), TR->color, TR->mode);
@@ -552,7 +552,7 @@ int lh_gavcoba(lua_State *L) {
 
 int lh_tileavcobaf(lua_State *L) {
   int kv = luaInt(1);
-  Font *F = luaO(4, Font);
+  BitmapFont *F = luaO(4, BitmapFont);
   if(kv < 0 || kv >= F->cnt) kv = 32;
   return noteye_retInt(L, 
     addMerge(addFill(luaInt(3), 0xFFFFFF), addRecolor(F->ti[kv], luaInt(2), recDefault), false)

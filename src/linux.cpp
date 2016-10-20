@@ -226,7 +226,7 @@ void LinuxProcess::drawChar(int c) {
       s->get(curx, cury) = 
         addMerge(
           brushback,
-          addRecolor(f->ti[c], brushColor, 0xffffff),
+          addRecolor(f->gettile(c), brushColor, 0xffffff),
           false
           );
       curx++;
@@ -446,7 +446,7 @@ void LinuxProcess::setColor() {
   // brush.back = vgacol[ mtrans[back] ];
   brushColor = vgacol[ mtrans[fore] | (bright ? 8 : 0)];
   brushback = addFill(vgacol[ mtrans[back] ], 0xffffff);
-  brush0 = addMerge(brushback, addRecolor(f->ti[32], brushColor, 0xffffff), false);
+  brush0 = addMerge(brushback, addRecolor(f->gettile(32), brushColor, 0xffffff), false);
   }
 
 void LinuxProcess::applyM(int c) {
