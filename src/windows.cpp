@@ -92,7 +92,7 @@ struct WinProcess : Process {
 
       int C = addMerge(
         addFill(vgacol[nc.Attributes >> 4], 0xFFFFFF),
-        addRecolor(f->ti[(unsigned char) nc.Char.AsciiChar], vgacol[nc.Attributes & 15], recDefault),
+        addRecolor(f->gettile((unsigned char) nc.Char.AsciiChar), vgacol[nc.Attributes & 15], recDefault),
         false
         );
 

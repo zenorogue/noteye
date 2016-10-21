@@ -1,3 +1,7 @@
+-- Necklace of the Eye v8.4 roguelike frontend
+-- Copyright (C) 2010-2016 Zeno Rogue, see noteye.noe for details
+-- call functions from the NotEye library, via FFI
+
 local ffi = require("ffi")
 
 ffi.cdef[[
@@ -24,24 +28,26 @@ ffi.cdef[[
   void scrset(int scr, int x, int y, int val);
   ]]
 
-tilemergep = ffi.C.addMerge
-tilemerge = ffi.C.addMerge0
-tilemergeover = ffi.C.addMerge1
-tilecol = ffi.C.addRecolor
-tilespatial = ffi.C.addSpatial
-tilelayer = ffi.C.addLayer
-getlayer = ffi.C.distillLayer
-getdistill = ffi.C.distill
-tilexf = ffi.C.addTransform
-tilealpha = ffi.C.addFill
-addtile = ffi.C.addTileID
+local noteyelib = ffi.os == "Windows" and ffi.load("noteye") or ffi.C
 
-gchv = ffi.C.getChar
-gba = ffi.C.getBak
--- gch = ffi.C.getChar2
-gco = ffi.C.getCol
-gimg = ffi.C.getImage
+tilemergep = noteyelib.addMerge
+tilemerge = noteyelib.addMerge0
+tilemergeover = noteyelib.addMerge1
+tilecol = noteyelib.addRecolor
+tilespatial = noteyelib.addSpatial
+tilelayer = noteyelib.addLayer
+getlayer = noteyelib.distillLayer
+getdistill = noteyelib.distill
+tilexf = noteyelib.addTransform
+tilealpha = noteyelib.addFill
+addtile = noteyelib.addTileID
 
-scrget = ffi.C.scrget
-scrset = ffi.C.scrset
-saveimage = ffi.C.saveimage
+gchv = noteyelib.getChar
+gba = noteyelib.getBak
+-- gch = noteyelib.getChar2 [DOES NOT WORK FOR SOME REASON]
+gco = noteyelib.getCol
+gimg = noteyelib.getImage
+
+scrget = noteyelib.scrget
+scrset = noteyelib.scrset
+saveimage = noteyelib.saveimage
