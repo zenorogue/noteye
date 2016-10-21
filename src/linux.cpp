@@ -43,7 +43,7 @@ struct LinuxProcess : Process {
   void drawChar(int c);
   int gp(int x, int dft);
   
-  void applyM(int i);
+  void applyM(int i, int& state);
 
   bool checkEvent(lua_State *L);
   void sendRawKeys(const char *buf, int q);
@@ -342,7 +342,8 @@ void LinuxProcess::drawChar(int c) {
       if(cury >= s->sy) cury = 0;
       }
     else if(c == 'm') {
-      for(int i=0; i<=nparam; i++) applyM(apar[i]);
+      int state = 0;
+      for(int i=0; i<=nparam; i++) applyM(apar[i], state);
       }
     else if(c == 'K') {
       switch(gp(0, 0)) {
@@ -444,13 +445,63 @@ void LinuxProcess::drawChar(int c) {
 void LinuxProcess::setColor() {
   int mtrans[8] = {0, 4, 2, 6, 1, 5, 3, 7};
   // brush.back = vgacol[ mtrans[back] ];
-  brushColor = vgacol[ mtrans[fore] | (bright ? 8 : 0)];
-  brushback = addFill(vgacol[ mtrans[back] ], 0xffffff);
+  brushColor = fore < 16 ? vgacol[ mtrans[fore] | (bright ? 8 : 0)] : fore;
+  int backcolor = back < 8 ? vgacol[mtrans[back]] : back;
+  brushback = addFill(backcolor, 0xffffff);
   brush0 = addMerge(brushback, addRecolor(f->gettile(32), brushColor, 0xffffff), false);
   }
 
-void LinuxProcess::applyM(int c) {
-  if(c == -1) ;
+static void set_xterm256(noteyecolor& col, int code) {
+  if(code < 16) col = code;
+  else if(code >= 0xE8) col = 0x7000000 + 0x10101 * (255 * (code - 0xE8) / 23);
+  else {
+    code -= 16;
+    for(int i=0; i<3; i++) {
+      part(col, i) = (code % 6) * 51; code /= 6;
+      }
+    }
+  }
+
+void LinuxProcess::applyM(int c, int& state) {
+  noteyecolor& f (* (noteyecolor*) &fore);
+  noteyecolor& b (* (noteyecolor*) &back);
+  if(state == 1 && c == 2) {
+    state = 3;
+    }
+  else if(state == 1 && c == 5) {
+    state = 9;
+    }
+  else if(state == 3) {
+    part(f, 2) = c; state += 2;
+    }
+  else if(state == 5) {
+    part(f, 1) = c; state += 2;
+    }
+  else if(state == 7) {
+    part(f, 0) = c; setColor(); state = 0;
+    }
+  else if(state == 9) {
+    set_xterm256(f, c); setColor(); state = 0;
+    }
+  else if(state == 2 && c == 2) {
+    state = 4;
+    }
+  else if(state == 2 && c == 5) {
+    state = 10;
+    }
+  else if(state == 4) {
+    part(b, 2) = c; state += 2;
+    }
+  else if(state == 6) {
+    part(b, 1) = c; state += 2;
+    }
+  else if(state == 8) {
+    part(b, 0) = c; setColor(); state = 0;
+    }
+  else if(state == 10) {
+    set_xterm256(b, c); setColor(); state = 0;
+    }
+  else if(c == -1) ;
   else if(c == 0) {
     back = 0; fore = 7; bright = false; 
     setColor();
@@ -470,11 +521,21 @@ void LinuxProcess::applyM(int c) {
   else if(c >= 30 && c <= 37) {
     fore = c-30; setColor();
     }
+  else if(c == 38) {
+    if(!(fore & 0xF0000000)) fore <<= 24;
+    if(!(fore & 0xF0000000)) fore |= 0x7000000;
+    state = 1;
+    }
   else if(c == 39) {
     fore = 7; bright = false; setColor();
     }
   else if(c >= 40 && c <= 47) {
     back = c-40; setColor();
+    }
+  else if(c == 48) {
+    if(!(back & 0xF0000000)) fore <<= 24;
+    if(!(back & 0xF0000000)) fore |= 0x8000000;
+    state = 2;
     }
   else if(c == 49) {
     back = 0; setColor();

@@ -445,7 +445,7 @@ struct InternalProcess : Process {
   void drawChar(int c);
   int gp(int x, int dft);
   
-  void applyM(int i);
+  void applyM(int i, int& state);
 
   bool checkEvent(lua_State *L);
   void sendKey(int scancode, int keycode, int mod, bool down);
