@@ -558,8 +558,9 @@ void LinuxProcess::sendText(const string& s) {
   
 
 void LinuxProcess::sendKey(int scancode, int keycode, int mod, bool down) {
-  if(!down) return;
 
+  if(!down) return;
+  
   int sym = keycode;
   
   // bool shift = mod & (KMOD_LSHIFT|KMOD_RSHIFT);
@@ -580,6 +581,8 @@ void LinuxProcess::sendKey(int scancode, int keycode, int mod, bool down) {
 
   else if(sym == SDLK_RETURN) sendRawKeys("\r", 1);
   Snd(TAB, "\t")
+  
+  Snd(BACKSPACE, "\b")
 
   Snd(F1, "\x1b[[A")
   Snd(F2, "\x1b[[B")
@@ -632,6 +635,7 @@ void LinuxProcess::sendKey(int scancode, int keycode, int mod, bool down) {
 
   else if(sym >= 'a' && sym <= 'z' && (mod & (KMOD_LCTRL|KMOD_RCTRL))) {
     char retkey = sym - 96;
+    if(retkey == 7) retkey = 8;
     sendRawKeys(&retkey, 1);
     }
   
