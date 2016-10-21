@@ -48,6 +48,13 @@ havegfx = true
 -- also, translating TrueColor games back to 16 colors does not work well yet
 haveascii = false
 
+-- you can also change the mode by adding:
+-- noteyemode_gfx()               -- for graphical mode
+-- noteyemode_console_curses()    -- for the Curses/Windows console output
+-- noteyemode_console_16()        -- for ANSI 16-color console output
+-- noteyemode_console_256()       -- for 256-color xterm console output
+-- noteyemode_console_truecolor() -- for truecolor xterm console output
+
 -- input settings
 ------------------
 

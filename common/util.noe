@@ -595,3 +595,37 @@ function addusermod(x)
     logprint2("Error adding usermod: "..value)
     end
   end
+
+-- console configuration shortcuts
+function noteyemode_gfx()
+  haveascii = fals
+  havegfx = true
+  end
+
+function noteyemode_console_curses()
+  haveascii = true
+  havegfx = false
+  mode = modeASCII
+  setdirectansi(0)
+  end
+
+function noteyemode_console_16()
+  haveascii = true
+  havegfx = false
+  mode = modeASCII
+  setdirectansi(1)
+  end
+
+function noteyemode_console_256()
+  haveascii = true
+  havegfx = false
+  mode = modeASCII
+  setdirectansi(2)
+  end
+
+function noteyemode_console_truecolor()
+  haveascii = true
+  havegfx = false
+  mode = modeASCII
+  setdirectansi(4)
+  end
