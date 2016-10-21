@@ -675,12 +675,26 @@ struct NStream *openTCPStream(void *skt);
 void noteye_initnet();
 
 int addTile(struct Image *i, int ox, int oy, int sx, int sy, int trans);
+int addTileID(int id, int ox, int oy, int sx, int sy, int trans);
 int addSpatial(int t1, int sf);
 int addMerge(int t1, int t2, bool over);
+int addMerge0(int t1, int t2);
+int addMerge1(int t1, int t2);
 int addRecolor(int t1, int color, int mode);
 int addFill(int color, int alpha);
 int addTransform(int t1, double dx, double dy, double sx, double sy, double dz, double rot);
 int addLayer(int t1, int layerid);
+int distillLayer(int x, int layerid);
+int distill(int x, int sp);
+int getChar(int x); 
+int getBak(int x);
+char getChar2(int i);
+int getCol(int x);
+int getImage(int x);
+
+void saveimage(int id, const char *fname);
+int scrget(int scr, int x, int y);
+void scrset(int scr, int x, int y, int val);
 
 int getFppDown(struct TileImage *T);
 

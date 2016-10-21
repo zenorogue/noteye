@@ -6,6 +6,8 @@
 -- print("<NotEye reloaded>")
 -- logprint("<NotEye reloaded>")
 
+dofile(commondir.."ffi.noe")
+
 dofile(commondir.."vectors.noe")
 dofile(commondir.."util.noe")
 dofile(commondir.."menu.noe")

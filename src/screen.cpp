@@ -84,18 +84,6 @@ int lh_scrwrite(lua_State *L) {
   return 0;
   }
 
-int lh_scrget(lua_State *L) {
-  checkArg(L, 3, "scrget");
-  return noteye_retInt(L, luaO(1, Screen)->get(luaInt(2), luaInt(3)));
-  }
-
-int lh_scrset(lua_State *L) {
-  checkArg(L, 4, "scrset");
-  int& C ( luaO(1, Screen)->get(luaInt(2), luaInt(3)) );
-  C = luaInt(4);
-  return 0;
-  }
-
 int lh_scrsetsize(lua_State *L) {
   checkArg(L, 3, "scrsetsize");
   luaO(1, Screen)->setSize(luaInt(2), luaInt(3));
@@ -386,4 +374,15 @@ int lh_mapapply(lua_State *L) {
   }
 #endif
 
+int scrget(int scr, int x, int y) {
+  Screen* s = dbyId<Screen> (scr);
+  return s ? s->get(x,y) : 0;
+  }
+
+void scrset(int scr, int x, int y, int val) {
+  Screen* s = dbyId<Screen> (scr);
+  if(s) s->get(x,y) = val;
+  }
+
 }
+

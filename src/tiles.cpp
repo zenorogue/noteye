@@ -496,46 +496,14 @@ int distill(int x, int sp) {
 
 #ifdef USELUA
 
-int lh_tileMerge(lua_State *L) {
-  checkArg(L, 2, "tilemerge");
-  return noteye_retInt(L, addMerge(luaInt(1), luaInt(2), false));
+int addMerge0(int t1, int t2) { return addMerge(t1, t2, false); }
+int addMerge1(int t1, int t2) { return addMerge(t1, t2, true); }
+
+int addTileID(int id, int ox, int oy, int sx, int sy, int trans) {
+  return addTile(dbyId<Image> (id), ox, oy, sx, sy, trans);
   }
 
-int lh_tileMergeOver(lua_State *L) {
-  checkArg(L, 2, "tilemergeover");
-  return noteye_retInt(L, addMerge(luaInt(1), luaInt(2), true));
-  }
-
-int lh_addTile(lua_State *L) {
-  checkArg(L, 6, "addtile");
-  return noteye_retInt(L, addTile(luaO(1, Image), luaInt(2), luaInt(3), 
-    luaInt(4), luaInt(5),
-    luaInt(6)
-    ));
-  }
-
-int lh_gch(lua_State *L) {
-  int i = getChar(luaInt(1));
-  char c = i == -1 ? 0 : i;
-  lua_pushlstring(L, &c, 1);
-  return 1;
-  }
-
-int lh_gchv(lua_State *L) {
-  return noteye_retInt(L, getChar(luaInt(1)));
-  }
-
-int lh_gco(lua_State *L) {
-  return noteye_retInt(L, getCol(luaInt(1)));
-  }
-
-int lh_gimg(lua_State *L) {
-  return noteye_retInt(L, getImage(luaInt(1)));
-  }
-
-int lh_gba(lua_State *L) {
-  return noteye_retInt(L, getBak(luaInt(1)));
-  }
+char getChar2(int i) { return getChar(i); }
 
 int lh_gp2(lua_State *L) {
   Get(TileMerge, T, luaInt(1));
@@ -557,55 +525,6 @@ int lh_tileavcobaf(lua_State *L) {
   return noteye_retInt(L, 
     addMerge(addFill(luaInt(3), 0xFFFFFF), addRecolor(F->ti[kv], luaInt(2), recDefault), false)
     );
-  }
-
-int lh_tileAlpha(lua_State *L) {
-  checkArg(L, 2, "tileshadeof");
-  int tc = luaInt(1);
-
-  return noteye_retInt(L, addFill(tc, luaInt(2)));
-  }
-
-int lh_tileRecolor(lua_State *L) {
-  checkArg(L, 3, "tilecol");
-  return noteye_retInt(L, addRecolor(luaInt(1), luaInt(2), luaInt(3)));
-  }
-
-//--
-
-int lh_tileSpatial(lua_State *L) {
-  checkArg(L, 2, "tilespatial");
-  return noteye_retInt(L, addSpatial(luaInt(1), luaInt(2)));
-  }
-
-int lh_tileLayer(lua_State *L) {
-  checkArg(L, 2, "tilelayer");
-  return noteye_retInt(L, addLayer(luaInt(1), luaInt(2)));
-  }
-
-int lh_getlayer(lua_State *L) {
-  checkArg(L, 2, "getlayer");
-  return noteye_retInt(L, distillLayer(luaInt(1), luaInt(2)));
-  }
-
-int lh_getdistill(lua_State *L) {
-  checkArg(L, 2, "getdistill");
-  return noteye_retInt(L, distill(luaInt(1), luaInt(2)));
-  }
-
-//--
-
-int lh_tileTransform(lua_State *L) {
-  checkArg(L, 7, "tilexf");
-  return noteye_retInt(L, addTransform(
-    luaInt(1), 
-    (luaNum(2)),
-    (luaNum(3)),
-    (luaNum(4)),
-    (luaNum(5)),
-    (luaNum(6)),
-    (luaNum(7))
-    ));
   }
 
 int lh_freeformparam(lua_State *L) {

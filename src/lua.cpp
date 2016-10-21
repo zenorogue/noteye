@@ -218,6 +218,8 @@ int lh_geterrormsg(lua_State *L) {
   return 0;
   }
    
+#include "obsolete.cpp"
+
 void initLua() {
   LS = lua_open();
   
@@ -230,35 +232,17 @@ void initLua() {
   noteye_globalfun("newimage", lh_newimage);
   noteye_globalfun("imagetitle", lh_imagetitle);
   noteye_globalfun("fillimage", lh_fillimage);
-  noteye_globalfun("saveimage", lh_saveimage);
   noteye_globalfun("imgcopy", lh_imgcopy);
   noteye_globalfun("imggetsize", lh_imggetsize);
   noteye_globalfun("getpixel", lh_getpixel);
   noteye_globalfun("setpixel", lh_setpixel);
   
-  noteye_globalfun("addtile", lh_addTile);
-  noteye_globalfun("tilemerge", lh_tileMerge);
-  noteye_globalfun("tilemergeover", lh_tileMergeOver);
-  noteye_globalfun("tilecol", lh_tileRecolor);
-  noteye_globalfun("tilespatial", lh_tileSpatial);
-  noteye_globalfun("tilelayer", lh_tileLayer);
-  noteye_globalfun("tilexf", lh_tileTransform);
-  noteye_globalfun("tilealpha", lh_tileAlpha);
   noteye_globalfun("tilefreeform", lh_tileFreeform);
 
   noteye_globalfun("tiledebug", lh_tiledebug);
 
   noteye_globalfun("freeformparam", lh_freeformparam);
   noteye_globalfun("freeformparamflags", lh_freeformparamflags);
-  noteye_globalfun("getlayer", lh_getlayer);
-  noteye_globalfun("getdistill", lh_getdistill);
-
-  noteye_globalfun("gch", lh_gch);
-  noteye_globalfun("gchv", lh_gchv);
-  noteye_globalfun("gco", lh_gco);
-  noteye_globalfun("gba", lh_gba);
-  noteye_globalfun("gp2", lh_gp2);
-  noteye_globalfun("gimg", lh_gimg);
 
   noteye_globalfun("gavcoba", lh_gavcoba);
   noteye_globalfun("tileavcobaf", lh_tileavcobaf);
@@ -276,8 +260,6 @@ void initLua() {
 
   noteye_globalfun("newscreen", lh_newScreen);
   noteye_globalfun("scrwrite", lh_scrwrite);
-  noteye_globalfun("scrget", lh_scrget);
-  noteye_globalfun("scrset", lh_scrset);
   noteye_globalfun("scrcopy", lh_scrcopy);
   noteye_globalfun("scrfill", lh_scrfill);
   noteye_globalfun("drawscreen", lh_drawScreen);
@@ -313,6 +295,7 @@ void initLua() {
   noteye_globalfun("SDL_ShowCursor", lh_SDL_ShowCursor);
   
   noteye_globalfun("openconsole", lh_openconsole);
+  noteye_globalfun("setdirectansi", lh_setdirectansi);
   
 #ifndef INTERNALONLY
   noteye_globalfun("newprocess", lh_newProcess);
@@ -407,6 +390,8 @@ void initLua() {
   noteye_globalfun("setcrashstring", lh_setcrashstring);
   noteye_globalfun("getcrashstring", lh_getcrashstring);
   noteye_globalfun("geterrormsg", lh_geterrormsg);
+  
+  obsolete();
 
 
   // constants:
@@ -472,6 +457,8 @@ void initLua() {
   noteye_globalint("evMouseWheel", evMouseWheel);
   noteye_globalint("evWindowEvent", evWindowEvent);
   noteye_globalint("evKeyConsole", evKeyConsole);
+
+  noteye_globalfun("gp2", lh_gp2);
   
   noteye_globalstr("noteyeversion", NOTEYEVERSION);
   noteye_globalint("NOTEYEVER", NOTEYEVER);

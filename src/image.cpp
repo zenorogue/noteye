@@ -101,13 +101,12 @@ int lh_loadimage(lua_State *L) {
   return noteye_retObject(L, o);
   }
 
-int lh_saveimage(lua_State *L) {
-  checkArg(L, 2, "saveimage");
-  Image *o = luaO(1, Image);
-  if(useGL(o)) screenshotGL((Window*) o, luaStr(2));
-  else if(useSDL(o)) screenshotSDL((Window*) o, luaStr(2));
-  else SDL_SaveBMP(o->s, luaStr(2));
-  return 0;
+void saveimage(int id, const char *fname) {
+  Image *o = dbyId<Image> (id);
+  if(!o) return;
+  if(useGL(o)) screenshotGL((Window*) o, fname);
+  else if(useSDL(o)) screenshotSDL((Window*) o, fname);
+  else SDL_SaveBMP(o->s, fname);
   }
 
 int lh_newimage(lua_State *L) {
