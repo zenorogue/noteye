@@ -7,6 +7,7 @@
 namespace noteye {
 
 static MainScreen *mscr;
+static Screen *old;
 
 MainScreen::MainScreen() {
   initscr(); noecho(); keypad(stdscr, true); 
@@ -29,6 +30,9 @@ MainScreen::MainScreen() {
   setSize(maxx, maxy);
   
   refresh();
+  
+  old = new Screen;
+  old->setSize(maxx, maxy);
   
   mscr = this;
   }
@@ -99,14 +103,16 @@ void redirectStd(FILE* f, int which, char *mode) {
 
 #ifdef USELUA
 
-#define TRUECOLOR 0
+bool direct_ansi_output;
+int ansi_x = -1, ansi_y = -1;
 
 int lh_refreshconsole(lua_State *L) {
-  if(TRUECOLOR)
-    puts("\x1b[?25l");  
   for(int y=0; y<mscr->sy; y++)
   for(int x=0; x<mscr->sx; x++) {
     int ic = mscr->get(x,y);
+    
+    if(ic == old->get(x,y)) continue;
+    old->get(x,y) = ic;
     
     int ch = getChar(ic);
     int ba24 = getBak(ic);
@@ -117,14 +123,17 @@ int lh_refreshconsole(lua_State *L) {
     if(ch < 32) ch = '$';
     if(ch >= 128) ch = '?';
   
-    if(TRUECOLOR) {
-      if(x==0) printf("\x1b[%d;1H", y+1);
+    if(direct_ansi_output) {
+      if(x != ansi_x || y != ansi_y) {
+        printf("\x1b[%d;%dH", y+1, x+1);
+        ansi_x = x; ansi_y = y;
+        }
       printf("\x1b[100m");
       if(cl24 != -1)
         printf("\x1b[38;2;%d;%d;%dm", (cl24>>16)&255, (cl24>>8)&255, (cl24>>0)&255);
       if(ba24 != -1)
         printf("\x1b[48;2;%d;%d;%dm", (ba24>>16)&255, (ba24>>8)&255, (ba24>>0)&255);
-      putchar(ch);
+      putchar(ch); ansi_x++;
       }
     else {
       move(y, x);
@@ -139,13 +148,13 @@ int lh_refreshconsole(lua_State *L) {
       }
     }
   if(lua_gettop(L) >= 2) {
-    if(TRUECOLOR)
+    if(direct_ansi_output)
       printf("\x1b[%d;%dH", luaInt(2)+1, luaInt(1)+1);
     else
       move(luaInt(1), luaInt(2));
     }
   if(lua_gettop(L) >= 3) {
-    if(TRUECOLOR) {
+    if(direct_ansi_output) {
       if(luaInt(3))
         puts("\x1b[?25h");
       else
@@ -154,7 +163,7 @@ int lh_refreshconsole(lua_State *L) {
     else
       curs_set(luaInt(3));
     }
-  if(!TRUECOLOR) refresh();
+  if(!direct_ansi_output) refresh();
   return 0;
   }
 
@@ -171,6 +180,13 @@ int lh_openconsole(lua_State *L) {
 
   return retObjectEv(L, new MainScreen);
   }
+
+int lh_setdirectansi(lua_State *L) {
+  checkArg(L, 1, "setdirectansi");
+  direct_ansi_output = luaInt(1);
+  return 0;
+  }
+
 #endif
 
 // copied from Hydra Slayer
