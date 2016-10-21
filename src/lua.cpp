@@ -295,7 +295,6 @@ void initLua() {
   noteye_globalfun("SDL_ShowCursor", lh_SDL_ShowCursor);
   
   noteye_globalfun("openconsole", lh_openconsole);
-  noteye_globalfun("setdirectansi", lh_setdirectansi);
   
 #ifndef INTERNALONLY
   noteye_globalfun("newprocess", lh_newProcess);

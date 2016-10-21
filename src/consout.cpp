@@ -103,10 +103,27 @@ void redirectStd(FILE* f, int which, char *mode) {
 
 #ifdef USELUA
 
-bool direct_ansi_output;
+int direct_ansi_output;
 int ansi_x = -1, ansi_y = -1;
+noteyecolor ansi_ba24 = noteyecolor(-2), ansi_cl24 = noteyecolor(-2);
+
+int getansi(int v) { 
+  static int ansicodes[8] = {0,4,2,6,1,5,3,7};
+  return ansicodes[v&7];
+  }
+  
+int getfaint(int v) { return (v&8) ? 1 : 2; }
+
+static int part5(noteyecolor c, int p) { return (part(c,p)+25) / 51; }
+
+int getxterm256(noteyecolor c) {
+  return 16 + part5(c, 0) + part5(c, 1) * 6 + part5(c, 2) * 36;
+  }
 
 int lh_refreshconsole(lua_State *L) {
+  if(direct_ansi_output) {
+    printf("\x1b[?7l\x1b[?20l");
+    }
   for(int y=0; y<mscr->sy; y++)
   for(int x=0; x<mscr->sx; x++) {
     int ic = mscr->get(x,y);
@@ -115,30 +132,52 @@ int lh_refreshconsole(lua_State *L) {
     old->get(x,y) = ic;
     
     int ch = getChar(ic);
-    int ba24 = getBak(ic);
-    int cl24 = getCol(ic);
+    noteyecolor ba24 = getBak(ic);
+    noteyecolor cl24 = getCol(ic);
 
     if(ch < 2) ch = 32;
     if(ch == 183) ch = '.';
     if(ch < 32) ch = '$';
     if(ch >= 128) ch = '?';
   
+    int ba = int(ba24) == -1 ? -1 : findcol(ba24, 8, -1);
+    int cl = int(cl24) == -1 ? 7 : (ba24 != cl24) ? findcol(cl24, 16, ba) : ba;
+
     if(direct_ansi_output) {
       if(x != ansi_x || y != ansi_y) {
         printf("\x1b[%d;%dH", y+1, x+1);
         ansi_x = x; ansi_y = y;
         }
-      printf("\x1b[100m");
-      if(cl24 != -1)
-        printf("\x1b[38;2;%d;%d;%dm", (cl24>>16)&255, (cl24>>8)&255, (cl24>>0)&255);
-      if(ba24 != -1)
-        printf("\x1b[48;2;%d;%d;%dm", (ba24>>16)&255, (ba24>>8)&255, (ba24>>0)&255);
+      
+      if(ba24 != ansi_ba24  || cl24 != ansi_cl24) {
+        if(int(ba24) == -1)
+          printf("\x1b[49m");
+        else {
+#define SEP if(dosep) printf(";"); else { printf("\x1b["); dosep = true; }
+          bool dosep = false;
+          if(direct_ansi_output & 1) { SEP printf("4%d", getansi(ba)); }
+          if(direct_ansi_output & 2) { SEP printf("48;5;%d",getxterm256(ba24)); }
+          if(direct_ansi_output & 4) { SEP printf("48;2;%d;%d;%d", part(ba24,2), part(ba24,1), part(ba24,0)); }
+          if(dosep) printf("m");
+          }
+        if(int(cl24) == -1)
+          printf("\x1b[39m");
+        else {
+          bool dosep = false;
+          if(direct_ansi_output & 1) { SEP printf("3%d;%d", getansi(cl), getfaint(cl)); }
+          if(direct_ansi_output & 2) { SEP printf("38;5;%d",getxterm256(cl24)); }
+          if(direct_ansi_output & 4) { SEP printf("38;2;%d;%d;%d", part(cl24,2), part(cl24,1), part(cl24,0)); }
+          if(dosep) printf("m");
+          }
+#undef SEP
+        ansi_ba24 = ba24;
+        ansi_cl24 = cl24;
+        }
       putchar(ch); ansi_x++;
+      fflush(stdout);
       }
     else {
       move(y, x);
-      int ba = ba24 == -1 ? -1 : findcol(ba24, 8, -1);
-      int cl = cl24 == -1 ? 7 : (ba24 != cl24) ? findcol(cl24, 16, ba) : ba;
       
       // fprintf(stderr, "ba24 = %x cl24 = %x ba = %d cl =%d\n", ba24, cl24, ba, cl);
       
@@ -148,17 +187,23 @@ int lh_refreshconsole(lua_State *L) {
       }
     }
   if(lua_gettop(L) >= 2) {
-    if(direct_ansi_output)
-      printf("\x1b[%d;%dH", luaInt(2)+1, luaInt(1)+1);
+    if(direct_ansi_output) {
+      int y = luaInt(1);
+      int x = luaInt(2);
+      if(y != ansi_y || x != ansi_x) {
+        printf("\x1b[%d;%dH", y+1, x+1);
+        ansi_x = x; ansi_y = y;
+        }
+      }
     else
       move(luaInt(1), luaInt(2));
     }
   if(lua_gettop(L) >= 3) {
     if(direct_ansi_output) {
       if(luaInt(3))
-        puts("\x1b[?25h");
+        printf("\x1b[?25h");
       else
-        puts("\x1b[?25l");
+        printf("\x1b[?25l");
       }
     else
       curs_set(luaInt(3));
@@ -181,11 +226,7 @@ int lh_openconsole(lua_State *L) {
   return retObjectEv(L, new MainScreen);
   }
 
-int lh_setdirectansi(lua_State *L) {
-  checkArg(L, 1, "setdirectansi");
-  direct_ansi_output = luaInt(1);
-  return 0;
-  }
+void setdirectansi(int val) { direct_ansi_output = val; }
 
 #endif
 

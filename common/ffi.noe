@@ -26,6 +26,7 @@ ffi.cdef[[
   void saveimage(int id, const char *fname);
   int scrget(int scr, int x, int y);
   void scrset(int scr, int x, int y, int val);
+  void setdirectansi(int val);
   ]]
 
 local noteyelib = ffi.os == "Windows" and ffi.load("noteye") or ffi.C
@@ -51,3 +52,4 @@ gimg = noteyelib.getImage
 scrget = noteyelib.scrget
 scrset = noteyelib.scrset
 saveimage = noteyelib.saveimage
+setdirectansi = noteyelib.setdirectansi

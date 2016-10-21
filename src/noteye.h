@@ -695,6 +695,7 @@ int getImage(int x);
 void saveimage(int id, const char *fname);
 int scrget(int scr, int x, int y);
 void scrset(int scr, int x, int y, int val);
+void setdirectansi(int val);
 
 int getFppDown(struct TileImage *T);
 
