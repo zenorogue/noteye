@@ -4,10 +4,10 @@ all: ../hydra.exe ../noteye.exe
 CFLAGS=-O3
 DEF=-DHYDRA -DWINDOWS -DOPENGL
 
-noteye-ho.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp windows.cpp opengl.cpp
+noteye-ho.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp windows.cpp opengl.cpp utf8.cpp obsolete.cpp
 	g++ libnoteye.cpp -c -o noteye-ho.o -DOPENGL -DWINDOWS -DINTERNALONLY -DHYDRAONLY -DNOCONSOLE -DAVOID_NET $(CFLAGS)
 
-noteye-hn.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp windows.cpp opengl.cpp
+noteye-hn.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp windows.cpp opengl.cpp utf8.cpp obsolete.cpp
 	g++ libnoteye.cpp -c -o noteye-hn.o -DOPENGL -DWINDOWS $(CFLAGS)
 
 hydra-mingw.o: noteye-curses.h ../hydra/classes.cpp ../hydra/hydra.cpp ../hydra/mainmenu.cpp ../hydra/ui.cpp ../hydra/tutorial.cpp ../hydra/weapons.cpp ../hydra/data.cpp ../hydra/save.cpp ../hydra/achieve.cpp

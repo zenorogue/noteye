@@ -22,7 +22,7 @@ DEF=-DHYDRA -DLINUX -DOPENGL
 #noteye: noteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp
 #	$(CC) noteye.cpp -o noteye -lSDL -lSDL_image -llua5.1 -lutil -DLINUX -lSDL_net -lz
 
-libnoteye.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp noteye-curses.h opengl.cpp drawtile.cpp sdltex.cpp
+libnoteye.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp noteye-curses.h opengl.cpp drawtile.cpp sdltex.cpp utf8.cpp obsolete.cpp
 	$(CC) -fpic -I/usr/include/lua5.1 libnoteye.cpp -c -o libnoteye.o $(CFLAGS) $(DEF) $(TGT)
 
 noteye-jni.o: noteye-jni.cpp noteye.h
