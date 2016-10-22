@@ -1062,7 +1062,11 @@ function drawmessageTemp()
     table.remove(messages, table.getn(messages))
     end
   end
-  
+
+function drawconsolescreen()
+  V.scrcopy(IMG, 0, mainscreen, 0, D.conssize, TMAP_COPY)
+  end
+
 function drawandrefresh()
   pendingAnimations = false
   if haveascii then
@@ -1070,7 +1074,7 @@ function drawandrefresh()
       delayed_videomode()
       end
 
-    V.scrcopy(IMG, 0, mainscreen, 0, D.conssize, TMAP_COPY)
+    drawconsolescreen()
     drawmessage()
     V.refreshconsole(pcursor, pcursor.size or 1)
     end
