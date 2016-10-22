@@ -28,7 +28,9 @@ Screen* newScreen(int x, int y) {
 void Screen::write(int x, int y, const char *buf, Font *f, int color) {
   int colorstack[128], qcolorstack = 1;
   while(*buf) {
-    unsigned char ch = *(buf++);
+    int len = utf8_numbytes(buf, 0);
+    int ch = utf8_decode(buf, 0);
+    buf += len;
     if(ch == '\v') {
       char ch2 = *(buf++);
       if(qcolorstack < 1) qcolorstack = 1;
@@ -56,7 +58,7 @@ void Screen::write(int x, int y, const char *buf, Font *f, int color) {
         }
       else ch = '?';
       }
-      
+          
     int& c(get(x,y));
     int ti = f->gettile(ch);
     c = addRecolor(ti, color, recDefault);

@@ -43,7 +43,7 @@ function loadTTFont(fname, x, y, ext, aname)
 
 hexFF0000FF = tonumber("FF0000FF", 16)
 
-function ttf_getAtSize(F, sx, sy)
+function ttf_getAtSize_old(F, sx, sy)
   local id = sx * 1000 + sy
   if F.sizes[id] then
     return F.sizes[id]
@@ -74,6 +74,52 @@ function ttf_getAtSize(F, sx, sy)
   F2.png = P
   F2.alias = imagealias(P, F.name..".ttf")
   F2.font = fontadj.simpleA(P,1,256,Psize.x,Psize.y)
+
+  return F2
+  end
+
+function ttf_getAtSize(F, sx, sy)
+  local id = sx * 1000 + sy
+  if F.sizes[id] then
+    return F.sizes[id]
+    end
+  
+  local F2 = {}
+  F.sizes[id] = F2
+  
+  local P = newimage(sx, sy*256, 0)
+
+  local Psize = imggetsize(P)
+  
+  local ts = 1
+  while true do
+    ts = ts + 1
+    local size = ttfgetsize(F.ttfont, ts, "M", 0)
+    if size.x > sx or size.y > sy then
+      break
+      end
+    end
+  ts = ts - 1
+  -- print("font size used: "..ts)
+
+  F2.nextid = 0
+
+  F2.png = P
+  F2.alias = imagealias(P, F.name..".ttf")
+  -- F2.font = fontadj.simpleA(P,1,256,Psize.x,Psize.y)
+  -- local bfont = newfont(P, 1, 256, transAlpha)
+  F2.font = newdynamicfont(function(x) 
+    rendertext(F.ttfont, ts, x, hexFF0000FF, P, V(sx/2, sy*F2.nextid+sy/2), V(-.5,-.5))
+    for x=0,sx-1 do for y=sy*F2.nextid,sy*F2.nextid+sy-1 do
+      local c = getpixel(P,x,y)
+      c = hex1000000 * colorpart(c, 0) + 255
+      setpixel(P, x,y, c)
+      end end
+    local t = addtile(P, 0, sy*F2.nextid, sx, sy, transAlpha)
+    F2.nextid = F2.nextid + 1
+    return t
+    -- return fget(bfont, x) 
+    end)
 
   return F2
   end

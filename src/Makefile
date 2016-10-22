@@ -2,6 +2,8 @@ all: ../noteye
 
 #for development:
 #CFLAGS=-Wall -Werror -g
+#CC=g++-4.6
+
 #for release:
 CFLAGS=-O9 -Wall
 
@@ -9,6 +11,7 @@ TGT=
 #TGT=-m32
 
 #link with lua or luajit?
+#note: recent versions of NotEye no longer work with standard Lua
 #LUAVER=-llua5.1
 LUAVER=-lluajit-5.1
 
@@ -16,30 +19,30 @@ LUAVER=-lluajit-5.1
 DEF=-DHYDRA -DLINUX -DOPENGL -O9
 
 #noteye: noteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp
-#	g++ noteye.cpp -o noteye -lSDL -lSDL_image -llua5.1 -lutil -DLINUX -lSDL_net -lz
+#	$(CC) noteye.cpp -o noteye -lSDL -lSDL_image -llua5.1 -lutil -DLINUX -lSDL_net -lz
 
 libnoteye.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp noteye-curses.h opengl.cpp drawtile.cpp sdltex.cpp
-	g++ -fpic -I/usr/include/lua5.1 libnoteye.cpp -c -o libnoteye.o $(CFLAGS) $(DEF) $(TGT)
+	$(CC) -fpic -I/usr/include/lua5.1 libnoteye.cpp -c -o libnoteye.o $(CFLAGS) $(DEF) $(TGT)
 
 noteye-jni.o: noteye-jni.cpp noteye.h
-	g++ -fpic -I. noteye-jni.cpp -c -o noteye-jni.o $(CFLAGS) $(DEF)
+	$(CC) -fpic -I. noteye-jni.cpp -c -o noteye-jni.o $(CFLAGS) $(DEF)
 
 # dynamic library (used for development)
 ../libnoteye.so: libnoteye.o noteye-jni.o
-	g++ -shared -Wl,-soname,libnoteye.so -o ../libnoteye.so libnoteye.o noteye-jni.o -lSDL2 -lSDL2_image $(LUAVER) -lutil -lSDL2_mixer -lSDL2_net -lGL -lGLU $(TGT) -lz -lcurses -lSDL2_ttf
+	$(CC) -shared -Wl,-soname,libnoteye.so -o ../libnoteye.so libnoteye.o noteye-jni.o -lSDL2 -lSDL2_image $(LUAVER) -lutil -lSDL2_mixer -lSDL2_net -lGL -lGLU $(TGT) -lz -lcurses -lSDL2_ttf
 
 # static library (used for Steam version)
 ../libnoteye.a: libnoteye.o noteye-jni.o
 	ar rcs ../libnoteye.a libnoteye.o noteye-jni.o
 
 hydra.o: noteye-curses.h ../hydra/classes.cpp ../hydra/hydra.cpp ../hydra/mainmenu.cpp ../hydra/ui.cpp ../hydra/tutorial.cpp ../hydra/weapons.cpp ../hydra/data.cpp ../hydra/save.cpp ../hydra/achieve.cpp ../hydra/utils.cpp ../hydra/level.cpp ../hydra/monster.cpp ../hydra/drawhydras.cpp
-	g++ ../hydra/hydra.cpp -c -o hydra.o -DNOTEYE $(CFLAGS) $(TGT) $(DEF)
+	$(CC) ../hydra/hydra.cpp -c -o hydra.o -DNOTEYE $(CFLAGS) $(TGT) $(DEF)
 
 ../noteye: ../libnoteye.so hydra.o noteye-main.cpp ../hydra/hydra-noteye.cpp
-	g++ $(DEF) -Wl,-rpath,. -Wl,-rpath,/usr/share/noteye hydra.o noteye-main.cpp -o ../noteye ../libnoteye.so -lGL -lGLU $(TGT)
+	$(CC) $(DEF) -Wl,-rpath,. -Wl,-rpath,/usr/share/noteye hydra.o noteye-main.cpp -o ../noteye ../libnoteye.so -lGL -lGLU $(TGT)
 
 #../noteye: ../libnoteye.so noteye-main.cpp noteye.h
-#	g++ -Wl,-rpath,. noteye-main.cpp -o ../noteye ../libnoteye.so
+#	$(CC) -Wl,-rpath,. noteye-main.cpp -o ../noteye ../libnoteye.so
 
 DESTDIR = /usr/share/noteye
 

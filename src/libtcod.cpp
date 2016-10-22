@@ -31,6 +31,7 @@ typedef uint32_t Uint32;
 #include "image.cpp"
 #include "tiles.cpp"
 #include "font.cpp"
+#include "utf8.cpp"
 #include "screen.cpp"
 
 int imagenotfound(string s) {

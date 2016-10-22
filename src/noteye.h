@@ -699,6 +699,10 @@ void scrset(int scr, int x, int y, int val);
 void setdirectansi(int val);
 void setconsolewindowtitle(const char *s);
 
+int utf8_numbytes(const char *s, int pos = 0);
+int utf8_decode(const char *s, int pos = 0);
+const char *utf8_encode(int i);
+
 int getFppDown(struct TileImage *T);
 
 // functions useful for those who have no access to C++
