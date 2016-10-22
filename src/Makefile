@@ -17,7 +17,7 @@ TGT=
 LUAVER=-lluajit-5.1
 
 # note: for Raspberry Pi (and possibly others) add -DRASPBERRY_FIX
-DEF=-DHYDRA -DLINUX -DOPENGL -O9
+DEF=-DHYDRA -DLINUX -DOPENGL
 
 #noteye: noteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp
 #	$(CC) noteye.cpp -o noteye -lSDL -lSDL_image -llua5.1 -lutil -DLINUX -lSDL_net -lz
