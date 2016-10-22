@@ -27,6 +27,7 @@ ffi.cdef[[
   int scrget(int scr, int x, int y);
   void scrset(int scr, int x, int y, int val);
   void setdirectansi(int val);
+  void setconsolewindowtitle(const char *s);
   ]]
 
 local noteyelib = ffi.os == "Windows" and ffi.load("noteye") or ffi.C
@@ -42,6 +43,7 @@ getdistill = noteyelib.distill
 tilexf = noteyelib.addTransform
 tilealpha = noteyelib.addFill
 addtile = noteyelib.addTileID
+setconsolewindowtitle = noteyelib.setconsolewindowtitle
 
 gchv = noteyelib.getChar
 gba = noteyelib.getBak
@@ -53,3 +55,7 @@ scrget = noteyelib.scrget
 scrset = noteyelib.scrset
 saveimage = noteyelib.saveimage
 setdirectansi = noteyelib.setdirectansi
+
+bAND = bit.band
+bOR = bit.bor
+bXOR = bit.bxor

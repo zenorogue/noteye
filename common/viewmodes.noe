@@ -219,6 +219,7 @@ mainwindowtitle = "NotEye (no title set)"
 function setmainwindowtitle(t)
   mainwindowtitle = t
   if Gfx then setwindowtitle(Gfx, t) end
+  if haveascii then setconsolewindowtitle(t) end
   end
 
 -- called to change the video mode, and calculate all the parameters

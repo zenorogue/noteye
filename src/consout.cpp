@@ -228,6 +228,10 @@ int lh_openconsole(lua_State *L) {
 
 void setdirectansi(int val) { direct_ansi_output = val; }
 
+void setconsolewindowtitle(const char *s) {
+  printf("\x1b]0;%s\a", s);
+  }
+
 #endif
 
 // copied from Hydra Slayer

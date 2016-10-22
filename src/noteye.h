@@ -25,7 +25,7 @@
 #define NOTEYEVERSION "8.3"
 #define NOTEYEVER 0x830
 #define NOTEYEPATCH 6
-#define NOTEYEPATCHSTR "P7"
+#define NOTEYEPATCHSTR "P8"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -696,6 +696,7 @@ void saveimage(int id, const char *fname);
 int scrget(int scr, int x, int y);
 void scrset(int scr, int x, int y, int val);
 void setdirectansi(int val);
+void setconsolewindowtitle(const char *s);
 
 int getFppDown(struct TileImage *T);
 
