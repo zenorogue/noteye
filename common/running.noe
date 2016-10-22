@@ -761,8 +761,8 @@ function luag.sendkey(ev)
   end
 
 function luag.sendtext(s)
-  for i=1, #s do
-    luag.sendkey({type = evTextInput, char = s:sub(i,i)})
+  for i=1, utf8.len(s) do
+    luag.sendkey({type = evTextInput, char = utf8.sub(s,i,i)})
     end
   end
 
