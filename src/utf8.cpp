@@ -76,7 +76,7 @@ myuchar utf8_encode_array(int i) {
   return res; 
   }
 
-const char *utf8_encode(int i) { static myuchar res = utf8_encode_array(i); return (char*) &res; }
+const char *utf8_encode(int i) { static myuchar res; res = utf8_encode_array(i); return (char*) &res; }
 
 int utf8_strlen(const char *s) { 
   int i = 0;
