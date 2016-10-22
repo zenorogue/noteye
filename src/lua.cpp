@@ -237,6 +237,7 @@ void initLua() {
   noteye_globalfun("getobjectinfo", lh_getobjectinfo);
 
   noteye_globalfun("newfont", lh_newfont);
+  noteye_globalfun("newdynamicfont", lh_newdynamicfont);
   noteye_globalfun("fget", lh_getchar);
   noteye_globalfun("fgetav", lh_getcharav);
 

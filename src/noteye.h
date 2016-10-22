@@ -342,13 +342,14 @@ struct BitmapFont : Font {
   int gettile(const char* chr);
   };
 
-/* struct TTBFont : Font { 
-  int sizex, sizey;
-  TTFont *base;
-  map<int, int> ti;
+struct DynamicFont : Font { 
+  int ref;
+  struct lua_State *L;
+  ~DynamicFont();
+  std::map<int, int> ti;
   int gettile(int id);
   int gettile(const char* chr);
-  }; */
+  };
 
 #ifndef NOTTF
 // TrueType font

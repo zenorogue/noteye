@@ -636,3 +636,14 @@ function consoleout_truecolor()
   mode = modeASCII
   setdirectansi(4)
   end
+
+if not dftested then
+  testf = newdynamicfont(function(x) 
+    print("dynamic font called for: "..x) 
+    return 8
+    end)
+  print(fget(testf, "x"))
+  print(fget(testf, "x"))
+  print(fget(testf, "ą"))
+  dftested = true
+  end

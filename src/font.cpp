@@ -4,8 +4,8 @@
 
 namespace noteye {
 
-/*
-int utf8_numbytes(const char *s) {
+int utf8_numbytes(const char *s, int pos = 0) {
+  s += pos;
   int res = 0;
   for(int i = 7; i > 0; --i)
     if(*s & (1 << i)) res++;
@@ -13,49 +13,67 @@ int utf8_numbytes(const char *s) {
   return res;
   }
 
-int utf8_ofs[5] = {0, 0x80, 0x2080, 0x82080, 0x2082080};
+// int utf8_ofs[5] = {0, 0x80, 0x2080, 0x82080, 0x2082080};
 
-int utf8_encode(const char *s) {
+int utf8_decode(const char *s, int pos = 0) {
   int nb = 0;
+  s += pos;
   for(int i = 7; i > 0; --i) {
     if(*s & (1 << i)) { nb++; continue; }
     int res = *s & ((1 << i) - 1);
     s++; nb--;
-    int ofs = utf8_ofs[nb];
-    while(nb) {
-      res <<= 7;
-      res += (*s) & 127;
+    // int ofs = utf8_ofs[nb];
+    while(nb>0) {
+      res <<= 6;
+      res += (*s) & 63;
       s++; nb--;
       }
-    return res + ofs;
+    return res;
     }
+  return 0;
   }
 
-typedef std::array<char, 6> myuchar;
+struct myuchar {
+  char c[7];
+  char& operator[] (int i) { return c[i]; }
+  };
 
-myuchar utf8_decode(int i) {
+myuchar utf8_encode(int i) {
   myuchar res;
-  for(int k=0; k<6; k++) res[k] = 0;
-  if(i < 0x80) { res[0] = i; return res; } else i -= 0x80;
-  if(i < 0x2000) { res[0] = 128 + (i>>7); res[1] = 0x80 + (i & 127); return res; }
-  else i -= 0x2000;
-  if(i < 0x80000) { res[0] = 192 + (i >> 14); res[1] = 0x80 + ((i>>7) & 127); res[2] = 0x80 + (i&127); return res; }
-  else i -= 0x80000;
-  if(i < 0x2000000) { 
-    res[0] = 224 + (i >> 21); 
-    res[1] = 0x80 + ((i>>14) & 127); 
-    res[2] = 0x80 + ((i>>7)  & 127); 
-    res[3] = 0x80 + ((i>>0)  & 127); 
+  for(int k=0; k<7; k++) res[k] = 0;
+  if(i < 0x80) { res[0] = i; return res; } // else i -= 0x80;
+  if(i < 0x800) { res[0] = 192 + (i>>6); res[1] = 0x80 + (i & 63); return res; }
+  // else i -= 0x2000;
+  if(i < 0x10000) { res[0] = 224 + (i >> 12); res[1] = 0x80 + ((i>>6) & 63); res[2] = 0x80 + (i&63); return res; }
+  // else i -= 0x80000;
+  if(i < 0x200000) { 
+    res[0] = 240 + (i >> 18); 
+    res[1] = 0x80 + ((i>>12) & 63); 
+    res[2] = 0x80 + ((i>>6)  & 63); 
+    res[3] = 0x80 + ((i>>0)  & 63); 
     return res; 
     }
-  res[0] = 240 + (i >> 28); 
-  res[1] = 0x80 + ((i>>21) & 127); 
-  res[2] = 0x80 + ((i>>14) & 127); 
-  res[3] = 0x80 + ((i>>7)  & 127); 
-  res[4] = 0x80 + ((i>>0)  & 127); 
+  if(i < 0x4000000) {
+    res[0] = 248 + (i >> 24); 
+    res[1] = 0x80 + ((i>>18) & 63); 
+    res[2] = 0x80 + ((i>>12) & 63); 
+    res[3] = 0x80 + ((i>>6)  & 63); 
+    res[4] = 0x80 + ((i>>0)  & 63); 
+    return res;
+    }
+  if(true) {
+    res[0] = 252 + (i >> 30); 
+    res[1] = 0x80 + ((i>>24) & 63); 
+    res[2] = 0x80 + ((i>>18) & 63); 
+    res[3] = 0x80 + ((i>>12) & 63); 
+    res[4] = 0x80 + ((i>>6)  & 63); 
+    res[5] = 0x80 + ((i>>0)  & 63); 
+    return res;
+    }
   return res; 
   }
-*/
+
+const char *utf8_encode2(int i) { static myuchar res = utf8_encode(i); return (char*) &res; }
 
 // -- bitmap fonts --
 
@@ -85,21 +103,6 @@ int BitmapFont::gettile(const char *s) {
   return gettile((unsigned char) s[0]);
   }
 
-/*
-// -- TTB fonts --
-
-int TTBFont::gettile(const char *s) {
-  return gettile(utf8_encode(s));
-  }
-
-int TTBFont::gettile(int i) {
-  if(ti.count(i)) return ti[i];
-  myuchar uc = utf8_encode(i);
-  if(i < 0 || i >= cnt) return 0;
-  return noteye_retInt(L, ti[i]);
-  }
-*/
-
 #ifdef USELUA
 int lh_newfont(lua_State *L) {
   checkArg(L, 4, "newfont");
@@ -108,7 +111,7 @@ int lh_newfont(lua_State *L) {
 
 int lh_getchar(lua_State *L) {
   checkArg(L, 2, "getchar");
-  return noteye_retInt(L, luaO(1, Font)->gettile(luaStr(2)[0]));
+  return noteye_retInt(L, luaO(1, Font)->gettile(luaStr(2)));
   }
 
 int lh_getcharav(lua_State *L) {
@@ -410,6 +413,43 @@ int lh_ttfrender(lua_State *L) {
   i->changes++;
 
   return noteye_retInt(L, 1);
+  }
+#endif
+
+DynamicFont::~DynamicFont() {
+  // todo make this work
+  // luaL_unref(L, LUA_REGISTRYINDEX, ref); 
+  }
+
+int DynamicFont::gettile(const char *s) {
+  return gettile(utf8_decode(s));
+  }
+
+int DynamicFont::gettile(int i) {
+  if(ti.count(i)) return ti[i];
+  myuchar uc = utf8_encode(i);
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+  lua_pushstring(L, (char*) &uc);
+  if (lua_pcall(L, 1, 1, 0) != 0) {
+    noteyeError(16, "error running dynamicfont", lua_tostring(L, -1));
+    return 0;
+    }
+  int res = noteye_argInt(L, -1);
+  lua_pop(L, 1);
+  
+  ti[i] = res;
+  return res;
+  }
+
+#ifdef USELUA
+int lh_newdynamicfont(lua_State *L) {
+  checkArg(L, 1, "newdynamicfont");
+  lua_pushvalue(L, -1);
+  DynamicFont *f = new DynamicFont;
+  f->L = L;
+  f->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  return noteye_retObject(L, f);
   }
 #endif
 
