@@ -177,6 +177,11 @@ function luagame()
           end
         end
       end
+    
+    local s = "Welcome to Rąż, the Lua Sample!"
+    for i=1,utf8.len(s) do
+      lgput(V(20+i, 0), utf8.sub(s,i,i), vgaget(11), vgaget(1))
+      end
 
     lgput(player.at, "@", vgaget(14), vgaget(0))
     
