@@ -91,8 +91,8 @@ end
 --  return string.byte(x,1)
 --  end
 
-av = utf8.dec
-avf = utf8.dec
+av = function(x) return utf8.dec(x,0) end
+avf = function(x) return utf8.dec(x,0) end
 
 -- various cell transformations
 
