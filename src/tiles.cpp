@@ -525,10 +525,9 @@ int lh_gavcoba(lua_State *L) {
 
 int lh_tileavcobaf(lua_State *L) {
   int kv = luaInt(1);
-  BitmapFont *F = luaO(4, BitmapFont);
-  if(kv < 0 || kv >= F->cnt) kv = 32;
+  Font *F = luaO(4, Font);
   return noteye_retInt(L, 
-    addMerge(addFill(luaInt(3), 0xFFFFFF), addRecolor(F->ti[kv], luaInt(2), recDefault), false)
+    addMerge(addFill(luaInt(3), 0xFFFFFF), addRecolor(F->gettile(kv), luaInt(2), recDefault), false)
     );
   }
 
