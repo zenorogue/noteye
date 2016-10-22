@@ -204,6 +204,8 @@ int lh_refreshconsole(lua_State *L) {
         printf("\x1b[?25h");
       else
         printf("\x1b[?25l");
+      curs_set(luaInt(3));
+      refresh();
       }
     else
       curs_set(luaInt(3));
