@@ -319,7 +319,7 @@ function noteyemain()
     elseif lev.type == evTextInput or lev.type == evKeyConsole then
 
       userremap(lev)
-      lev.text = lev.text or (lev.char and string.char(lev.char))
+      lev.text = lev.text or (lev.char and utf8.enc(lev.char))
       local mgame = lev.text and menugames[lev.text]
 
       if lev.text == "q" then break

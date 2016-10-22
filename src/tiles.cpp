@@ -379,6 +379,11 @@ int getBak(int x) {
   return -1;
   }
 
+void tileSetChid(int x, int chid) {
+  TileImage *TI = dbyId<TileImage> (x);
+  if(TI) TI->chid = chid;
+  }
+
 int tileSetFont(int x, Font *f) {
   Get(TileImage, TI, x);
   if(TI && TI->chid >= 0 && TI->chid < 256) return f->gettile(TI->chid);

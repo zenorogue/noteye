@@ -99,7 +99,7 @@ function namediag()
 diaglayoutmenu = {}
 
 for i,v in pairs(diaglayouts) do
-  addtomenu(diaglayoutmenu, string.char(96+i),
+  addtomenu(diaglayoutmenu, utf8.enc(96+i),
     writechoice(diaglayouts[i][1]),
     function()
       picknumber("diaglayoutid", i)

@@ -116,6 +116,7 @@ function ttf_getAtSize(F, sx, sy)
       setpixel(P, x,y, c)
       end end
     local t = addtile(P, 0, sy*F2.nextid, sx, sy, transAlpha)
+    tilesetchid(t, utf8.dec(x,0))
     F2.nextid = F2.nextid + 1
     return t
     -- return fget(bfont, x) 

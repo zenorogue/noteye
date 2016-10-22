@@ -22,12 +22,19 @@ ffi.cdef[[
   char getChar2(int i);
   int getCol(int x);
   int getImage(int x);
+  void tileSetChid(int x, int chid);
 
   void saveimage(int id, const char *fname);
   int scrget(int scr, int x, int y);
   void scrset(int scr, int x, int y, int val);
   void setdirectansi(int val);
   void setconsolewindowtitle(const char *s);
+
+  int utf8_numbytes(const char *s, int pos);
+  int utf8_decode(const char *s, int pos);
+  const char *utf8_encode(int i);
+  int utf8_strlen(const char *s);
+  const char *utf8_substr(const char *s, int from, int len);
   ]]
 
 local noteyelib = ffi.os == "Windows" and ffi.load("noteye") or ffi.C
@@ -42,6 +49,8 @@ getlayer = noteyelib.distillLayer
 getdistill = noteyelib.distill
 tilexf = noteyelib.addTransform
 tilealpha = noteyelib.addFill
+tilesetchid = noteyelib.tileSetChid
+
 addtile = noteyelib.addTileID
 setconsolewindowtitle = noteyelib.setconsolewindowtitle
 
@@ -55,6 +64,13 @@ scrget = noteyelib.scrget
 scrset = noteyelib.scrset
 saveimage = noteyelib.saveimage
 setdirectansi = noteyelib.setdirectansi
+
+utf8 = {}
+utf8.nb = noteyelib.utf8_numbytes
+utf8.dec = noteyelib.utf8_decode
+utf8.enc = function(x) return ffi.string(noteyelib.utf8_encode(x)) end
+utf8.len = noteyelib.utf8_strlen
+utf8.sub = function(x,y,z) return ffi.string(noteyelib.utf8_substr(x,y,z)) end
 
 bAND = bit.band
 bOR = bit.bor

@@ -6,6 +6,7 @@ all: ../noteye
 
 #for release:
 CFLAGS=-O9 -Wall
+CC=g++
 
 TGT=
 #TGT=-m32

@@ -117,12 +117,12 @@ function dfthdr(title)
     while titl ~= "" do
       local i = string.find(titl, "\n")
       if i>conssize.x then 
-        scrwrite(IMG, 1, menuy, string.sub(titl, 1, conssize.x-1), Font, col)
+        scrwrite(IMG, 1, menuy, utf8.sub(titl, 1, conssize.x-1), Font, col)
         scrwrite(IMG, 0, menuy+1, "-", Font, vgaget(4))
-        titl = string.sub(titl, conssize.x)
+        titl = utf8.sub(titl, conssize.x, 9999)
       else
-        scrwrite(IMG, 1, menuy, string.sub(titl, 1, i-1), Font, col)
-        titl = string.sub(titl, i+1)
+        scrwrite(IMG, 1, menuy, utf8.sub(titl, 1, i-1), Font, col)
+        titl = utf8.sub(titl, i+1, 9999)
         col = vgaget(7)
         end
       menuy = menuy+1
@@ -350,7 +350,7 @@ function askstr(text, question, note, symbolfunction)
       elseif iskey(lev, KEYS.RETURN) or iskey(lev, KEYS.KP_ENTER) then 
         return text
       elseif iskey(lev, KEYS.BACKSPACE) then 
-        text = string.sub(text, 0, #text-1)
+        text = utf8.sub(text, 1, utf8.len(text)-1)
         redrawmenu()
         end
     elseif lev.type == evTextInput then

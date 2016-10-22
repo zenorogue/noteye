@@ -353,7 +353,7 @@ void drawMap() {
 char squareRootSign() { 
   InternalProcess* P = noteye_getinternal();
   Font* F = P ? P->f : NULL;
-  int i = F ? F->ti[64] : 0;
+  int i = F ? F->gettile(64) : 0;
   TileImage *ti = dynamic_cast<TileImage*> (noteye_getobj(i));
   if(ti && ti->i && ti->i->title.find("cp437") != string::npos) return 251;
   if(ti && ti->i && ti->i->title.find("fantasy") != string::npos) return 251;  

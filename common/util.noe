@@ -83,13 +83,16 @@ end
 
 -- ascii value
 
-function av(x)
-  return string.byte(x,1)
-  end
+--function av(x)
+--  return string.byte(x,1)
+--  end
 
-function avf(x)
-  return string.byte(x,1)
-  end
+--function avf(x)
+--  return string.byte(x,1)
+--  end
+
+av = utf8.dec
+avf = utf8.dec
 
 -- various cell transformations
 
@@ -408,7 +411,7 @@ function conschar(pressed)
     i = pressed.char
     if i<0 then i = i + 256 end
     i = i % 256
-    return string.char(i)
+    return utf8.enc(i)
     end
   return "?"
   end

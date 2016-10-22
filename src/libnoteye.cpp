@@ -26,6 +26,7 @@ using namespace std;
 #include "screen.cpp"
 #include "fpp.cpp"
 #include "iso.cpp"
+#include "utf8.cpp"
 #include "font.cpp"
 #include "process.cpp"
 #include "stream.cpp"

@@ -278,7 +278,7 @@ function nchecktext(ev)
     if i >= 97 and i <= 122 and ev.mod and bAND(ev.mod, KMOD.LSHIFT + KMOD.RSHIFT) > 0 then
       i = i - 32
       end
-    nsendtext(string.char(i))
+    nsendtext(utf8.enc(i))
     end
   end
 
@@ -300,7 +300,7 @@ function nsendkey(ev)
     --ev.keycode = ev.sdl
     --ev.scancode = ev.scancode or 0
     --nsendkey(ev)
-    if ev.sdl >= 256 then
+    if ev.sdl >= SDLKoffset then
       nsendkey({type = evKeyDown, keycode = ev.sdl, scancode = ev.sdl - SDLK.RIGHT + SDLSCAN.RIGHT, repeated = 0, mod = 0})
     else
       nsendtext(conschar(ev))

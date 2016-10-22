@@ -772,7 +772,7 @@ function luag.getch(releases)
     luag.kq[luag.kqfirst] = nil
     luag.kqfirst = luag.kqfirst+1
     if ret.type == 2 and not releases then return end
-    if ret.chr then ret.char = string.char(ret.chr) end
+    if ret.chr then ret.char = utf8.enc(ret.chr) end
 
     for c=0,8 do
       if keytabs.numpad[c] and iskey(ret, keytabs.numpad[c]) 

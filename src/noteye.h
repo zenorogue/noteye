@@ -692,6 +692,7 @@ int getBak(int x);
 char getChar2(int i);
 int getCol(int x);
 int getImage(int x);
+void tileSetChid(int x, int chid);
 
 void saveimage(int id, const char *fname);
 int scrget(int scr, int x, int y);
@@ -702,6 +703,8 @@ void setconsolewindowtitle(const char *s);
 int utf8_numbytes(const char *s, int pos = 0);
 int utf8_decode(const char *s, int pos = 0);
 const char *utf8_encode(int i);
+int utf8_strlen(const char *s);
+const char *utf8_substr(const char *s, int from, int len);
 
 int getFppDown(struct TileImage *T);
 

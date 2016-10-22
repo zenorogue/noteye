@@ -20,7 +20,7 @@ function tiletest()
       return tilefill(vgaget(x % 16))
       end
     local id = y*32+x
-    local ch = string.char(id)
+    local ch = utf8.enc(id)
     return bord(ch)
     end
   
