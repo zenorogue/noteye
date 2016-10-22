@@ -261,7 +261,11 @@ int curses_to_sdl[] = {
   CF(1) CF(2) CF(3) CF(4) CF(5) CF(6) CF(7) CF(8) CF(9) CF(10) CF(11) CF(12)
   CCK(A1, 7) CCK(A3, 9) CCK(C1, 1) CCK(C3, 3) CCK(B2, 5)  
   KEY_SLEFT, SDLK_LEFT, KMOD_RSHIFT,
-  KEY_SRIGHT, SDLK_RIGHT, KMOD_RSHIFT
+  KEY_SRIGHT, SDLK_RIGHT, KMOD_RSHIFT,
+  454, SDLK_KP_6, 0,
+  456, SDLK_KP_2, 0,
+  452, SDLK_KP_4, 0,
+  450, SDLK_KP_8, 0,
   };
 
 bool MainScreen::checkEvent(lua_State *L) {
