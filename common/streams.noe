@@ -300,7 +300,11 @@ function nsendkey(ev)
     --ev.keycode = ev.sdl
     --ev.scancode = ev.scancode or 0
     --nsendkey(ev)
-    nsendtext(conschar(ev))
+    if ev.sdl >= 256 then
+      nsendkey({type = evKeyDown, keycode = ev.sdl, scancode = ev.sdl - SDLK.RIGHT + SDLSCAN.RIGHT, repeated = 0, mod = 0})
+    else
+      nsendtext(conschar(ev))
+      end
     --if ev.char >= 32 and 
     --nchecktext(ev)
     --ev.type = evKeyUp
