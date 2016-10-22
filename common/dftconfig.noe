@@ -3,6 +3,17 @@
 
 -- NotEye configuration file
 
+-- Note: This file is mostly for backward compatibility. Unless
+-- you want something very weird, you do not need to edit it, 
+-- just edit the config inside NotEye and it will be saved. 
+-- Things like configuring NotEye for console output cannot 
+-- be done from the menus (but it is probably more convenient
+-- to add the line to the NOTEYEEXTRACONFIG environment variable,
+-- which is parsed just like config.noe, instead of editing this file).
+
+-- common/dftconfig.noe is the default config, and config.noe in the
+-- user config subdirectory is a copy.
+
 -- default visual settings:
 ----------------------------
 
@@ -48,12 +59,13 @@ havegfx = true
 -- also, translating TrueColor games back to 16 colors does not work well yet
 haveascii = false
 
--- you can also change the mode by adding:
--- noteyemode_gfx()               -- for graphical mode
--- noteyemode_console_curses()    -- for the Curses/Windows console output
--- noteyemode_console_16()        -- for ANSI 16-color console output
--- noteyemode_console_256()       -- for 256-color xterm console output
--- noteyemode_console_truecolor() -- for truecolor xterm console output
+-- you can also change the console output mode by adding:
+-- (using NOTEYEEXTRACONFIG suggested)
+-- consoleout_gfx()       -- for graphical mode
+-- consoleout_curses()    -- for the Curses/Windows console output
+-- consoleout_16()        -- for ANSI 16-color console output
+-- consoleout_256()       -- for 256-color xterm console output
+-- consoleout_truecolor() -- for truecolor xterm console output
 
 -- input settings
 ------------------

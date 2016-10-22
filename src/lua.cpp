@@ -129,18 +129,6 @@ int lh_logopen(lua_State *L) {
   return 0;
   }
 
-int lh_bAND(lua_State *L) {
-  return noteye_retInt(L, luaInt(1) & luaInt(2));
-  }
-
-int lh_bOR(lua_State *L) {
-  return noteye_retInt(L, luaInt(1) | luaInt(2));
-  }
-
-int lh_bXOR(lua_State *L) {
-  return noteye_retInt(L, luaInt(1) ^ luaInt(2));
-  }
-
 int lh_argv(lua_State *L) {
   checkArg(L, 1, "argv");
   int i = luaInt(1);
@@ -324,9 +312,6 @@ void initLua() {
   noteye_globalfun("logprint", lh_logprint);
   noteye_globalfun("logopen", lh_logopen);
 
-  noteye_globalfun("bAND", lh_bAND);
-  noteye_globalfun("bOR", lh_bOR);
-  noteye_globalfun("bXOR", lh_bXOR);
   noteye_globalfun("fpp", lh_fpp);
   noteye_globalfun("refreshconsole", lh_refreshconsole);
 

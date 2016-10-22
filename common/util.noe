@@ -302,6 +302,13 @@ function loadgameconfig()
       for k,v in pairs(delayconfig_table) do v() end
       end
     end
+  load_env_config("NOTEYEEXTRACONFIG2")
+  end
+
+function load_env_config(s)
+  s = os.getenv(s)
+  if s then assert(loadstring(s))()
+    end
   end
 
 function savegameconfigonexit()
@@ -597,33 +604,33 @@ function addusermod(x)
   end
 
 -- console configuration shortcuts
-function noteyemode_gfx()
+function consoleout_gfx()
   haveascii = fals
   havegfx = true
   end
 
-function noteyemode_console_curses()
+function consoleout_curses()
   haveascii = true
   havegfx = false
   mode = modeASCII
   setdirectansi(0)
   end
 
-function noteyemode_console_16()
+function consoleout_16()
   haveascii = true
   havegfx = false
   mode = modeASCII
   setdirectansi(1)
   end
 
-function noteyemode_console_256()
+function consoleout_256()
   haveascii = true
   havegfx = false
   mode = modeASCII
   setdirectansi(2)
   end
 
-function noteyemode_console_truecolor()
+function consoleout_truecolor()
   haveascii = true
   havegfx = false
   mode = modeASCII

@@ -69,3 +69,23 @@ int lh_scrset(lua_State *L) {
   noteye_globalfun("scrset", lh_scrset);
 
 */
+
+/*
+int lh_bAND(lua_State *L) {
+  return noteye_retInt(L, luaInt(1) & luaInt(2));
+  }
+
+int lh_bOR(lua_State *L) {
+  return noteye_retInt(L, luaInt(1) | luaInt(2));
+  }
+
+int lh_bXOR(lua_State *L) {
+  return noteye_retInt(L, luaInt(1) ^ luaInt(2));
+  }
+*/
+
+/*
+  noteye_globalfun("bAND", lh_bAND);
+  noteye_globalfun("bOR", lh_bOR);
+  noteye_globalfun("bXOR", lh_bXOR);
+*/
