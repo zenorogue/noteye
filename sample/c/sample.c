@@ -146,6 +146,9 @@ void rungame() {
   noteye_addstr("Press Ctrl+M to change NotEye modes, 'q' to win.");
   noteye_move(24, 15);
   noteye_addstr("F8 causes the NotEye script to crash.");
+
+  // Unicode test:
+  // noteye_move(0, 65); noteye_addchx(261); // in UTF8 this is ą
   
   createmap();
   

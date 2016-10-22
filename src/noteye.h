@@ -700,8 +700,13 @@ void scrset(int scr, int x, int y, int val);
 void setdirectansi(int val);
 void setconsolewindowtitle(const char *s);
 
+#ifdef __cplusplus
 int utf8_numbytes(const char *s, int pos = 0);
 int utf8_decode(const char *s, int pos = 0);
+#else
+int utf8_numbytes(const char *s, int pos);
+int utf8_decode(const char *s, int pos);
+#endif
 const char *utf8_encode(int i);
 int utf8_strlen(const char *s);
 const char *utf8_substr(const char *s, int from, int len);
