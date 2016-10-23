@@ -19,7 +19,7 @@ ffi.cdef[[
   int distill(int x, int sp);
   int getChar(int x);
   int getBak(int x);
-  char getChar2(int i);
+  const char* getChar2(int i);
   int getCol(int x);
   int getImage(int x);
   void tileSetChid(int x, int chid);
@@ -56,7 +56,7 @@ setconsolewindowtitle = noteyelib.setconsolewindowtitle
 
 gchv = noteyelib.getChar
 gba = noteyelib.getBak
--- gch = noteyelib.getChar2 [DOES NOT WORK FOR SOME REASON]
+gch = function(x) return ffi.string(noteyelib.getChar2(x)) end
 gco = noteyelib.getCol
 gimg = noteyelib.getImage
 

@@ -34,14 +34,14 @@ int lh_gba(lua_State *L) {
   }
 */
 
-int lh_gch(lua_State *L) {
+/* int lh_gch(lua_State *L) {
   int i = getChar(luaInt(1));
   char c = i == -1 ? 0 : i;
   lua_pushlstring(L, &c, 1);
   return 1;
-  }
+  } */
 
-void obsolete() {
+inline void obsolete() {
 //noteye_globalfun("tilemerge", lh_tileMerge);
 //noteye_globalfun("tilemergeover", lh_tileMergeOver);
 //noteye_globalfun("addtile", lh_addTile);
@@ -49,7 +49,7 @@ void obsolete() {
 //noteye_globalfun("gimg", lh_gimg);
 //noteye_globalfun("gba", lh_gba);
 //noteye_globalfun("gco", lh_gco);
-  noteye_globalfun("gch", lh_gch);
+//noteye_globalfun("gch", lh_gch);
   }
 
 /*

@@ -508,7 +508,9 @@ int addTileID(int id, int ox, int oy, int sx, int sy, int trans) {
   return addTile(dbyId<Image> (id), ox, oy, sx, sy, trans);
   }
 
-char getChar2(int i) { return getChar(i); }
+char tab[4] = {0,0,0,0};
+
+const char* getChar2(int i) { i = getChar(i); if(i==-1) return tab; else return utf8_encode(i); }
 
 int lh_gp2(lua_State *L) {
   Get(TileMerge, T, luaInt(1));

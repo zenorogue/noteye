@@ -689,7 +689,7 @@ int distillLayer(int x, int layerid);
 int distill(int x, int sp);
 int getChar(int x); 
 int getBak(int x);
-char getChar2(int i);
+const char* getChar2(int i);
 int getCol(int x);
 int getImage(int x);
 void tileSetChid(int x, int chid);
