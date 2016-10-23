@@ -41,6 +41,22 @@ int lh_gba(lua_State *L) {
   return 1;
   } */
 
+/*
+int lh_setpixel(lua_State *L) {
+  checkArg(L, 4, "setpixel");
+  Image *srcI = luaO(1, Image);
+  img_setpixel2(srcI, luaInt(2), luaInt(3), luaInt(4));
+  return 0;
+  }
+
+int lh_getpixel(lua_State *L) {
+  checkArg(L, 3, "getpixel");
+  Image *srcI = luaO(1, Image);
+  int res = img_getpixel2(srcI, luaInt(2), luaInt(3));
+  return noteye_retInt(L, res);
+  }
+*/
+
 inline void obsolete() {
 //noteye_globalfun("tilemerge", lh_tileMerge);
 //noteye_globalfun("tilemergeover", lh_tileMergeOver);
@@ -50,6 +66,8 @@ inline void obsolete() {
 //noteye_globalfun("gba", lh_gba);
 //noteye_globalfun("gco", lh_gco);
 //noteye_globalfun("gch", lh_gch);
+//noteye_globalfun("getpixel", lh_getpixel);
+//noteye_globalfun("setpixel", lh_setpixel);
   }
 
 /*
@@ -89,3 +107,4 @@ int lh_bXOR(lua_State *L) {
   noteye_globalfun("bOR", lh_bOR);
   noteye_globalfun("bXOR", lh_bXOR);
 */
+

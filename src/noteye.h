@@ -24,8 +24,8 @@
 
 #define NOTEYEVERSION "8.3"
 #define NOTEYEVER 0x830
-#define NOTEYEPATCH 9
-#define NOTEYEPATCHSTR "P9"
+#define NOTEYEPATCH 10
+#define NOTEYEPATCHSTR "P10"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -699,6 +699,9 @@ int scrget(int scr, int x, int y);
 void scrset(int scr, int x, int y, int val);
 void setdirectansi(int val);
 void setconsolewindowtitle(const char *s);
+
+noteyecolor img_getpixel(int src, int srcX, int srcY);
+void img_setpixel(int src, int srcX, int srcY, noteyecolor pix);
 
 #ifdef __cplusplus
 int utf8_numbytes(const char *s, int pos = 0);

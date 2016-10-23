@@ -35,6 +35,9 @@ ffi.cdef[[
   const char *utf8_encode(int i);
   int utf8_strlen(const char *s);
   const char *utf8_substr(const char *s, int from, int len);
+
+  unsigned int img_getpixel(int src, int srcX, int srcY);
+  void img_setpixel(int src, int srcX, int srcY, unsigned int pix);
   ]]
 
 local noteyelib = ffi.os == "Windows" and ffi.load("noteye") or ffi.C
@@ -64,6 +67,20 @@ scrget = noteyelib.scrget
 scrset = noteyelib.scrset
 saveimage = noteyelib.saveimage
 setdirectansi = noteyelib.setdirectansi
+
+getpixel = noteyelib.img_getpixel
+setpixel = noteyelib.img_setpixel
+
+-- local setpixel2 = setpixel
+
+function setpixel(img,x,y,p)
+  local old = getpixel(img,x,y)
+  noteyelib.img_setpixel(img,x,y,p)
+  -- setpixel2(img,x,y,p)
+  if bAND(getpixel(img,x,y), 0xFFFFFFFF) ~= bOR(p, 0) then 
+    print(string.format("not set: p=%x get=%x old=%x (p=%d)", bOR(p, 0), getpixel(img,x,y), old, p))
+    end
+  end
 
 utf8 = {}
 utf8.nb = noteyelib.utf8_numbytes

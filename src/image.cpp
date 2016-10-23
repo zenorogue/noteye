@@ -168,37 +168,37 @@ int lh_imgcopy(lua_State *L) {
   return 0;
   }
 
-int lh_getpixel(lua_State *L) {
-  checkArg(L, 3, "getpixel");
-
-  Image *srcI = luaO(1, Image);
-  int srcX = luaInt(2);
-  int srcY = luaInt(3);
+int img_getpixel2(Image *srcI, int srcX, int srcY) {
 #ifdef OPENGL
-  if(useGL(srcI)) return noteye_retInt(L, getpixelGL((Window*)srcI, srcX, srcY));
+  if(useGL(srcI)) return getpixelGL((Window*)srcI, srcX, srcY);
 #endif
-  if(useSDL(srcI)) return noteye_retInt(L, getpixelSDL((Window*)srcI, srcX, srcY));
+  if(useSDL(srcI)) return getpixelSDL((Window*)srcI, srcX, srcY);
   srcI->setLock(true);
-  int res = qpixel(srcI->s, srcX, srcY);
-  return noteye_retInt(L, res);
+  return qpixel(srcI->s, srcX, srcY);
   }
 
-int lh_setpixel(lua_State *L) {
-  checkArg(L, 4, "setpixel");
+noteyecolor img_getpixel(int src, int srcX, int srcY) {
+  Image *srcI = dbyId<Image> (src);
+  if(!srcI) return 0;
+  return img_getpixel2(srcI, srcX, srcY);
+  }
 
-  Image *srcI = luaO(1, Image);
-  int srcX = luaInt(2);
-  int srcY = luaInt(3);
-  
+int img_setpixel2(Image *srcI, int srcX, int srcY, int pix) {
 #ifdef OPENGL
   if(useGL(srcI)) return 0;
 #endif
   if(useSDL(srcI)) return 0; // todo
 
   srcI->setLock(true);
-  qpixel(srcI->s, srcX, srcY) = luaInt(4);
+  qpixel(srcI->s, srcX, srcY) = pix;
   srcI->changes++;
   return 0;
+  }
+
+void img_setpixel(int src, int srcX, int srcY, noteyecolor pix) {
+  Image *srcI = dbyId<Image> (src);
+  if(!srcI) return;
+  img_setpixel2(srcI, srcX, srcY, pix);
   }
 
 int lh_imggetsize(lua_State *L) {

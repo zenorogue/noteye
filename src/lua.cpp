@@ -222,8 +222,6 @@ void initLua() {
   noteye_globalfun("fillimage", lh_fillimage);
   noteye_globalfun("imgcopy", lh_imgcopy);
   noteye_globalfun("imggetsize", lh_imggetsize);
-  noteye_globalfun("getpixel", lh_getpixel);
-  noteye_globalfun("setpixel", lh_setpixel);
   
   noteye_globalfun("tilefreeform", lh_tileFreeform);
 
