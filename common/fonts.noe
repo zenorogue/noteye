@@ -119,12 +119,28 @@ function ttf_getAtSize(F, sx, sy)
     local t = addtile(P, 0, sy*F2.nextid, sx, sy, transAlpha)
     tilesetchid(t, utf8.dec(x,0))
     F2.nextid = F2.nextid + 1
+    if F2.nextid == 256 then
+      F2.nextid = 0
+      P = newimage(sx, sy*256, 0)
+      end
     return t
     -- return fget(bfont, x) 
     end)
 
   return F2
   end
+
+fakefont_nextid = 0
+fakefont = newdynamicfont(function(x)
+  if fakefont_nextid == 0 then
+    fakefont_image = newimage(1024, 1, 0)
+    end
+  local t = addtile(P, fakefont_nextid, 0, 1, 1, transAlpha)
+  tilesetchid(t, utf8.dec(x,0))
+  if fakefont_nextid == 1024 then fakefont_nextid = 0 end
+  return t
+  end
+  )
 
 function loadfont(fname, x, y, adjuster)
   if not Fonts[fname] then
