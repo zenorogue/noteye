@@ -9,7 +9,7 @@ namespace noteye {
 
 bool debugon;
 
-lua_State *luamapstate;
+// lua_State *luamapstate;
 
 int outscr;
 
@@ -115,7 +115,7 @@ int lh_scrcopy(lua_State *L) {
   int SY = luaInt(8);
   
   int fid = lua_type(L, 9) == LUA_TFUNCTION ? -1 : luaInt(9);
-  luamapstate = L;
+  // luamapstate = L;
   TileMapping *utm = fid > 0 ? byId<TileMapping> (fid, L) : 0;
 
   for(int x=0; x<SX; x++) for(int y=0; y<SY; y++) {
@@ -233,7 +233,7 @@ int lh_drawScreenX(lua_State *L) {
   int tx = luaInt(5); int ty = luaInt(6);
   
   int fid = lua_type (L, 7) == LUA_TFUNCTION ? -1 : luaInt(7);
-  luamapstate = L;
+  // luamapstate = L;
   TileMapping *utm = fid > 0 ? byId<TileMapping> (fid, L) : 0;
   
   drawmatrix M;
@@ -319,19 +319,26 @@ struct TileMappingLayer : TileMapping {
 
 #ifdef USELUA
 struct TileMappingLua : TileMapping {
+  lua_State *L;
   int ref;
-  // lua_State *L;
-  TileMappingLua(int r) : ref(r) {}
-  ~TileMappingLua() { if(luamapstate) luaL_unref(luamapstate, LUA_REGISTRYINDEX, ref); }
+  TileMappingLua(lua_State *L2, int r) : L(L2), ref(r) {}
+  void deleteLua() { 
+    if(ref == -1) return;
+    luaL_unref(L, LUA_REGISTRYINDEX, ref);
+    ref = -1;
+    deleteobj(id);
+    }
+
+  ~TileMappingLua() { deleteLua(); }
   int applyRaw(int id) { 
-    lua_rawgeti(luamapstate, LUA_REGISTRYINDEX, ref);
-    lua_pushinteger(luamapstate, id);
-    if (lua_pcall(luamapstate, 1, 1, 0) != 0) {
-      noteyeError(16, "error running TileMapping", lua_tostring(luamapstate, -1));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+    lua_pushinteger(L, id);
+    if (lua_pcall(L, 1, 1, 0) != 0) {
+      noteyeError(16, "error running TileMapping", lua_tostring(L, -1));
       return 0;
       }
-    int ret = noteye_argInt(luamapstate, -1);
-    lua_pop(luamapstate, 1);
+    int ret = noteye_argInt(L, -1);
+    lua_pop(L, 1);
     return ret;
     }
   };
@@ -364,7 +371,7 @@ void initMappings() {
 int lh_newmapping(lua_State *L) {
   checkArg(L, 1, "newmapping");
   lua_pushvalue(L, -1);
-  return noteye_retObject(L, new TileMappingLua(luaL_ref(L, LUA_REGISTRYINDEX)));
+  return noteye_retObject(L, new TileMappingLua(L, luaL_ref(L, LUA_REGISTRYINDEX)));
   }
 
 int lh_mapapply(lua_State *L) {

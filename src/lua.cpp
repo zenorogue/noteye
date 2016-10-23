@@ -99,7 +99,7 @@ int lh_vgaset(lua_State *L) {
   }
 
 int lh_delete(lua_State *L) {
-  luamapstate = L;
+  // luamapstate = L;
   checkArg(L, 1, "delete");
   int i = luaInt(1);
   if(i < 0 || i > size(objs)) {
@@ -471,7 +471,7 @@ void initLua() {
   }
 
 void closeLua() {
-  luamapstate = NULL;
+  // luamapstate = NULL;
   lua_close(LS);
   }
 

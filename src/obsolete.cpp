@@ -54,8 +54,7 @@ int lh_getpixel(lua_State *L) {
   Image *srcI = luaO(1, Image);
   int res = img_getpixel2(srcI, luaInt(2), luaInt(3));
   return noteye_retInt(L, res);
-  }
-*/
+  } */
 
 inline void obsolete() {
 //noteye_globalfun("tilemerge", lh_tileMerge);
