@@ -201,6 +201,7 @@ struct Object {
   int id;
   virtual bool checkEvent(struct lua_State *L) {return false;}
   virtual ~Object() {}
+  virtual void deleteLua() {}
   };
 
 // image
@@ -345,7 +346,8 @@ struct BitmapFont : Font {
 struct DynamicFont : Font { 
   int ref;
   struct lua_State *L;
-  ~DynamicFont();
+  void deleteLua();
+  ~DynamicFont() { deleteLua(); }
   std::map<int, int> ti;
   int gettile(int id);
   int gettile(const char* chr);

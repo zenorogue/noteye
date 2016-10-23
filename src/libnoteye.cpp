@@ -70,6 +70,8 @@ void noteye_handleerror(noteyehandler h) {
   }
 
 void noteye_halt() {
+  for(int i=1; i<size(objs); i++) 
+    if(objs[i]) objs[i]->deleteLua();
   closeLua();  
   if(logfile) {
     fprintf(logfile, "%s", noteyeStats());
