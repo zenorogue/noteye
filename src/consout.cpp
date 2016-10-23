@@ -3,7 +3,11 @@
 // Copyright (C) 2010-2012 Zeno Rogue, see 'noteye.h' for details
 
 #define _XOPEN_SOURCE_EXTENDED 1
+#ifdef CURSESW
 #include <cursesw.h>
+#else
+#include <curses.h>
+#endif
 
 namespace noteye {
 
@@ -11,7 +15,9 @@ static MainScreen *mscr;
 static Screen *old;
 
 MainScreen::MainScreen() {
+#ifdef CURSESW
   setlocale(LC_ALL, "");
+#endif
   initscr(); noecho(); keypad(stdscr, true); 
   start_color(); use_default_colors();
 
@@ -188,7 +194,11 @@ int lh_refreshconsole(lua_State *L) {
       
       col(cl, ba);
       // if(ba >= 0) bkgdset(COLOR_PAIR(16 + (ba & 7)));
+#ifdef CURSESW
       addstr(utf8_encode(ch));
+#else
+      addch(ch);
+#endif
       }
     }
   if(lua_gettop(L) >= 2) {
