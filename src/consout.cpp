@@ -2,7 +2,8 @@
 // roguelike frontend
 // Copyright (C) 2010-2012 Zeno Rogue, see 'noteye.h' for details
 
-#include <curses.h>
+#define _XOPEN_SOURCE_EXTENDED 1
+#include <cursesw.h>
 
 namespace noteye {
 
@@ -10,6 +11,7 @@ static MainScreen *mscr;
 static Screen *old;
 
 MainScreen::MainScreen() {
+  setlocale(LC_ALL, "");
   initscr(); noecho(); keypad(stdscr, true); 
   start_color(); use_default_colors();
 
@@ -135,10 +137,12 @@ int lh_refreshconsole(lua_State *L) {
     noteyecolor ba24 = getBak(ic);
     noteyecolor cl24 = getCol(ic);
 
+    static FILE* whatch = fopen("whatch.txt", "wt"); 
+    if(ch < 2 || ch > 128) fprintf(whatch, "%d\n", ch);
+
     if(ch < 2) ch = 32;
     if(ch == 183) ch = '.';
     if(ch < 32) ch = '$';
-    if(ch >= 128) ch = '?';
   
     int ba = int(ba24) == -1 ? -1 : findcol(ba24, 8, -1);
     int cl = int(cl24) == -1 ? 7 : (ba24 != cl24) ? findcol(cl24, 16, ba) : ba;
@@ -173,7 +177,8 @@ int lh_refreshconsole(lua_State *L) {
         ansi_ba24 = ba24;
         ansi_cl24 = cl24;
         }
-      putchar(ch); ansi_x++;
+      fputs(utf8_encode(ch), stdout);
+      ansi_x++;
       fflush(stdout);
       }
     else {
@@ -183,7 +188,7 @@ int lh_refreshconsole(lua_State *L) {
       
       col(cl, ba);
       // if(ba >= 0) bkgdset(COLOR_PAIR(16 + (ba & 7)));
-      addch(ch);
+      addstr(utf8_encode(ch));
       }
     }
   if(lua_gettop(L) >= 2) {
