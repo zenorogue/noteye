@@ -246,7 +246,9 @@ int lh_openconsole(lua_State *L) {
 void setdirectansi(int val) { direct_ansi_output = val; }
 
 void setconsolewindowtitle(const char *s) {
+#ifndef WINDOWS
   printf("\x1b]0;%s\a", s);
+#endif
   }
 
 #endif
