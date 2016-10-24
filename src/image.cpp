@@ -186,7 +186,7 @@ noteyecolor img_getpixel(int src, int srcX, int srcY) {
   if(!srcI) {
     if(logfile) fprintf(logfile, "getpixel with invalid image\n");
     fprintf(stderr, "getpixel with invalid image\n");
-    return 0;
+    return;
     }
   return img_getpixel2(srcI, srcX, srcY);
   }
@@ -208,7 +208,7 @@ void img_setpixel(int src, int srcX, int srcY, noteyecolor pix) {
   if(!srcI) {
     if(logfile) fprintf(logfile, "setpixel with invalid image\n");
     fprintf(stderr, "setpixel with invalid image\n");
-    return 0;
+    return;
     }
   img_setpixel2(srcI, srcX, srcY, pix);
   }
