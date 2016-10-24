@@ -326,7 +326,6 @@ struct TileMappingLua : TileMapping {
     if(ref == -1) return;
     luaL_unref(L, LUA_REGISTRYINDEX, ref);
     ref = -1;
-    deleteobj(id);
     }
 
   ~TileMappingLua() { deleteLua(); }
