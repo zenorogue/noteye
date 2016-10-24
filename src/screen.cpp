@@ -397,7 +397,7 @@ void scrset(int scr, int x, int y, int val) {
   if(!s) {
     if(logfile) fprintf(logfile, "scrset with invalid screen\n");
     fprintf(stderr, "scrset with invalid screen\n");
-    return 0;
+    return;
     }
   if(s) s->get(x,y) = val;
   }

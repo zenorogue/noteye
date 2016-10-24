@@ -186,7 +186,7 @@ noteyecolor img_getpixel(int src, int srcX, int srcY) {
   if(!srcI) {
     if(logfile) fprintf(logfile, "getpixel with invalid image\n");
     fprintf(stderr, "getpixel with invalid image\n");
-    return;
+    return 0;
     }
   return img_getpixel2(srcI, srcX, srcY);
   }
