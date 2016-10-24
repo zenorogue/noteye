@@ -384,11 +384,21 @@ int lh_mapapply(lua_State *L) {
 
 int scrget(int scr, int x, int y) {
   Screen* s = dbyId<Screen> (scr);
+  if(!s) {
+    if(logfile) fprintf(logfile, "scrget with invalid screen\n");
+    fprintf(stderr, "scrget with invalid screen\n");
+    return 0;
+    }
   return s ? s->get(x,y) : 0;
   }
 
 void scrset(int scr, int x, int y, int val) {
   Screen* s = dbyId<Screen> (scr);
+  if(!s) {
+    if(logfile) fprintf(logfile, "scrset with invalid screen\n");
+    fprintf(stderr, "scrset with invalid screen\n");
+    return 0;
+    }
   if(s) s->get(x,y) = val;
   }
 

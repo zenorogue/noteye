@@ -505,7 +505,13 @@ int addMerge0(int t1, int t2) { return addMerge(t1, t2, false); }
 int addMerge1(int t1, int t2) { return addMerge(t1, t2, true); }
 
 int addTileID(int id, int ox, int oy, int sx, int sy, int trans) {
-  return addTile(dbyId<Image> (id), ox, oy, sx, sy, trans);
+  Image* img = dbyId<Image> (id);
+  if(!img) {
+    if(logfile) fprintf(logfile, "addTileID with invalid image\n");
+    fprintf(stderr, "addTileID with invalid image\n");
+    return 0;
+    }
+  return addTile(img, ox, oy, sx, sy, trans);
   }
 
 char tab[4] = {0,0,0,0};

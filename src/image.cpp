@@ -103,7 +103,11 @@ int lh_loadimage(lua_State *L) {
 
 void saveimage(int id, const char *fname) {
   Image *o = dbyId<Image> (id);
-  if(!o) return;
+  if(!o) {
+    if(logfile) fprintf(logfile, "saveimage with invalid image\n");
+    fprintf(stderr, "saveimage with invalid image\n");
+    return;
+    }
   if(useGL(o)) screenshotGL((Window*) o, fname);
   else if(useSDL(o)) screenshotSDL((Window*) o, fname);
   else SDL_SaveBMP(o->s, fname);
@@ -179,7 +183,11 @@ int img_getpixel2(Image *srcI, int srcX, int srcY) {
 
 noteyecolor img_getpixel(int src, int srcX, int srcY) {
   Image *srcI = dbyId<Image> (src);
-  if(!srcI) return 0;
+  if(!srcI) {
+    if(logfile) fprintf(logfile, "getpixel with invalid image\n");
+    fprintf(stderr, "getpixel with invalid image\n");
+    return 0;
+    }
   return img_getpixel2(srcI, srcX, srcY);
   }
 
@@ -197,7 +205,11 @@ int img_setpixel2(Image *srcI, int srcX, int srcY, int pix) {
 
 void img_setpixel(int src, int srcX, int srcY, noteyecolor pix) {
   Image *srcI = dbyId<Image> (src);
-  if(!srcI) return;
+  if(!srcI) {
+    if(logfile) fprintf(logfile, "setpixel with invalid image\n");
+    fprintf(stderr, "setpixel with invalid image\n");
+    return 0;
+    }
   img_setpixel2(srcI, srcX, srcY, pix);
   }
 
