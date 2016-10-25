@@ -1,8 +1,8 @@
 id ICON "../hydra/hydra.ico"
 
 1 VERSIONINFO
-FILEVERSION     16,3,0,0
-PRODUCTVERSION  16,3,0,0
+FILEVERSION     17,1,0,0
+PRODUCTVERSION  17,1,0,0
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
@@ -10,12 +10,12 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "Zeno Rogue"
       VALUE "FileDescription", "A math puzzle roguelike"
-      VALUE "FileVersion", "16.3"
+      VALUE "FileVersion", "17.1"
       VALUE "InternalName", "hydra"
       VALUE "LegalCopyright", "Zeno Rogue"
       VALUE "OriginalFilename", "hydra.exe"
       VALUE "ProductName", "Hydra Slayer"
-      VALUE "ProductVersion", "16.3"
+      VALUE "ProductVersion", "17.1"
     END
   END
 
