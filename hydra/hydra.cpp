@@ -18,8 +18,8 @@
 #define VER "16.1"
 #define VERSION 1600
 #else
-#define VER "16.3"
-#define VERSION 1630
+#define VER "17.1"
+#define VERSION 1720
 #endif
 
 #include "utils.cpp"
@@ -40,7 +40,7 @@ void achievement(const char *buf);
 void shareClose() { }
 void shareUpdate() { }
 
-void highscore(int kind, int val) { }
+void highscore(const char *what, int val, int highisgood) { }
 void share(const string& s) { }
 
 void shform(const string& s, const string& am , const string& is, const string& are) {}
@@ -55,22 +55,32 @@ void shareFixed(const string &s) {
 
 void shareS(const string& verb, const string &s) {
   shform(s, verb, verb+"s", verb);
-  }    
+  }
+
+void initChecksum() {}
+long long calcChecksum() { return 666; }
+void highscoreDaily() {}
+void downloadDailyScores(vector<playerinfo>& pi, int& tosync) { tosync = 2; }
 #endif
 
 int loglines     = 10; // last messages in the log file
 string savename  = "hydra.sav";
 string backname  = "hydra-bak.sav";
-string logname   = "hydralog.txt";
 string scorename = "hydrascores.sav";
+string logname   = "hydralog.txt";
+string challname = "hydrachallenge.sav";
 
-void hydraUserdir(const string& userdir) {
+string userdir   = ".";
+
+void hydraUserdir(const string& _userdir) {
   static bool addUserdir = true;
+  userdir = _userdir;
   if(addUserdir) {
     savename = userdir + "/" + savename;
     backname = userdir + "/" + backname;
     logname = userdir + "/" + logname; 
     scorename = userdir + "/" + scorename;
+    challname = userdir + "/" + challname;
     addUserdir = false;
     }
   }
@@ -129,6 +139,7 @@ void twinswap_phase() {
   if(tdiff > 0) P.phase >>= tdiff;
   if(tdiff < 0) P.phase <<= -tdiff;
   twinswap();
+  sendSwapEvent();
   }
 
 hydra *twinAlive() {
@@ -140,7 +151,9 @@ hydra *twinAlive() {
   return NULL;
   }
 
-string form(hydra *who, string verb) {
+string form(sclass *who, string verb) {
+
+  hydra *whoh = who ? who->asHydra() : NULL;
 
   // crush -> crushes
   if(who && verb[verb.size()-1] == 'h') 
@@ -149,10 +162,10 @@ string form(hydra *who, string verb) {
   if(twin && (who == twin || (!who && P.twinsNamed))) {
     return twinName(P.twinsNamed ? 0 : who,1) + " " + verb + "s";
     }
-  else if(who && !who->ewpn && verb != "kill") {
-    verb = who->info().hverb;
-    if(who->color & HC_DRAGON)
-      verb = who->info().dverb;
+  else if(whoh && !whoh->ewpn && verb != "kill") {
+    verb = whoh->info().hverb;
+    if(whoh->color & HC_DRAGON)
+      verb = whoh->info().dverb;
     return "The " + who->name() + " " + verb;
     }
   else if(who) return "The " + who->name() + " " + verb + "s";
@@ -195,6 +208,7 @@ void cancelspeed() {
     P.phase--;
     P.phase >>= 1;
     P.active[IT_PFAST]--;
+    playSound("potion/potion-extreme-speed", 100, 0);
     }
   singlestep();
   }
@@ -208,6 +222,7 @@ bool checkShadow(cell& c) {
   if(!c.h) return false;
   if(c.h->visible()) return false;
   addMessage("You miss the "+c.h->name()+".");
+  playSound("weapons/miss", 100, 0);
   cancelspeed();
   if(P.ambifresh && P.ambifresh == P.active[IT_PAMBI])
     P.ambifresh--;
@@ -242,7 +257,9 @@ void movedir(int dir) {
     return;
     }
   
-  vec2 npos = playerpos + dirs[dir];
+  vec2 mvec = dirs[dir];
+  vec2 npos = playerpos + mvec;
+#define ATTACK_ANIMATION sendAttackEvent(ATT_PLAYER, playerpos, npos)
   cell& c(M[npos]);
 
   if((P.flags & dfAutoON) && c.mushrooms) {
@@ -305,6 +322,8 @@ void movedir(int dir) {
       addMessage("The mushrooms move in front of you!");
     else
       addMessage("The mushroom bows to you!");
+    playSound("other/mushroomMovesInFrontOfYou", sizeToVolume(c.mushrooms), 0);
+    
     P.active[IT_PSEED] += c.mushrooms-1;
 
     W->sc.sc[WS_MKILL] ++;
@@ -345,6 +364,7 @@ void movedir(int dir) {
       addMessage("As you hit the "+c.h->name()+", a huge shockwave is released"+exclamation);
     else
       addMessage("The poor mushroom shakes and the ground trembles"+exclamation);
+    playSound("../hydra-old/quake", 100, 0);
     for(int i=0; i<size(hydras); i++) {
       hydra *h (hydras[i]);
       h->sheads = h->heads;
@@ -362,10 +382,14 @@ void movedir(int dir) {
     }
   
   else if(W && W->type == WT_RAND && c.h) {
+    ATTACK_ANIMATION;
+    playAttackSound(W, NULL, false, 0);
     mersenneTwist(W, c.h);
     }
   
   else if(W && W->type == WT_RAND && hc) {
+    playAttackSound(W, NULL, false, 0);
+    ATTACK_ANIMATION;
     hydra h(HC_MUSH, c.mushrooms, 1, 0);
     mersenneTwist(W, &h);
     c.mushrooms = h.heads;
@@ -380,6 +404,11 @@ void movedir(int dir) {
     tryWandUse(W, dir, false);
     }
 
+  else if(W && W->orb() && (c.type == CT_WALL || hc)) {
+    activateOrb(W);
+    return;
+    }
+
   else if(W && W->type == WT_PICK && c.type == CT_WALL) {
     if(!inlevel(wrap(npos))) {
       addMessage("Destroying outer walls of magical dungeons is dangerous. Won't do that!");
@@ -387,6 +416,7 @@ void movedir(int dir) {
       }
     c.type = CT_EMPTY;
     addMessage("You crush the wall with your "+W->name()+"!");
+    playSound("other/wallCrush", sizeToVolume(W->size), 0);
     stats.ws[MOT_PICK].sc[WS_USE]++;
     stats.ws[MOT_PICK].sc[WS_GROW]++;
     if(!W->sc.sc[WS_USE]) shareBe("crushing walls with the " + W->name());
@@ -394,6 +424,7 @@ void movedir(int dir) {
     W->sc.sc[WS_GROW]++;
     if(W->size < 3) cancelspeed();
     if(W->size < 5) cancelspeed();
+    ATTACK_ANIMATION;
     }
   else if(W && W->type == WT_PICK && c.mushrooms) {
     stats.ws[MOT_PICK].sc[WS_USE]++;
@@ -406,9 +437,11 @@ void movedir(int dir) {
     c.mushrooms = 0;
     addMessage("You crush the mushrooms with your "+W->name()+"!");
     if(W->size < 2) cancelspeed();
+    ATTACK_ANIMATION;
     }
   else if(c.type == CT_WALL) {
     addMessage("A wall blocks your path!");
+    playSound("../hydra-old/pickup", 100, 0);
     }
   
   else if(!c.h && (!c.mushrooms)) {
@@ -429,7 +462,6 @@ void movedir(int dir) {
         }
       
       if(mush > 0) {
-        nagawait();
         stats.necro += mush;
         hydra *h = new hydra(c.dead-1, mush, 1, 1);
         P.maxHP--; P.curHP--;
@@ -440,12 +472,15 @@ void movedir(int dir) {
         for(int i=0; i<COLORS; i++) h->res[i] = 0;
         shareS("raise", " " + h->name());
         addMessage("You raise a hydra zombie!");
+        playSound("potion/powder-fungalNecromancy", headsToVolume(h->heads), 0);
         if(mush >= 200000) achievement("NECROPOWER");
+        ATTACK_ANIMATION;
+        nagawait();
         return;
         }
       }
     
-    if(W && W->type == WT_SPEED) {
+    if(W && W->type == WT_SPEED && !exploreOn) {
       for(int u=1; u<W->size; u++) {
         npos += dirs[dir];
         if(!M[npos].isPassable()) {
@@ -456,7 +491,9 @@ void movedir(int dir) {
         }
       int hpcost = 1;
       if(P.race == R_TROLL) hpcost = 3;
-      P.curHP -= hpcost; stats.broomhp += hpcost;
+      stats.broomhp += hpcost;
+      takeWounds(hpcost);
+      if(P.curHP <= 0) achievement("SUICIDE");
       stats.broomdist += W->size;
       playSound("other/broomOfSpeed", 20 + 10 * min(W->size, 8));
       }
@@ -467,6 +504,7 @@ void movedir(int dir) {
       M[playerpos].mushrooms+=q;
       }
     playerpos = npos;
+    trapHitPlayer();
     
     if(P.race == R_NAGA) {
       nagavulnerable = true;
@@ -498,9 +536,12 @@ void movedir(int dir) {
     analyzeHydra(&h);
     stats.mushgrow++;
     if(growHeads(&h)) {
+      int extra = h.heads - c.mushrooms;
+      addAnimation(&c, ANIM_PLUS, h.heads - c.mushrooms, iinf[IT_RGROW].color);
       c.mushrooms = h.heads;
       // giveHint(&h);
       addMessage("The mushroom grows!");
+      playSound("other/mushroomGrows", headsToVolume(extra), 0);
       }
     else addMessage("You could not even cut a mushroom with your current weapons!");
     P.active[IT_RGROW]--;
@@ -511,6 +552,7 @@ void movedir(int dir) {
     // h.sheads = h.heads;
     stats.ws[MOT_DECAP].sc[WS_MKILL]++;
     stats.ws[MOT_DECAP].sc[WS_MHEAD] += c.mushrooms;
+    playSound("potion/potion-decapitation", headsToVolume(c.mushrooms), 0);
     c.mushrooms = 0;
     addMessage("Your powder instantly destroys a patch of mushrooms!");
     P.active[IT_RDEAD]--;
@@ -522,13 +564,22 @@ void movedir(int dir) {
   else if(c.mushrooms && !W) {
     stats.ws[MOT_BARE].sc[WS_USE] ++;
     c.mushrooms--;
-    if(c.mushrooms)
+    if(c.mushrooms) {
       addMessage("You crush one of the mushroom's heads.");
-    else
-      addMessage("You crush the mushroom with your hands."),
-      stats.ws[MOT_BARE].sc[WS_MKILL] ++;
+      }
+    else {
+      addMessage("You crush the mushroom with your hands.");
+      }
+    
+    static string s;
+    s = "weapons/mushroomCrush-"+its(hrand(3)+1);
+    playSound(s.c_str(), 100, 0);
+    printf("s = %s\n", s.c_str());
+
+    stats.ws[MOT_BARE].sc[WS_MKILL] ++;
     cancelspeed();
     cancelspeed();
+    ATTACK_ANIMATION;
     }
 
   else if(c.mushrooms && W->activeonly())
@@ -537,9 +588,11 @@ void movedir(int dir) {
   else if(c.h && P.active[IT_RSTUN] && c.h->sheads != c.h->heads) {
     nagawait();
     c.h->stunforce += 5 * c.h->heads + 1000;
-    stats.magestun += (c.h->heads - c.h->sheads);
+    int q = (c.h->heads - c.h->sheads);
+    stats.magestun += q;
     c.h->sheads = c.h->heads;
     addMessage("Sparks fly and the "+c.h->name()+" is stunned!");
+    playSound("potion/potion-stunning", headsToVolume(q), 0);
     P.active[IT_RSTUN]--;
     stunnedHydra = c.h; stunnedColor = iinf[IT_RSTUN].color;
     if(c.h->color == HC_VAMPIRE) {
@@ -555,6 +608,7 @@ void movedir(int dir) {
       addMessage("The "+c.h->name()+" is too powerful to be affected by this puny magic!");
       return;
       }
+    playSound("potion/potion-decapitation", headsToVolume(c.h->sheads), 0);
     stats.ws[MOT_DECAP].sc[WS_HHEAD] += c.h->sheads;
     if(c.h->heads > c.h->sheads) {
       if(c.h->color == HC_VAMPIRE) {
@@ -579,6 +633,8 @@ void movedir(int dir) {
 
   else if(c.h && P.active[IT_RCANC]) {
     nagawait();
+    addAnimation(&c, ANIM_CANCEL, 5, iinf[IT_RCANC].color);
+    playSound("potion/potion-cancellation", 100, 0);
     if(c.h->color == HC_ALIEN) {
       addMessage("The "+c.h->name()+" is not affected!");
     } else if(c.h->isAncient()) {
@@ -601,6 +657,7 @@ void movedir(int dir) {
     stats.magegrow -= c.h->heads;
     if(growHeads(c.h)) {
       addMessage("The "+origname+" suddenly grows some new heads!");
+      playSound("../hydra-old/rune", 100, 0);
       if(c.h == vorplast) vorpalClear();
       }
     else {
@@ -608,6 +665,8 @@ void movedir(int dir) {
       }
     stats.magegrow += c.h->heads;
     orig = c.h->heads - orig;
+    playSound("../hydra-old/rune", headsToVolume(orig), 0);
+    addAnimation(&c, ANIM_PLUS, orig, iinf[IT_RGROW].color);
     if(orig >= 10000) achievement("GROWTHMASTER");
     if(orig >= 1000) shareS("grow", " the " + c.h->name() + " (" + its(orig)+ " new heads)");
     P.active[IT_RGROW]--;
@@ -624,6 +683,8 @@ void movedir(int dir) {
       c.h->lowhead() ? "The "+c.h->name()+" suddenly seems to dislike hydras for some reason!" :
       c.h->power() ?  "The "+c.h->name()+" now looks confused!" : 
       "The "+c.h->name()+" should be confused once it wakes up!");
+    playSound("potion/potion-conflict", headsToVolume(c.h->heads), 0);
+    addAnimation(&c, ANIM_ZIG, 10, iinf[IT_RCONF].color);
     P.active[IT_RCONF]--;
     }
   
@@ -635,6 +696,7 @@ void movedir(int dir) {
       return;
       }
     c.mushrooms = c.h->heads;
+    playSound("../hydra-old/rune", headsToVolume(c.mushrooms), 0);
     if(c.h->color == HC_ALIEN)
       addMessage("The "+c.h->name()+" turns into an otherworldly mushroom!");
     if(c.h->color != HC_VAMPIRE) 
@@ -644,12 +706,15 @@ void movedir(int dir) {
       addMessage("Such a mighty being falling to such a stupid magical trick? You feel uneasy.");
       }
     
+    addAnimation(&c, ANIM_CANCEL, c.mushrooms, iinf[IT_RFUNG].color);
     c.hydraDead(NULL);
     c.dead = 0; // not allowed to raise
     }
 
-  else if(c.h && bitcount(P.ambiArm) > 1 && P.active[IT_PAMBI]) 
+  else if(c.h && bitcount(P.ambiArm) > 1 && P.active[IT_PAMBI]) {
+    ATTACK_ANIMATION;
     ambiAttackFull(&c, D);
+    }
   
   else if(c.h && !W) {
     if(!checkShadow(*shc))
@@ -659,6 +724,7 @@ void movedir(int dir) {
   else if(hc && W->type == WT_BLADE && W->size == 0) {
     // fingernail attack!
     if(c.h) shareS("attack", " " + c.h->name() + " with the " + W->name());
+    ATTACK_ANIMATION;
     c.attack(W, 0, NULL);
     cancelspeed();
     // int orig = c.h->heads;
@@ -669,6 +735,7 @@ void movedir(int dir) {
     if(W->xcuts() && W->type != WT_PSLAY && !W->size) {
       if(!checkShadow(*shc)) {
         addMessage("This weapon will drive you mad!!! You decide against using it.");
+        playSound("other/weaponDrivesYouMad", 100, 0);
         achievement("NULLSECTOR");
         shareBe("too sane to use the " + W->name());
         }
@@ -685,6 +752,7 @@ void movedir(int dir) {
       else if(hc < res || (hc == res && !c.h->sheads))
         addMessage("Not enough active heads here...");
       else {
+        ATTACK_ANIMATION;
         c.attack(W, W->size, NULL);
         W->addStat(WS_USE, 1, 0);
         cancelspeed();
@@ -723,6 +791,12 @@ void movedir(int dir) {
       if(W->xcuts() && ((haveswipe&7) == 4)) {
         wstr = W->cutoff(hc, false);
         oldtype = W->type;
+
+        if(W->type == WT_GOLD) for(int u=1; u<W->size; u++) {
+          if(W->cutoff(hc-wstr, false) >= 0) {
+            wstr += W->cutoff(hc-wstr, false);
+            }
+          }
         W->type = WT_BLADE;
         }
       
@@ -736,6 +810,7 @@ void movedir(int dir) {
       
       bool havedouble = false;
       
+      ATTACK_ANIMATION;
       for(int d=0; d<DIRS; d++) if(wstr) {
         cell& c2(M[playerpos + dirs[(dir + d * dd) % DIRS]]);
         int hc0;
@@ -771,10 +846,10 @@ void movedir(int dir) {
 
       // the mushroom staff grows mushrooms on attack
       if(mushlord) for(int i=0; i<mushroomlevel(mushlord); i++) {
-        int d = rand() % DIRS;
+        int d = hrand(DIRS);
         for(int k=0; k<DIRS; k++) {
           cell& c2(M[npos+dirs[(d+k) % DIRS]]);
-          if((&c2 != &M[playerpos]) && !c2.mushrooms && c2.type == CT_EMPTY) {
+          if((&c2 != &M[playerpos]) && !c2.mushrooms && c2.type == CT_EMPTY && !c2.h) {
             c2.mushrooms++;
             break;
             }
@@ -799,8 +874,10 @@ bool useKnowledgeOn(sclass *x) {
   if(h->aware() && h->dirty) {
     h->dirty = 0;
     addMessage("You recognize the " + h->name()+" under the blood.");
+    playSound("potion/potion-knowledge", 100);
     return true;
     }
+  playSound("potion/potion-knowledge", 100);
   giveHint(h);
   return true;
 /*  case IT_PKNOW: {
@@ -818,11 +895,21 @@ bool useKnowledgeOn(sclass *x) {
       } */
   }
 
-bool useup(int ii) {
+bool useup(int ii, weapon *orb) {
   /* if(ii < IT_SXMUT && P.race == R_ELF) {
     ii = IT_SXMUT;
     addMessage("You convert the Rune to a Scroll of Transmutation.");
     } */
+  
+  if(orb && orb->size == 0) {
+    addMessage("No power left!");
+    return false;
+    }
+  if(orb && P.active[ii]) {
+    addMessage("You cannot stack powers from the Orbs.");
+    return false;
+    }
+
   if((ii == IT_SGROW || ii == IT_SXMUT) && P.active[IT_PAMBI] && bitcount(P.ambiArm) > 1) {
     if(P.race == R_NAGA ? P.active[IT_PAMBI] > 1 : P.ambifresh) {
       stats.ambiscroll++;
@@ -839,16 +926,22 @@ bool useup(int ii) {
   switch(ii) {
     case IT_SXMUT: {
       if(!transmute(wpn[P.cArm])) return false;
+      addAnimation(&M[playerpos], ANIM_HAMMER, 10, iinf[IT_SXMUT].color);
       break;
       }      
     
     case IT_SGROW: {
-      if(wpn[P.cArm]) wpn[P.cArm]->grow();
+      if(wpn[P.cArm]) {
+        wpn[P.cArm]->grow();
+        playSound("potion/scroll-bigStick", sizeToVolume(wpn[P.cArm]->size));
+        }
       else {
         wpn[P.cArm] = new weapon(8, 0, WT_BLADE);
         wpn[P.cArm]->level = P.curlevel+1;
         addMessage("Your fingernail suddenly grows and falls off!");
+        playSound("other/fingernailGrows", 100, 0);
         }
+      addAnimation(&M[playerpos], ANIM_HAMMER, wpn[P.cArm]->size, iinf[IT_SGROW].color);
       wpnset++;
       break;
       }
@@ -864,6 +957,7 @@ bool useup(int ii) {
           if(!wpn[i]) error = true;
           else if(wpn[i]->size > bigsize) bigsize = wpn[i]->size, bigat = i;
           }
+        if(bigat >= 0 && wpn[bigat]->type == WT_ORB) error = true;
         if(!error)
           for(int i=0; i<P.arms; i++) if(havebit(P.ambiArm, i)) if(i != bigat) {
             if(wpn[i]->size & 1) error = true;
@@ -875,6 +969,7 @@ bool useup(int ii) {
           return false;
           }
         addMessage("The "+wpn[bigat]->name()+" is reforged!");
+        playSound("../hydra-old/rune", 100, 0);
         stats.ambiforge++;
         for(int i=0; i<P.arms; i++) if(havebit(P.ambiArm, i)) if(i != bigat) {
           wpn[i]->size /= 2;
@@ -883,6 +978,7 @@ bool useup(int ii) {
           }
         P.active[IT_PAMBI]--; P.ambifresh--;
         wpnset++;
+        addAnimation(&M[playerpos], ANIM_HAMMER, 10, iinf[IT_SPART].color);
         return true;
         }
     
@@ -908,7 +1004,9 @@ bool useup(int ii) {
       w->osize = -1;
 
       addMessage("A part of "+wpn[P.cArm]->name()+" falls off!");
+      playSound("../hydra-old/rune", sizeToVolume(w->size), 0);
       M[playerpos].it = w;
+      addAnimation(&M[playerpos], ANIM_HAMMER, w->size, iinf[IT_SPART].color);
       wpn[P.cArm]->size -= w->size;
 
       wpnset++;
@@ -944,6 +1042,8 @@ bool useup(int ii) {
         achievement("LIFESAVER");
         }
       addMessage("You feel full of life!");
+      addAnimation(&M[playerpos], ANIM_PLUS, P.maxHP, iinf[IT_PLIFE].color);
+      playSound("other/fullOfLife", 100, 0);
       P.maxHP *= 2;
       P.curHP = P.maxHP;
       /*P.twinmax *= 2;
@@ -963,19 +1063,25 @@ bool useup(int ii) {
         addMessage("You feel like a source of mushroom life!");
       if(P.active[IT_PSEED] > stats.maxseed) stats.maxseed = P.active[IT_PSEED];
       if(stats.maxseed >= 50) achievement("SEEDMASTER");
+      addAnimation(&M[playerpos], ANIM_PLUS, 7, iinf[IT_PSEED].color);
       break;
 
     case IT_PARMS:
       P.arms++;
       addMessage(P.arms & 1 ? "You suddenly grow a new right arm!" : "You suddenly grow a new left arm!");
-      if(stats.powerignore > P.inv[IT_PARMS]-1 && P.race != R_TROLL)
-        stats.powerignore = P.inv[IT_PARMS] - 1;
+      
+      {int ig = P.inv[IT_PARMS] - (P.race == R_TROLL ? 0 : 1);      
+      if(stats.powerignore > ig) stats.powerignore = ig;
+      }
+      addAnimation(&M[playerpos], ANIM_PLUS, P.arms, iinf[IT_PARMS].color);
       break;
     
     default:
       if(ii == IT_PCHRG && P.race == R_NAGA) {
-        if(P.active[IT_PFAST])
+        if(P.active[IT_PFAST]) {
           P.active[IT_PFAST]--;
+          playSound("potion/potion-extreme-speed", 100, 0);
+          }
         else {
           addMessage("Children of Echidna are too slow to charge! Drink a Potion of Speed first.");
           return false;
@@ -990,21 +1096,34 @@ bool useup(int ii) {
             addMessage("Respect your dead twin! You would never drink this alone!");
           return false;
           }
-        if(P.inv[IT_PAMBI] == 1) {
+        if(orb && P.inv[IT_PAMBI] == 0) {
+          addMessage("But "+twinName()+" needs to drink a potion!");
+          return false;
+          }
+        if(P.inv[IT_PAMBI] == 1 && !orb) {
           addMessage("You have only one of these! What about "+twinName()+"?");
           return false;
           }
-        P.inv[ii]--, stats.usedup[ii]++;
-        if(!stats.woundwin) stats.usedb[ii]++;
+        useupItem(ii);
         }
 
       P.active[ii]++;
-      if(ii >= IT_POTS)
+      if(orb) {
+        addMessage("You activate the "+orb->name()+"!");
+        playSound("../hydra-old/rune", 50, 0);
+        }
+      else if(ii >= IT_POTS) {
         addMessage("You drink the "+iinf[ii].name+"!");
-      else 
+        if(ii == IT_PFAST) playSound("potion/potion-extreme-speed", 100, 0);
+        else if(ii == IT_PCHRG) playSound("potion/potion-weaponcharge", 100, 0);
+        else playSound("../hydra-old/drink", 100, 0);
+        }
+      else {
+        playSound("../hydra-old/rune", 100, 0);
         addMessage("You prepare the "+iinf[ii].name+"!");
+        }
 
-      if(ii == IT_PAMBI && P.race == R_ELF) {
+      if(ii == IT_PAMBI && P.race == R_ELF && !orb) {
         addMessage("Elves' superior fighting style does not work with this potion, but...");
         }
       
@@ -1078,33 +1197,64 @@ bool canGoDown() {
   return true;
   }
 
+bool noEnemies() {
+  
+  for(int i=0; i<size(hydras); i++)
+    if(!hydras[i]->zombie)
+      return false;
+
+  return true;
+  }
+
 void totalKnowledge() {
-  addMessage("You have a dream about killing 100 hydras on the next 10 levels...");
+
   drawScreen(); refresh(IC_VIEWDESC);
   int killed = 0, wounds = 0;
   
-  if(P.curlevel+1 < LEVELS) {
-    addstri("This feature works only below the boss level.");
-    return;
-    }
+  if(P.curlevel == 0) {
+
+    addMessage("Checking vulture hydras...");
+    for(int i=1; i<=3; i++) for(int j=0; j<3; j++) {
+      hydra *h = new hydra(HC_VAMPIRE, i, 1, 50);
+      for(int k=0; k<10; k++) h->res[k] = j;
+      analyzeHydra(h);
+      int spos; encode(h->heads, h->sheads, spos);
   
-  int ocl = P.curlevel;
-  
-  for(int i=0; i<100; i++) {
-    P.curlevel += 1 + (i/10);
-    hydra* h = new hydra(i % HCOLORS, rand() % (200 + 5 * P.curlevel) + 1, 13, 240/(P.curlevel-7));
-    
-    analyzeHydra(h);
-    int spos; encode(h->heads, h->sheads, spos);
-    
-    if(h->heads < AMAXS && wnd[spos] < WMAX) {
-      killed++;
-      wounds += wnd[spos];
+      if(h->heads < AMAXS && wnd[spos] < WMAX) {
+        killed++;
+        wounds += wnd[spos];
+        }
+      delete h;
       }
-    delete h;
+
     }
-  P.curlevel = ocl;
+  else {
+    addMessage("You have a dream about killing 100 hydras on the next 10 levels...");
+    if(P.curlevel+1 < LEVELS) {
+      addstri("This feature works only below the boss level.");
+      return;
+      }
+    
+    int ocl = P.curlevel;
+    
+    for(int i=0; i<100; i++) {
+      P.curlevel += 1 + (i/10);
+      hydra* h = new hydra(i % HCOLORS, hrand(200 + 5 * P.curlevel) + 1, 13, 240/(P.curlevel-7));
+      
+      analyzeHydra(h);
+      int spos; encode(h->heads, h->sheads, spos);
+      
+      if(h->heads < AMAXS && wnd[spos] < WMAX) {
+        killed++;
+        wounds += wnd[spos];
+        }
+      delete h;
+      }
+    P.curlevel = ocl;
+    }
+
   addMessage("You have killed "+its(killed)+" of them taking "+its(wounds)+" wounds.");
+  
   }
 
 #include "save.cpp"
@@ -1112,126 +1262,142 @@ void totalKnowledge() {
 #include "mainmenu.cpp"
 #include "ui.cpp"
 
-void initGame() {
+void initCharacter() {
+  for(int ii=0; ii<ITEMS; ii++) P.inv[ii] = 0;
+  P.arms = 2; P.cArm = 0; P.ambiArm = 3;
+  P.maxHP = 24; P.curHP = 24;
+  P.version = VERSION;
+  stats.powerignore = 100;
+  stats.gamestart = time(NULL);
+  
+  P.arms = 0;
+      
+  share("I just started playing Hydra Slayer!");
 
-  if(!stats.savecount) {
-    P.gameseed = time(NULL);
+  shareS("enter", " the Hydras Nest");
+  P.arms = 2;
+
+  generateLevel();
+  if(P.race == R_ELF || P.race == R_CENTAUR) {
+    delete(wpn[0]);
+    wpn[0] = new weapon(HC_ALIEN, 1, WT_BOW);
+    P.cArm = 1;
     }
+
+  int it3[] = {IT_PFAST, IT_PSEED, IT_RCANC};
+
+  if(P.flags & dfTutorial) {
+    // tutorial starting items
+    P.inv[IT_RSTUN]+=2;
+    P.inv[IT_RDEAD]+=2;
+    }
+
+  else if(P.race != R_TROLL) {
+    P.inv[IT_RSTUN]++;
+    P.inv[IT_RDEAD]++;        
+    P.inv[it3[hrand(3)]]++;
+    }
+
+  else {
+    // generate a size 3 stunner
+    pinfo.trollwpn.push_back(new weapon(HC_ANCIENT, 3, WT_BLUNT));
+    pinfo.trollkey.push_back('h');
+    }
+  
+  if(P.race == R_TWIN) {
+    stairqueue.push_back(new hydra(HC_TWIN, 12, 1, 0));
+    P.maxHP = 12; P.curHP = 12;
+    P.twinarms = 2; P.twinmax = 12; P.twincarm = 1;
+    }
+
+  if(debugon()) {
+    for(int ii=0; ii<ITEMS; ii++) P.inv[ii] = 666;
+    pinfo.trollwpn.push_back(new weapon(0, 2, WT_SHLD));
+    pinfo.trollwpn.push_back(new weapon(1, 0, WT_DIV));
+    pinfo.trollwpn.push_back(new weapon(2, 2, WT_DIV));
+    pinfo.trollwpn.push_back(new weapon(3, 3, WT_DIV));
+    pinfo.trollwpn.push_back(new weapon(4, 5, WT_DIV));
+    pinfo.trollwpn.push_back(new weapon(5, 10, WT_DIV));
+    pinfo.trollwpn.push_back(new weapon(6, 20, WT_BLADE));
+    pinfo.trollwpn.push_back(new weapon(7, 2, WT_ROOT));
+    pinfo.trollwpn.push_back(new weapon(8, 4, WT_MSL));
+    pinfo.trollwpn.push_back(new weapon(9, 15, WT_MSL));
+    pinfo.trollwpn.push_back(new weapon(0, 999, WT_BLADE));
+    pinfo.trollwpn.push_back(new weapon(1, 999, WT_MSL));
+    pinfo.trollwpn.push_back(new weapon(2, 3, WT_DANCE));
+    pinfo.trollwpn.push_back(new weapon(3, 30, WT_DANCE));
+    pinfo.trollwpn.push_back(new weapon(4, 1, WT_VORP));
+    pinfo.trollwpn.push_back(new weapon(2, 2, WT_PREC));
+    pinfo.trollwpn.push_back(new weapon(HC_OBSID, 1, WT_PREC));
+    pinfo.trollwpn.push_back(new weapon(HCOLORS, 1, WT_PICK));
+    pinfo.trollwpn.push_back(new weapon(4, 40, WT_DECO));
+    pinfo.trollwpn.push_back(new weapon(HC_OBSID, 10, WT_DECO));
+    pinfo.trollwpn.push_back(new weapon(HC_OBSID, 1, WT_FUNG));
+    pinfo.trollwpn.push_back(new weapon(5, 2, WT_LOG));
+    pinfo.trollwpn.push_back(new weapon(HCOLORS, 13, WT_BLUNT));
+    pinfo.trollwpn.push_back(new weapon(HCOLORS+1, 1, WT_BLUNT));
+    pinfo.trollwpn.push_back(new weapon(HC_ANCIENT, 1, WT_SHLD));
+    pinfo.trollwpn.push_back(new weapon(HC_OBSID, 1, WT_BLADE));
+    pinfo.trollwpn.push_back(new weapon(HC_OBSID, 2, WT_BLADE));
+    pinfo.trollwpn.push_back(new weapon(HC_OBSID, 3, WT_BLADE));
+    pinfo.trollwpn.push_back(new weapon(HC_ALIEN, 2, WT_QUAKE));
+    pinfo.trollwpn.push_back(new weapon(6, 0, WT_PSLAY));
+    pinfo.trollwpn.push_back(new weapon(12, 1, WT_SPEAR));
+    pinfo.trollwpn.push_back(new weapon(8, 1, WT_AXE));
+    pinfo.trollwpn.push_back(new weapon(9, 1, WT_DISK));
+    pinfo.trollwpn.push_back(new weapon(10, 1, WT_STONE));
+    pinfo.trollwpn.push_back(new weapon(11, 200, WT_PHASE));
+    pinfo.trollwpn.push_back(new weapon(10, 1, WT_BOW));
+    pinfo.trollwpn.push_back(new weapon(7, 3, WT_SUBD));
+    pinfo.trollwpn.push_back(new weapon(8, 3, WT_QUI));
+    pinfo.trollwpn.push_back(new weapon(9, 1, WT_GOLD));
+    pinfo.trollwpn.push_back(new weapon(10, 2, WT_SPEED));
+    pinfo.trollwpn.push_back(new weapon(4, 1, WT_TIME));
+    pinfo.trollwpn.push_back(new weapon(5, 10, WT_RAIN));
+    pinfo.trollwpn.push_back(new weapon(1, 1, WT_RAND));
+    pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_PFAST), 60, WT_ORB));
+    pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_RCONF), 61, WT_ORB));
+    pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_RGROW), 62, WT_ORB));
+    pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_RSTUN), 63, WT_ORB));
+    pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_PAMBI), 64, WT_ORB));
+
+    pinfo.trollwpn.push_back(newTrap(5, 2, WT_DIV));
+    pinfo.trollwpn.push_back(newTrap(6, 10, WT_BLADE));
+    pinfo.trollwpn.push_back(newTrap(7, 10, WT_BLUNT));
+
+    pinfo.trollkey.clear();
+    for(int i=0; i<size(pinfo.trollwpn); i++)
+      pinfo.trollkey.push_back(i<26 ? 'a'+i : 'A'+(i-26));
+    }    
+
+  if(P.flags & dfTutorial)
+    addMessage("Welcome to the Tutorial!");
+  
+  else
+    addMessage("Welcome to Hydra Slayer v"VER"!");
+  }
+
+void initGame() {
 
   generateGame();
   
   stats.tstart = time(NULL) - stats.tstart;
   
-  if(!stats.savecount) {
-    P.gameseed = time(NULL);
-    for(int ii=0; ii<ITEMS; ii++) P.inv[ii] = 0;
-    P.arms = 2; P.cArm = 0; P.ambiArm = 3;
-    P.maxHP = 24; P.curHP = 24;
-    P.version = VERSION;
-    stats.powerignore = 100;
-    stats.gamestart = time(NULL);
-    
-    P.arms = 0;
-        
-    share("I just started playing Hydra Slayer!");
-
-    shareS("enter", " the Hydras Nest");
-    P.arms = 2;
-
-    generateLevel();
-    if(P.race == R_ELF || P.race == R_CENTAUR) {
-      delete(wpn[0]);
-      wpn[0] = new weapon(HC_ALIEN, 1, WT_BOW);
-      P.cArm = 1;
-      }
-
-    int it3[] = {IT_PFAST, IT_PSEED, IT_RCANC};
-
-    if(P.flags & dfTutorial) {
-      // tutorial starting items
-      P.inv[IT_RSTUN]+=2;
-      P.inv[IT_RDEAD]+=2;
-      }
-
-    else if(P.race != R_TROLL) {
-      P.inv[IT_RSTUN]++;
-      P.inv[IT_RDEAD]++;        
-      P.inv[it3[rand() % 3]]++;
-      }
-
-    else {
-      // generate a size 3 stunner
-      pinfo.trollwpn.push_back(new weapon(HC_ANCIENT, 3, WT_BLUNT));
-      pinfo.trollkey.push_back('h');
-      }
-    
-    if(P.race == R_TWIN) {
-      stairqueue.push_back(new hydra(HC_TWIN, 12, 1, 0));
-      P.maxHP = 12; P.curHP = 12;
-      P.twinarms = 2; P.twinmax = 12; P.twincarm = 1;
-      }
-
-    if(debugon()) {
-      for(int ii=0; ii<ITEMS; ii++) P.inv[ii] = 666;
-      pinfo.trollwpn.push_back(new weapon(0, 2, WT_SHLD));
-      pinfo.trollwpn.push_back(new weapon(1, 0, WT_DIV));
-      pinfo.trollwpn.push_back(new weapon(2, 2, WT_DIV));
-      pinfo.trollwpn.push_back(new weapon(3, 3, WT_DIV));
-      pinfo.trollwpn.push_back(new weapon(4, 5, WT_DIV));
-      pinfo.trollwpn.push_back(new weapon(5, 10, WT_DIV));
-      pinfo.trollwpn.push_back(new weapon(6, 20, WT_BLADE));
-      pinfo.trollwpn.push_back(new weapon(7, 2, WT_ROOT));
-      pinfo.trollwpn.push_back(new weapon(8, 4, WT_MSL));
-      pinfo.trollwpn.push_back(new weapon(9, 15, WT_MSL));
-      pinfo.trollwpn.push_back(new weapon(0, 999, WT_BLADE));
-      pinfo.trollwpn.push_back(new weapon(1, 999, WT_MSL));
-      pinfo.trollwpn.push_back(new weapon(2, 3, WT_DANCE));
-      pinfo.trollwpn.push_back(new weapon(3, 30, WT_DANCE));
-      pinfo.trollwpn.push_back(new weapon(4, 1, WT_VORP));
-      pinfo.trollwpn.push_back(new weapon(2, 2, WT_PREC));
-      pinfo.trollwpn.push_back(new weapon(HC_OBSID, 1, WT_PREC));
-      pinfo.trollwpn.push_back(new weapon(HCOLORS, 1, WT_PICK));
-      pinfo.trollwpn.push_back(new weapon(4, 40, WT_DECO));
-      pinfo.trollwpn.push_back(new weapon(HC_OBSID, 10, WT_DECO));
-      pinfo.trollwpn.push_back(new weapon(HC_OBSID, 1, WT_FUNG));
-      pinfo.trollwpn.push_back(new weapon(5, 2, WT_LOG));
-      pinfo.trollwpn.push_back(new weapon(HCOLORS, 13, WT_BLUNT));
-      pinfo.trollwpn.push_back(new weapon(HCOLORS+1, 1, WT_BLUNT));
-      pinfo.trollwpn.push_back(new weapon(HC_ANCIENT, 1, WT_SHLD));
-      pinfo.trollwpn.push_back(new weapon(HC_OBSID, 1, WT_BLADE));
-      pinfo.trollwpn.push_back(new weapon(HC_OBSID, 2, WT_BLADE));
-      pinfo.trollwpn.push_back(new weapon(HC_OBSID, 3, WT_BLADE));
-      pinfo.trollwpn.push_back(new weapon(HC_ALIEN, 2, WT_QUAKE));
-      pinfo.trollwpn.push_back(new weapon(6, 0, WT_PSLAY));
-      pinfo.trollwpn.push_back(new weapon(12, 1, WT_SPEAR));
-      pinfo.trollwpn.push_back(new weapon(8, 1, WT_AXE));
-      pinfo.trollwpn.push_back(new weapon(9, 1, WT_DISK));
-      pinfo.trollwpn.push_back(new weapon(10, 1, WT_STONE));
-      pinfo.trollwpn.push_back(new weapon(11, 200, WT_PHASE));
-      pinfo.trollwpn.push_back(new weapon(10, 1, WT_BOW));
-      pinfo.trollwpn.push_back(new weapon(7, 3, WT_SUBD));
-      pinfo.trollwpn.push_back(new weapon(8, 3, WT_QUI));
-      pinfo.trollwpn.push_back(new weapon(9, 1, WT_GOLD));
-      pinfo.trollwpn.push_back(new weapon(10, 2, WT_SPEED));
-      pinfo.trollwpn.push_back(new weapon(4, 1, WT_TIME));
-      pinfo.trollwpn.push_back(new weapon(5, 10, WT_RAIN));
-      pinfo.trollwpn.push_back(new weapon(1, 1, WT_RAND));
-      pinfo.trollkey.clear();
-      for(int i=0; i<size(pinfo.trollwpn); i++)
-        pinfo.trollkey.push_back(i<26 ? 'a'+i : 'A'+(i-26));
-      }    
-
-    if(P.flags & dfTutorial)
-      addMessage("Welcome to the Tutorial!");
-    
+  if(P.flags & dfChallenge) {
+    if(stats.savecount)
+      addMessage("Welcome back to the Hydra Slayer Challenge!");
     else
-      addMessage("Welcome to Hydra Slayer v"VER"!");
+      addMessage("Welcome to the Hydra Slayer Challenge!");
+    if(P.flags & dfConsist) addMessage("Warning: challenge consistency check failed");
+    if(P.flags & dfDailyAgain) addMessage("Playing the Daily Challenge again. Score won't be sent.");
     }
+  else if(!stats.savecount) 
+    initCharacter();
   else {
     addMessage("Welcome back to Hydra Slayer!");
     shareS("continue", " the adventure");
     }
-  addMessage("Press F1 or ? to get help.");  
+  addMessage("Press F1 or ? to get help.");
   
   fixTheSavefile();
   
@@ -1299,9 +1465,10 @@ void runTests() {
   }
 
 int main(int argc, char **argv) {
-  
+
   P.curlevel = 0; 
   P.gameseed = time(NULL);
+  randgen.seed(P.gameseed);
   
   pinfo.twin[0] = "Castor";
   pinfo.twin[1] = "Pollux";
@@ -1314,16 +1481,20 @@ int main(int argc, char **argv) {
   #else
   
   P.geometry = 4;
-  char *user = getenv("USER");
+  const char *user = getenv("USER");
   if(user == NULL) user = getenv("USERNAME");
-  if(user == NULL) user = (char*) "Heracles";
+  if(user == NULL) user = "Heracles";
   pinfo.username = user;
+  #ifdef STEAM
+  takeSteamName();
+  #endif
   pinfo.charname = pinfo.username;
   pinfo.charname[0] = toupper(pinfo.charname[0]);
 
   for(int i=1; i<argc; i++)
     switch(argv[i][0] == '-' ? argv[i][1] : argv[i][0]) {
     case 's':
+      fixedseed = true;
       P.gameseed = atoi(readArg(argv, i, argc));
       break;
     
@@ -1341,6 +1512,10 @@ int main(int argc, char **argv) {
     
     case 'g':
       scorename = readArg(argv, i, argc);
+      break;
+    
+    case 'G':
+      challname = readArg(argv, i, argc);
       break;
     
     case 'l':
@@ -1405,6 +1580,7 @@ int main(int argc, char **argv) {
   initScreen();
   loadGame();
   if(gameExists) initGame(), mainloop();
+  else clearGame();
   mainmenu();
   clearGame();
   quitgame = false;

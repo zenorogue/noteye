@@ -4,7 +4,7 @@
 // achievements (achieve.cpp)
 //============================================
 
-#define NUMACH 51
+#define NUMACH 53
 
 struct achievementdata {
   const char *textcode;
@@ -47,11 +47,11 @@ struct achievementdata ach[NUMACH] = {
   {"WELLPREPARED", "Well Prepared", "Killed a Two-Headed Giant with a machete", 5}, 
   {"MAKEUSEFUL", "Practical Worker", "Made the Null Sector useful", 5}, 
   {"TELEFRAG", "Telefragger", "Killed a monster using the wand of phasing", 5}, 
-  {"GROWTHMASTER", "Master of Growth", "Gave 10000+ heads using the Powder of Growth", 5}, 
-  {"NECROPOWER", "Necro Power", "Created 200000+ zombie", 5}, 
+  {"GROWTHMASTER", "Master of Growth", "Gave 10000+ heads at once using the Powder of Growth", 5}, 
+  {"NECROPOWER", "Necro Power", "Created a zombie with 200000+ heads", 5}, 
   {"LIFESAVER", "Lifesaver", "Saved the Twin with a Potion of Life", 5}, 
-  {"SEEDMASTER", "Master of Seeds", "Had 50+ mushroom seeds", 5}, 
-  {"SPEEDOFLIGHT", "Speed of Light", "Drank 11+ Potions of Speed", 5}, 
+  {"SEEDMASTER", "Master of Seeds", "Had 50+ active mushroom seeds at once", 5}, 
+  {"SPEEDOFLIGHT", "Speed of Light", "Had 11+ active Potions of Speed at once", 5}, 
   {"RUNEMASTER", "Powdermaster", "Had 5+ active powders at once", 5}, 
   {"ALLAROUND", "All Around", "Killed 8 hydras with an all-around attack", 10}, 
   {"VAMPIRESLAYER", "Vulture Slayer", "Killed the first Vulture Hydra honorably", 5}, 
@@ -62,9 +62,11 @@ struct achievementdata ach[NUMACH] = {
   {"SUICIDE", "Suicide", "Commited a suicide", 12}, 
   {"BOOMERANG", "Boomerang", "Had a missile dropped under their feet", 5}, 
   {"LONGTHROW", "Long Throw", "Killed 11+ hydras with a single missile throw", 10}, 
-  {"RESURRECTION", "Resurrection", "Was killed and came back to life (not as Twin)", 10},
-  {"NODIVISOR", "Don't Divide but Conquer", "Win the small game without attacking with divisor blades", 10},
-  {"NOJUICE", "Power is for the Weak", "Win the small game without drinking your first Power Juice", 10}
+  {"RESURRECTIONX", "Resurrection", "Was killed and came back to life (not as Twin)", 10},
+  {"NODIVISOR", "Don't Divide but Conquer", "Reached and killed the first boss without attacking with divisor blades", 10},
+  {"NOJUICE", "Power is for the Weak", "Reached and killed the first boss without drinking the first Power Juice you pick up", 10},
+  {"TRAPPER", "Trapper", "Killed a hydra with a trap", 5},
+  {"NOJUICE3", "Innate Power", "Reached and killed the first boss without drinking the first three Power Juices you find", 10},
   };
 
 void setmax(int& a, int b) { if(b>a) a=b; }
@@ -192,14 +194,46 @@ void viewNumAchievements(const vector<playerinfo>& pi, bool global) {
   ghch(IC_VIEWDESC);
   }
 
+long long getAchievementId(const char* s) {
+  long long res = 0;
+  for(int i=0; i<NUMACH; i++)
+    if(strcmp(s, ach[i].textcode) == 0) 
+      res |= (1ll << i);
+  return res;
+  }
+
 void achievement(const char* s) {
+#ifdef STEAM
+  extern void achievement_gain(const char *name);
+  achievement_gain(s);  
+#endif
   for(int i=0; i<NUMACH; i++)
     if(strcmp(s, ach[i].textcode) == 0) {
       stats.achiev |= (1ll << i);
       return;
       }
-  
   addMessage("Warning: unrecognized achievement!");
+  }
+
+void addAchievementsToLog() {
+  int myscore = 0;
+
+  for(int i=0; i<NUMACH; i++) {
+    bool inmy = (stats.achiev >> i) & 1;
+    int sco = ach[i].score;
+    if(inmy) myscore += sco;
+    }
+  
+  if(!myscore) return;
+  
+  glog.push_back("\n");
+  glog.push_back("Achievements earned in this game: (" + its(myscore)+" points)\n");
+
+  for(int i=0; i<NUMACH; i++) {
+    bool inmy = (stats.achiev >> i) & 1;
+    if(inmy)
+      glog.push_back("  " + s0 + ach[i].hname + " (" + its(ach[i].score) + ")\n");
+    }
   }
 
 void viewAchievements(const vector<playerinfo>& pi, bool global) {
@@ -215,7 +249,12 @@ void viewAchievements(const vector<playerinfo>& pi, bool global) {
     if(global ? false : Pi.username != pinfo.username)
       continue;
     
-    if(!Pi.curgame) total |= Pi.stats.achiev;
+    if(!Pi.curgame) {
+      long long ach = Pi.stats.achiev;
+      if(P.oldversion <= 1704)
+        ach &=~ getAchievementId("NOJUICE2");
+      total |= ach;
+      }
     }
 
   bool descr = false;

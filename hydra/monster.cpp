@@ -3,6 +3,25 @@
 
 bool hydra::aware() { return visible() ? M[pos].seen : (P.flags & dfShadowAware); }
 
+void takeWounds(int thc) {
+  P.curHP -= thc;
+  stats.wounds += thc;
+  if((P.flags & dfChallenge) && P.curlevel < CLEVELS)
+    pinfo.cdata.wounds[P.curlevel] += thc;
+  }
+
+void removeWounds(int hp) {
+  if(hp > P.maxHP - P.curHP) hp = P.maxHP - P.curHP;
+  takeWounds(-hp);
+  }
+
+void useupItem(int ii) {
+  if((P.flags & dfChallenge) && P.curlevel < CLEVELS)
+    pinfo.cdata.itcost[P.curlevel] += iinf[ii].value;
+  P.inv[ii]--; stats.usedup[ii]++;
+  if(!stats.woundwin) stats.usedb[ii]++;
+  }
+
 bool nearPlayer(vec2 loc) {
   if(neighbor(loc, playerpos)) return true;
   if(!twin) return false;
@@ -113,18 +132,23 @@ void cell::hydraDead(hydra *killer) {
   if(P.race == R_NAGA && h->heal >= 2) P.curHP--;
   if(P.race == R_NAGA && h->heal >= 4) P.curHP--;
   if(P.race == R_NAGA && h->heal >= 6) P.curHP--;
+  
+  // stop waiting if a hydra dies
+  if(h->visible()) inWaitMode = false;
 
   if(P.curHP > P.maxHP) P.curHP = P.maxHP;
 
   if(h->visible())
     dead = (h->color & HC_DRMASK) + 1;
+  else
+    P.flags &= ~dfShadowAware;
   
   if(h->ewpn) {
     if(!it) it = h->ewpn;
     else for(int d=0; d<DIRS; d++) {
-      vec2 pos2 = pos + dirs[d];
+      vec2 pos2 = h->pos + dirs[d];
       cell& c(M[pos2]);
-      if(c.it == NULL) { c.it = h->ewpn; break; }
+      if(c.it == NULL && c.type == CT_EMPTY) { c.it = h->ewpn; break; }
       }
     }
   
@@ -132,8 +156,10 @@ void cell::hydraDead(hydra *killer) {
   else if(h->color == HC_MONKEY) stats.monkeykill++;
   else if(h->color != HC_TWIN) {
     stats.hydrakill++;
-    highscore(1, stats.hydrakill);
-    if(P.curlevel < LEVELS) stats.armscore += P.arms - 2;
+    highscore("hydras killed", stats.hydrakill, 1);
+    if(!stats.usedup[IT_PLIFE]) highscore("hydras killed/no life", stats.hydrakill, 1);
+    if(P.flags & dfDaily) highscoreDaily();
+    if(P.curlevel < GLEVELS) stats.armscore += P.arms - 2;
     if(P.curlevel < LEVELS2) stats.armscore2 += P.arms - 2;
     }
   if(h->color == HC_GROW) stats.ivykill++;
@@ -150,11 +176,24 @@ void cell::hydraDead(hydra *killer) {
     for(int j=i+1; j<size(hydras); j++) hydras[j-1] = hydras[j];
     hydras.resize(size(hydras)-1);
     }
+
+  bool cleanup = (pinfo.player.flags & dfCleanup);
   
   bool anc = h->isAncient();
 
-  if(h->isAncient()) {
-    if(P.curlevel < LEVELS) {
+  if(h->isAncient() && !cleanup) {
+    if(P.flags & dfChallenge) {
+      if(debugon())
+        addMessage("OK, you win. Cheater.");
+      else
+        addMessage("The Challenge is completed!");
+      stats.woundwin = stats.wounds;
+      stats.treasure = 0;
+      for(int i=0; i<ITEMS; i++)
+        stats.treasure += stats.usedup[i] * iinf[i].value;
+      highscoreDaily();
+      }
+    else if(P.curlevel < GLEVELS) {
       if(debugon())
         addMessage("You kill the Ancient Hydra!!! But it is possible without cheating!");
       else
@@ -176,14 +215,17 @@ void cell::hydraDead(hydra *killer) {
       if(P.race == R_TWIN) achievement("BRONZETWIN");
       
       if(stats.maxoftype[MOT_DIV] == 0) achievement("NODIVISOR");
-      if(stats.powerignore) achievement("NOJUICE");
+      
+      if(P.race != R_TROLL && stats.powerignore >= 1) achievement("NOJUICE");
+      if(stats.powerignore >= 3) achievement("NOJUICE3");
 
       bool usedNone = true;
       for(int i=0; i<ITEMS; i++) if(stats.usedb[i]) usedNone = false;
       if(usedNone) achievement("TOUGHFIGHTER");
 
-      highscore(2, stats.treasure);
-      highscore(3, stats.armscore);
+      highscore("wounds to win/partial", stats.woundwin, -1);
+      highscore("value of items used/partial", stats.treasure, -1);
+      highscore("mutation score/partial", stats.armscore, -1);
       string s = " the Ancient Hydra taking only "+its(stats.woundwin)+" wounds";
       if(usedNone) s += " without using any items";
       if(P.arms < 6) s += " with just "+its(P.arms)+" arms";
@@ -221,8 +263,9 @@ void cell::hydraDead(hydra *killer) {
       
       if(stats.usedup[IT_PLIFE] == 0) achievement("PLATINUM");
 
-      highscore(4, stats.treasure2);
-      highscore(5, stats.armscore2);
+      highscore("wounds to win/full", stats.woundwin, -1);
+      highscore("value of items used/full", stats.treasure2, -1);
+      highscore("mutation score/full", stats.armscore2, -1);
 
       string s = " the Ancient Dragon taking only "+its(stats.woundwin2)+" wounds";
       if(P.inv[IT_PLIFE]) s += " without using "+its(P.inv[IT_PLIFE])+" Potions of Life";
@@ -243,7 +286,7 @@ void cell::hydraDead(hydra *killer) {
 
   delete h;
   extern int sceneid;
-  if(req && canGoDown() && !sceneid) {
+  if(req && canGoDown() && !sceneid && !cleanup) {
     string msgs[11] = {
       "First level completed! Step on the stairs ('>') to go to the next level.",
       "No mighty hydra slaying weapons yet... well, no REAL hydras either.",
@@ -260,11 +303,14 @@ void cell::hydraDead(hydra *killer) {
     if(!anc) {
       if(P.curlevel < 0)
         addMessage("Congratulations! You have successfully completed the Tutorial.");
+      else if(P.flags & dfChallenge)
+        addMessage(msgs[2 + hrand(7)]);
       else if(P.curlevel < LEVELS-1)
         addMessage(msgs[P.curlevel]);
       else if(P.curlevel > LEVELS-1 && P.curlevel != 49)
-        addMessage(msgs[2 + rand() % 7]);
+        addMessage(msgs[2 + hrand(7)]);
       }
+    playSound("other/tada", 100, 0);
     
     if(P.curlevel == 0) achievement("BEGINNER");
     if(P.curlevel == 0 && stats.wounds == 0) achievement("BEGINNERPERFECT");
@@ -297,13 +343,15 @@ void hydraKnowDirty(hydra *H) {
 void hydraAttackPlayer(hydra* H, bool brother) {
   string amsg;
   
+  inWaitMode = false;
+  
   if(H->ewpn) {
     string verb = H->ewpn->info().hverb;
     if(verb[size(verb)-1] == 'h') verb += "e";
     amsg = "The "+H->name()+" "+verb+"s";
     }
   else if(H->color == (HC_ANCIENT | HC_DRAGON))
-    amsg = "The "+H->name()+" "+hyinf[rand() % 10].dverb;
+    amsg = "The "+H->name()+" "+hyinf[hrand(10)].dverb;
   else if(H->color & HC_DRAGON)
     amsg = "The "+H->name()+" "+H->info().dverb;
   else 
@@ -316,11 +364,14 @@ void hydraAttackPlayer(hydra* H, bool brother) {
     if(wnd > 3) wnd = 3;
     amsg += " "+its(wnd)+" wnd";
     addMessage(amsg);
-  
-    P.curHP -= wnd;
-    stats.wounds += wnd;
+    
+    takeWounds(wnd);
     stats.shadowwounds+= wnd;
     P.flags |= dfShadowAware;
+    printf("playAttackSound called\n");
+    playAttackSound(NULL, H);
+    if(shadowwarning) shadowwarning = 0;
+    else shadowwarning = 10;
     }
   
   else if(true) {
@@ -371,7 +422,7 @@ void hydraAttackPlayer(hydra* H, bool brother) {
         }
     
       else {
-        P.curHP -= dmg;
+        removeWounds(-dmg);
       
         stats.shieldheal -= dmg;
       
@@ -395,8 +446,7 @@ void hydraAttackPlayer(hydra* H, bool brother) {
     
     int dam = SI.dampost(hcount);
   
-    P.curHP -= dam;
-    stats.wounds += dam;
+    takeWounds(dam);
     if(H->ewpn) stats.ettinwnd += dam;
     if(H->isAncient()) {
       if(P.curlevel < LEVELS)
@@ -451,7 +501,8 @@ void repelEttin(hydra *H, int by) {
   }
 
 bool canAttackBothTwins(hydra *H) {
-  return H->color >= HCOLORS && !H->lowhead() && P.curlevel >= LEVELS;
+  return H->color >= HCOLORS && !H->lowhead() && 
+    P.curlevel >= (P.flags & dfChallenge ? GLEVELS/2 : LEVELS);
   }
 
 void twinAttackBoth(hydra *H) {
@@ -475,7 +526,7 @@ void twinAttackBoth(hydra *H) {
     if(dmg == max) count++;
     }
 
-  count = rand() % count;
+  count = hrand(count);
   for(int i=0; i<=hcount; i++) {
     int dmg = SI.dampost(i) + twinSI.dampost(hcount-i);
     if(dmg == max) {
@@ -521,7 +572,7 @@ void twinAttackPick(hydra *H) {
     }
 
   if(twins == mine) {
-    twins += rand() % 2 ? 1 : -1;
+    twins += hrand(2) ? 1 : -1;
     }
   
   if(twins > mine) {
@@ -563,11 +614,36 @@ bool isEnemy(hydra *H, hydra *H2 = NULL) {
     }
   }
 
+vector<cell*> traps; // traps activated in this turn
+
+bool trapHits(cell *c) {
+  weapon *t = c->trapped();
+  if(!t) return false;
+  if(!c->h) return false;
+  if(t->type == WT_BLADE && c->h->heads < t->size)
+    return false;
+  if(t->type == WT_BLUNT && (c->h->heads-c->h->sheads) < t->size)
+    return false;
+  if(t->type == WT_DIV && c->h->heads % t->size)
+    return false;
+  return true;
+  }
+
+void trapHitPlayer() {
+  weapon *t = M[playerpos].trapped();
+  if(!t) return;
+  addMessage("You are hit by the "+t->fullname()+"!");
+  takeWounds(t->size);
+  if(P.curHP <= 0) shareFixed("commited suicide with the "+t->fullname());
+  if(P.curHP <= 0) achievement("SUICIDE");
+  delete t; M[playerpos].it = NULL;
+  }
+
 void moveHydra(hydra* H) {
   vec2 playerwrap = wrap(playerpos);
   int morder[DIRS];
   for(int i=0; i<DIRS; i++) morder[i] = i;
-  for(int i=0; i<DIRS; i++) swap(morder[i], morder[rand() % (i+1)]);
+  for(int i=0; i<DIRS; i++) swap(morder[i], morder[hrand(i+1)]);
 
   vec2 moveto = H->pos;
   int smell = H->power() + 1;
@@ -576,6 +652,7 @@ void moveHydra(hydra* H) {
   if(H->color == HC_ETTIN) smell += 2;
   if(H->color == HC_MONKEY) smell += 30;
   if(H->color == HC_SHADOW) smell += 50;
+  if(inWaitMode && waitsteps >= 1000) smell += 500;
   if(H->color == HC_TWIN) smell = 900;
   smell += H->awareness;
 
@@ -583,11 +660,11 @@ void moveHydra(hydra* H) {
     smell *= 2;
     smell += smell / 8;
     }
-  if(rand() % 3 == 0) {
+  if(hrand(3) == 0) {
     smell--;
-    if(rand() % 2) {
+    if(hrand(2)) {
       smell--;
-      if(rand() % 2) smell--;
+      if(hrand(2)) smell--;
       // previously, a power N hydra would lose track of the PC in distance 2 with chance 1/3*2^(N-1);
       // currently, a big hydra never loses track
       }
@@ -616,13 +693,15 @@ void moveHydra(hydra* H) {
       }
     else {
       if(twin) stats.twindef1++;
+      sendAttackEvent(H->uid, H->pos, playerpos);
       hydraAttack(H, playerpos);
       }
     return;
     }
                                         
   for(int i=0; i<DIRS; i++) {
-    vec2 vnw = H->pos + dirs[morder[i]];
+    vec2 mvec = dirs[morder[i]];
+    vec2 vnw = H->pos + mvec;
     vec2 v = wrap(vnw);
   
     if(v == playerwrap) {
@@ -632,7 +711,7 @@ void moveHydra(hydra* H) {
           if(wrap(vnw + dirs[i]) != wrap(playerpos + dirs[i]))
             mirrored = true;
         if(mirrored) achievement("MIRRORIMAGES");
-        bool hadmirrored = false;
+        static bool hadmirrored = false;
         if(mirrored && !hadmirrored) hadmirrored = true, shareBe("now mirror images");
         }
       continue; // friendly, attacking was done previously
@@ -682,8 +761,10 @@ void moveHydra(hydra* H) {
           }
 
         stats.twinai++;
+        vec2 twinpos = H->pos;
         twinswap();
         bool hd = h2->res[wpn[usew[spos]]->color] < 0;
+        sendAttackEvent(ATT_TWIN, twinpos, v);
         M[v].attack(wpn[usew[spos]], wpn[usew[spos]]->size, twin);
         attackEffect(wpn[usew[spos]], hd);
         cancelVorpal();
@@ -691,6 +772,7 @@ void moveHydra(hydra* H) {
         return;
         }
       else {
+        if(!inWaitMode) sendAttackEvent(H->uid, H->pos, v);
         hydraAttack(H, v);
         return;
         }
@@ -700,6 +782,14 @@ void moveHydra(hydra* H) {
       // if we can smell the PC, go towards them
       
       int dist = M[v].dist;
+      
+      if(M[v].trapped()) {
+        if(!M[v].explored) continue;
+        if(dist > smell || dist == 0) continue;
+        if(H->color == HC_TWIN || H->color == HC_MONKEY || H->color == HC_ETTIN) 
+          continue;
+        if(H->color == HC_SHADOW && !(P.flags & dfShadowAware)) continue;
+        }
       
       if(dist > smell) dist = DANGER-10;
       if(dist == 0) dist = DANGER-10;
@@ -730,6 +820,9 @@ void moveHydra(hydra* H) {
   M[H->pos].h = NULL;
   H->pos = moveto;
   M[moveto].h = H;
+  
+  weapon *trap = M[moveto].trapped();
+  if(trap) traps.push_back(&M[moveto]);
   
   if(H == twin) {
     twinswap();
@@ -764,9 +857,15 @@ void popStairQueue() {
   }
 
 void moveHydras() {
-  stats.turns++;
-  if(twin && P.twinmode) stats.turntwin++;
+  if(inWaitMode) 
+    stats.waitturns++;
+  else {
+    stats.turns++;
+    if(twin && P.twinmode) stats.turntwin++;
+    }
   bfs(0); 
+  
+  traps.clear();
   
   for(int i=0; i<size(hydras); i++) {
 
@@ -781,16 +880,34 @@ void moveHydras() {
     if(H->stunforce < 0) {
       stats.awakenhd += H->sheads;
       bool next = false;
-      if(M[H->pos].seen && H->sheads == H->heads)
+      if(M[H->pos].seen && H->sheads == H->heads && H->color != HC_SHADOW) {
         stats.awakenhyd++, next = true,
         addMessage("The "+H->name()+" wakes up.");
-      if(M[H->pos].seen && H->sheads < H->heads)
+        playSound("other/wakesUp", 75, 0);
+        }
+      if(M[H->pos].seen && H->sheads < H->heads && H->color != HC_SHADOW) {
         stats.awakenhyd++,
         addMessage("The "+H->name()+" is fully awake again!");
+        playSound("other/wakesUp", 100, 0);
+        }
       H->stunforce = 0, H->sheads = 0;
       if(next) continue;
       }
     }
+  
+  for(int i=0; i<size(traps); i++) {
+    weapon *t = traps[i]->trapped();
+    if(!t) continue;
+    if(trapHits(traps[i])) 
+      traps[i]->attack(t, t->size, t);
+    else {
+      addMessage("The "+t->fullname()+" misses the "+traps[i]->h->name()+"!");
+      playSound("weapons/miss", 100, 0);
+      }
+    if(!traps[i]->h) achievement("TRAPPER");
+    delete traps[i]->it; traps[i]->it = NULL;
+    }
+  
   popStairQueue();  
   }
 
@@ -815,11 +932,13 @@ bool growHeads(hydra *h) {
   // then just use the appropriate divisor
   // note that the closest match will be always used
   
+  /*
   int div = 0;
   for(int w=0; w<P.arms; w++) 
     if(wpn[w] && wpn[w]->type == WT_DIV && wpn[w]->size > div && 
       h->res[wpn[w]->color] >= 0)
       div = wpn[w]->size;
+  */
   
   /*
   int res = h->res[wpn[w]->color];
@@ -840,8 +959,9 @@ bool growHeads(hydra *h) {
   
   int nhd;
   
-  if(div) nhd = (h->heads/div) * div + div;
-  else {
+  /* if(div) nhd = (h->heads/div) * div + div;
+  else */
+  {
     // try to cover Eradicator, Blade of Logaems, etc.
 
     for(int hb=1; hb<=100000; hb++) {
@@ -864,13 +984,33 @@ bool growHeads(hydra *h) {
   return true;
   }
 
+int monkeymax() {
+  if(P.flags & dfChallenge) return (2+P.curlevel) * 3;
+  else return P.curlevel * 2;
+  }
+
 string hydra::describe() {
   if(color == HC_TWIN)
     return rinf[R_TWIN].desc;
+    
+  string stundesc = "";
+  if(conflict)
+    stundesc += " It looks confused.";
+    
+  if(sheads) {
+    stundesc += "\nStunned heads (won't attack or pursue you): "+its(sheads)+ ", for ";
+    if(stunforce >= sheads) stundesc += its(stunforce/sheads);
+    if(stunforce%sheads) stundesc += " " + its(stunforce%sheads)+"/"+its(sheads);
+    if(stunforce > sheads)
+      stundesc += " turns";
+    else stundesc += " turn";
+    }
+  
+  
   if(zombie)
     return
       "This is a zombie, raised by your Powder of Fungal Necromancy. "
-      "It is your slave, and does not question anything.";
+      "It is your slave, and does not question anything." + stundesc;
     
   if(color == HC_SHADOW && stats.backupsaves)
     return
@@ -890,15 +1030,15 @@ string hydra::describe() {
       "which Hydra Slayers use to determine the number of heads regrown for each type of "
       "attack. To know that, you will need to either use this attack, or to "
       "drink a Potion of Knowledge (note that the potion used "
-      "to identify bloody hydras does not do anything else).\n";
+      "to identify bloody hydras does not do anything else)." + stundesc;
+
   if(heads == 1 && !lowhead() && color != HC_TWIN && color != HC_MUSH)
     return 
       "This 'hydra' has only one head. It should be enough to "
       "attack it with a dagger, and it will be dead. No problems "
-      "with heads regrowing then.";
+      "with heads regrowing then." + stundesc;
+
   string s = info().hdesc;
-  if(conflict)
-    s += " It looks confused.";
   if(color == HC_ETTIN) {
     string t;
     if(P.race == R_ELF)
@@ -927,9 +1067,10 @@ string hydra::describe() {
     s.replace(s.find("2N"), 2, namenum(heads*2));
     }
   if(s.find("ML") != string::npos) {
-    s.replace(s.find("ML"), 2, its(P.curlevel*2));
+    s.replace(s.find("ML"), 2, its(monkeymax()));
     }
-  return s;
+
+  return s + stundesc;
   }
 
 void prepareHah(hydra *H) {
@@ -984,6 +1125,7 @@ void specialExtra(hydra *H) {
     prepareHah(H);
     if(headsafterhit(H, H->heads+1) > headsafterhit(H, H->heads)) {
       addMessage("The "+H->name()+" suddenly grows a head!");
+      playSound("../hydra-old/rune", 25, 0);
       H->heads++;
       stats.ivygrow++;
       }
@@ -999,6 +1141,7 @@ void specialExtra(hydra *H) {
       }
     if(nh < H->heads) {
       addMessage("The "+H->name()+" teleports "+its(H->heads-nh)+" of its heads away!");
+      playSound("other/teleport", headsToVolume(H->heads-nh), 0);
       stats.wizout += (H->heads-nh);
       H->heads = nh;
       }
@@ -1086,6 +1229,7 @@ bool specialMove(hydra *H) {
         }
       if(hcount) {
         addMessage("The "+H->name()+" teleports "+its(hcount)+" heads to the "+H2->name()+"!");
+        playSound("other/teleport", headsToVolume(hcount), 0);
         H->heads -= hcount;
         H2->heads += hcount;
         stats.wizport += hcount;
@@ -1099,7 +1243,7 @@ bool specialMove(hydra *H) {
     // vec2 playerwrap = wrap(playerpos);
     int morder[DIRS];
     for(int i=0; i<DIRS; i++) morder[i] = i;
-    for(int i=0; i<DIRS; i++) swap(morder[i], morder[rand() % (i+1)]);
+    for(int i=0; i<DIRS; i++) swap(morder[i], morder[hrand(i+1)]);
     
     // int shc = H->heads - H->sheads;
     
@@ -1134,7 +1278,7 @@ bool stealable(hydra *H, int id) {
   weapon *w = wpn[id];
   if(!w) return false;
   if(w->msl()) return false;
-  if(w->size > P.curlevel * 2) return false;
+  if(w->size > monkeymax()) return false;
   bool nearit = nearPlayerOf(H, havebit(P.twinarms, id));
   if(!nearit) return false;
   return w->cuts() || w->stuns();
@@ -1145,9 +1289,13 @@ void tryStealing(hydra *H, bool postmove) {
     return;
   if(nearPlayer(H)) {
     int best = -1, score = -1;
-    int likeblade  = (rand() % 10) * 100;
-    int likestun   = (rand() % 10) * 100;
-    int likeshield = (rand() % 10) * 100;
+
+    tmprand t(P.gameseed * 513901301 + P.curlevel * 910510111);
+    for(int i=0; i<60; i++) hrand(2);
+    int likeblade  = hrand(10) * 100;
+    int likestun   = hrand(10) * 100;
+    int likeshield = hrand(10) * 100;
+
     if(likeshield < likestun) likeshield = likestun;
     
     for(int i=0; i<P.arms; i++) if(stealable(H, i)) {
@@ -1164,6 +1312,7 @@ void tryStealing(hydra *H, bool postmove) {
     if(best != -1) {
       swap(H->ewpn, wpn[best]);
       addMessage("The "+H->name()+" steals your "+H->ewpn->name()+"!");
+      playSound("other/stealsYourWeapon", sizeToVolume(H->ewpn->size), 0);
       }
     }
   }

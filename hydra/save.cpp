@@ -2,6 +2,7 @@
 // Copyright (C) 2010-2011 Zeno Rogue, see 'hydra.cpp' for details
 
 #define SAVEFORMAT 104
+#define HYDRADATE 1278319078
 
 #ifdef MINGW
 #include <io.h>
@@ -13,8 +14,10 @@ FILE *savefile;
 
 bool error;
 
+#ifndef STEAM
 template<class T> void save(const T& t) { fwrite(&t, 1, sizeof(t), savefile); }
 template<class T> void load(T& t, int size = sizeof(T)) { if(error) return; if(fread(&t, size, 1, savefile) != 1) error = true; }
+#endif
 
 void saveString(const string& s) {
   int size = s.size();
@@ -24,6 +27,7 @@ void saveString(const string& s) {
 
 string loadString() {
   int size; load(size);
+  if(size > 1000) { error = true; size = 0; }
   string ret(size, ' ');
   for(int i=0; i<size; i++) { load(ret[i]); }
   return ret;
@@ -33,12 +37,17 @@ void deleteGame(string sav = savename) { unlink(sav.c_str()); }
 
 void saveGame(string sav = savename) {
 
-  if(!P.arms) {
-    deleteGame();
-    return;
+  if(!gameExists || !P.arms) {
+    P.arms = 0;
+    pinfo.whist.clear();
+    stairqueue.clear();
+    pinfo.trollwpn.clear();
+    pinfo.trollkey.clear();
+    stats.gamestart = HYDRADATE;
+    stats.gameend   = HYDRADATE;
     }
 
-  savefile = fopen(sav.c_str(), "wb");
+  savefile = fopen(sav.c_str(), "wb"); initChecksum();
   
   error = !savefile;
   
@@ -46,6 +55,12 @@ void saveGame(string sav = savename) {
   
   P.saveformat = SAVEFORMAT;
   P.version = VERSION;
+  if(!P.oldversion) P.oldversion = VERSION;
+  #ifdef STEAM
+  P.flags |= dfSteam;
+  #else
+  P.flags |= dfFree;
+  #endif
   stats.whistSize = size(pinfo.whist);
   P.stairqueue = size(stairqueue);
   
@@ -69,12 +84,12 @@ void saveGame(string sav = savename) {
     for(int i=0; i<trollsize; i++) save(pinfo.trollkey[i]);
     for(int i=0; i<trollsize; i++) pinfo.trollwpn[i]->csave();
     }
-  
+    
   for(int i=0; i<P.stairqueue; i++) stairqueue[i]->csave();
   
   for(int i=0; i<stats.whistSize; i++) save(pinfo.whistAt[i]), pinfo.whist[i]->csave();
   
-  for(int y=0; y<SY; y++) for(int x=0; x<SX; x++) {
+  if(gameExists) for(int y=0; y<SY; y++) for(int x=0; x<SX; x++) {
     cell& c(M.m[y][x]);
     #define ITEMMASK (1<<24)
     if(c.it) c.mushrooms |= ITEMMASK;
@@ -85,6 +100,11 @@ void saveGame(string sav = savename) {
   
   int32_t i = hydras.size();
   save(i); for(int i=0; i<size(hydras); i++) hydras[i]->csave();
+  
+  if(P.flags & dfChallenge) save(pinfo.cdata);
+  
+  long long r = calcChecksum(); 
+  save(r);
   
   fclose(savefile);
   }
@@ -114,6 +134,7 @@ void sclass::csave() { save(sct()); }
 void item::csave() { sclass::csave(); save(type); }
 void weapon::csave() { 
   sclass::csave(); save(type), save(size), save(color), save(level), save(ocolor), save(osize), save(sc);
+  save(wpnflags);
   }
 void hydra::csave() {
   sclass::csave();
@@ -132,6 +153,7 @@ void hydra::csave() {
 void item::cload() { load(type); }
 void weapon::cload() {
   load(type), load(size), load(color), load(level), load(ocolor), load(osize), load(sc);
+  if(P.version >= 1640) load(wpnflags); else wpnflags = 0;
   }
 void hydra::cload() { 
   load(color), load(heads), load(sheads), load(stunforce), load(heal), load(res);
@@ -154,8 +176,6 @@ template<class x> void loadshift(x& a, int pos, int shift) {
   memmove(v+pos+shift, v+pos, sizeof(a) - pos-shift);
   memset(v+pos, 0, shift);
   }
-
-#define HYDRADATE 1278319078
 
 #define ofs(x) (((char*)(&S.x)) - ((char*)(&S)))
 
@@ -196,24 +216,34 @@ void loadStats(statstruct& S, int saveformat) {
 
 void loadGame(string sav = savename) {
   gameExists = false;
-  savefile = fopen(sav.c_str(), "rb");
+  savefile = fopen(sav.c_str(), "rb"); initChecksum();
 
   if(!savefile) { error = true; return; }
   error = false;
   
   load(P);
 
+  // if no flags set, must have been an old version
+  if((P.flags & (dfSteam | dfFree)) == 0)
+    P.flags |= dfFree;
+    
+  #ifdef STEAM
+  P.flags |= dfSteam;
+  #else
+  P.flags |= dfFree;
+  #endif
+
   if(P.saveformat < 103) {
     printf("Savefile format incompatible\n");
     return;
     }
-  
+
   loadStats(stats, P.saveformat);
   if(P.geometry == 0) P.geometry = 8; setDirs();
   load(playerpos); load(topx); load(topy);
   pinfo.charname = loadString();
   pinfo.username = loadString();  
-
+  
   if(P.twinsNamed)
     pinfo.twin[0] = loadString(),
     pinfo.twin[1] = loadString();
@@ -236,7 +266,7 @@ void loadGame(string sav = savename) {
   for(int i=0; i<stats.whistSize; i++) 
     load(pinfo.whistAt[i]), pinfo.whist.push_back((weapon*) loadS());
   
-  for(int y=0; y<SY; y++) for(int x=0; x<SX; x++) {
+  if(P.arms) for(int y=0; y<SY; y++) for(int x=0; x<SX; x++) {
     cell& c(M.m[y][x]);
     c.it = NULL;
     load(c.type), load(c.mushrooms), load(c.dead), load(c.explored);
@@ -256,9 +286,17 @@ void loadGame(string sav = savename) {
     M[h->pos].h = h;
     if(h->color == HC_TWIN) twin = h;
     }
+
+  if((P.flags & dfChallenge) && P.version >= 1650) load(pinfo.cdata);
+  
+  if(!P.oldversion) P.oldversion = VERSION;
+  if(P.version >= 1660) {
+    long long r = calcChecksum(); long long r2; load(r2);
+    if(r != r2) P.flags |= dfSaveEdit;
+    }
   
   char x; if(error || fread(&x, 1, 1, savefile) != 0) error = true;
-  
+
   fclose(savefile);
   stats.savecount++;
   
@@ -268,6 +306,8 @@ void loadGame(string sav = savename) {
     exit(0);
     }
   else gameExists = true;
+  
+  if(!P.arms) gameExists = false;
   }
 
 void emSaveGame() {

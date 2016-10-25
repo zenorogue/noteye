@@ -20,7 +20,7 @@ noteye-jni-mingw.o: noteye-jni.cpp
 	g++ -shared noteye-hn.o noteye-jni-mingw.o -o ../noteye.dll -lSDL2 -lSDL2_image -lopengl32 ../lua51.dll -lSDL2_net -lz -lcurses -lSDL2_mixer --enable-runtime-pseudo-relocs -lSDL2_ttf
 
 ../hydraslayer.dll: hydra-mingw.o ../noteye.dll
-	g++ -shared hydra-mingw.o -o ../hydraslayer.dll ../noteye.dll
+	g++ -shared hydra-mingw.o -o ../hydraslayer.dll ../noteye.dll -lSDL2
 
 #../noteye.exe: ../noteye.dll hydra-mingw.o noteye.res noteye-main.cpp
 #	g++ -DHYDRA noteye-main.cpp hydra-mingw.o noteye.res -o ../noteye.exe ../noteye.dll

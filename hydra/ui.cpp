@@ -16,52 +16,19 @@ bool yesno(int context) {
     }
   }
 
-#ifndef NOTEYE
-void playSound(const char *fname, int vol, int msToWait) {}
-#endif
-
-#ifdef NOTEYE
-int ghch(int context) { return noteye_getch(); }
-
-struct soundtoplay {
-  int vol, delay;
-  const char *sfname;
-  };
-
-vector<soundtoplay> soundqueue;
-
-void playSound(const char *fname, int vol, int msToWait) {
-  if(!fname) return;
-  soundtoplay P;
-  P.vol = vol; P.delay = msToWait; P.sfname = fname;
-  soundqueue.push_back(P);
-  }
-
-#undef erase
-#include "../src/noteye.h"
-#define erase noteye_erase
-
-int lh_getSounds(lua_State *L) {
-  noteye_table_new(L);
-  for(int i=0; i<size(soundqueue); i++) {
-    soundtoplay& P(soundqueue[i]);
-    noteye::noteye_table_opensubAtInt(L, i);
-    noteye_table_setStr(L, "sound", P.sfname);
-    noteye_table_setInt(L, "vol", P.vol);
-    noteye_table_setInt(L, "delay", P.delay);
-    noteye_table_closesub(L);
-    }
-  soundqueue.clear();
-  return 1;
-  }
-
-#endif
-
 #ifndef NOCURSES
+int current_context;
+
 int ghch(int context) {
+  current_context = context;
+
+#ifdef STEAM
+  shareUpdate();
+#endif
 
   refresh();
   int ch=getch();
+
   
   // thanks to Xecutor on Roguetemple for this hack
   // it allows you to use Alt+keypad for movement on Macs
@@ -221,7 +188,7 @@ int getDir(int ch) {
   exit(1);
   }
 
-void viewMultiLine(string s, int& cy) {
+void viewMultiLine(string s, int& cy, int narrow) {
   s = s + " ";
   int cut = -1;
 
@@ -231,7 +198,7 @@ void viewMultiLine(string s, int& cy) {
 #define MAXLINE 79
 #endif
 
-  int cx = 0;
+  int cx = narrow;
 
   while(s != "") {
     move(cy, cx);
@@ -239,7 +206,7 @@ void viewMultiLine(string s, int& cy) {
     
     cut = size(s);
 
-    for(int x=0; x<MAXLINE && x < size(s); x++) 
+    for(int x=0; x<MAXLINE-narrow*2 && x < size(s); x++) 
       if(s[x] == '\n' || s[x] == '\r') { cut = x; break; } 
       else if(s[x] == ' ' ) cut = x;
     
@@ -346,182 +313,133 @@ void drawMap() {
     }
   }
 
+#ifndef NOTEYE
+void playSound(const char *fname, int vol, int msToWait) {}
+void sendSwapEvent() {}
+void sendAttackEvent(int hid, vec2 from, vec2 to) {}
+void addAnimation(cell *c, int headid, int cutcount, int color = 0) {}
+#endif
+
 #ifdef NOTEYE
 
 #include "drawhydras.cpp"
 
-char squareRootSign() { 
+int squareRootSign() { 
   InternalProcess* P = noteye_getinternal();
   Font* F = P ? P->f : NULL;
+  // Unicode square root sign for dynamic fonts
+  if(dynamic_cast<DynamicFont*>(F)) return 8730;
   int i = F ? F->gettile(64) : 0;
   TileImage *ti = dynamic_cast<TileImage*> (noteye_getobj(i));
   if(ti && ti->i && ti->i->title.find("cp437") != string::npos) return 251;
   if(ti && ti->i && ti->i->title.find("fantasy") != string::npos) return 251;  
-  return '^';
+  if(ti && ti->i && ti->i->title.find("ttf") != string::npos) return 8730;
+  if(ti && ti->i && ti->i->title.find("utf") != string::npos) return 8730;
+  return 'r';
   }
 
-
-bool doshadow(cell &c1, cell &c2) {
-//if(c1.seen && !c2.seen) return true;
-  if(c1.explored && !c2.explored) return true;
-  if(c1.explored && c2.explored)
-    if(c1.type != CT_WALL && c2.type == CT_WALL) return true;
-  return false;
-  }
-
-map<long long, int> gmapcache;
-
-long long lastid;
-
-void cacheMap(int id, int val) {
-  gmapcache[lastid] = val;
-  }
-
-// return a multi-layer tile as a Lua table
-void drawMapLua(lua_State *L, int x, int y, int mode) {
-  vec2 v = vec2(x,y);
-  if(topx != TBAR) v.x += playerpos.x - center.x;
-  if(topy != TBAR) v.y += playerpos.y - center.y;
-  cell& c(M[v]);
-  
-  noteye_table_new(L);
-  if(&c == &M.out) {
-    noteye_table_setInt(L, "out", 1);
-    return;
-    }
-  
-  int shadow = 0;
-  if(doshadow(M[v], M[v+vec2(+1, 0)])) shadow |= 1;
-  if(doshadow(M[v], M[v+vec2(-1, 0)])) shadow |= 2;
-  if(doshadow(M[v], M[v+vec2( 0,+1)])) shadow |= 4;
-  if(doshadow(M[v], M[v+vec2( 0,-1)])) shadow |= 8;
-
-  int floorid;    
-  if(c.type == CT_STAIRDOWN) floorid = 3;
-  else if(c.type == CT_STAIRUP) floorid = 2;
-  else if(c.type == CT_WALL) floorid = 1;
-  else floorid = 0;
-
-  bool onplayer = wrap(v) == wrap(playerpos);
-  if(!onplayer && !c.h && !(mode == 8 && (c.mushrooms || c.it || c.dead))) {
-    long long cacheid = shadow&15;
-    cacheid <<= 3; cacheid += (x+3*y) % 5;
-    cacheid <<= 1; if(c.type == CT_HEXOUT) cacheid++;
-    cacheid <<= 1; if(c.ontarget) cacheid++;
-    if(c.explored) {
-      cacheid <<= 6; if(c.mushrooms) cacheid |= 1+hydraiconid(c.mushrooms);
-      cacheid <<= 7; if(c.it) cacheid |= c.it->icon();
-      cacheid <<= 5; if(c.it) cacheid |= c.it->gcolor();
-      cacheid <<= 2; cacheid |= floorid;
-      cacheid <<= 1; cacheid |= c.seen;
-      cacheid <<= 5; cacheid |= c.dead == HC_TWIN+1 ? 31 : c.dead;
-      }
-    else { cacheid <<= (6+7+5+2+1+5); cacheid |= 30; }
-    if(gmapcache.count(cacheid)) {
-      noteye_table_setInt(L, "cached", gmapcache[cacheid]);
-      return;
-      }
-    noteye_table_setInt(L, "cacheid", cacheid);
-    lastid = cacheid;
-    }
-
-  if(wrap(v) == wrap(playerpos)) {
-    noteye_table_setInt(L, "hicon", '@');
-    int col = P.race == R_NAGA ? 14 : P.race == R_CENTAUR ? 12 : 15;
-    noteye_table_setInt(L, "hcolor", getVGAcolor(col));
-    }
-  
-  noteye_table_setInt(L, "shadow", shadow);
-
-  if(c.type == CT_HEXOUT)
-    noteye_table_setInt(L, "hex", 1);
-    
-  if(c.ontarget && &c != &M.out)
-    noteye_table_setInt(L, "target", 1);
-
-  if(c.explored) {
-  
-    if(c.h && (c.h->visible() ? c.seen : seeallmode())) {
-      noteye_table_setInt(L, "hcolor", getVGAcolorX(c.h->gcolor()));
-      noteye_table_setInt(L, "hicon", c.h->icon());
-      noteye_table_setInt(L, "hid", c.h->uid);
-      if(c.h->sheads)
-        noteye_table_setInt(L, "stun", 1 + 6 * c.h->sheads / c.h->heads);
-
-      if(hydrabox && !P.simplehydras)
-      if(c.h->color != HC_TWIN && c.h->color != HC_ETTIN && c.h->color != HC_MONKEY) {
-        hydrapicDraw(c.h);
-        noteye_table_setInt(L, "gfxid", c.h->gfxid);
-        }
-      }
-  
-    if(c.mushrooms) {
-      noteye_table_setInt(L, "hicon", hydraicon(c.mushrooms));
-      noteye_table_setInt(L, "hcolor", getVGAcolorX(8));
-      }
-    
-    if(c.it) {
-      noteye_table_setInt(L, "icolor", getVGAcolorX(c.it->gcolor()));
-      noteye_table_setInt(L, "iicon", c.it->icon());
-      if(c.it->asWpn()) noteye_table_setInt(L, "itype", c.it->asWpn()->type);
-      }
-    
-    noteye_table_setInt(L, "floor", ".#<>" [floorid]);
-    
-    if(c.dead == HC_TWIN+1) noteye_table_setInt(L, "dead", -1);
-    else if(c.dead) noteye_table_setInt(L, "dead", getVGAcolorX(hyinf[c.dead-1].color));
-    
-    if(c.seen) noteye_table_setInt(L, "seen", 1);
-    }
-  }
 
 void viewDescription(sclass*);
 void drawScreen();
 
-void helpAbout(int x, int y) {
+sclass *things[30];
+
+void queueTarget(int x, int y) {
+  vec2 v = vec2(x,y);
+  if(topx != TBAR) v.x += playerpos.x - center.x;
+  if(topy != TBAR) v.y += playerpos.y - center.y;
+  for(int dir=0; dir<DIRS; dir++)
+    if(&M[v] == &M[playerpos + dirs[dir]])
+      return;
+  exploreOn = true;
+  exploreWithDestination = true;
+  exploreDestination = v;
+  }
+
+string helpAbout(int x, int y, bool lng) {
+  if(x == 100) {
+    if(y<0 || y >= 30) return "error";
+    sclass *s = things[y];
+    if(s) {
+      if(lng) viewDescription(s);
+      else return s->name();
+      }
+    else if(!lng) return "nothing";
+    drawScreen();
+    return "";
+    }
+  if(x == -2) {
+    printf("y = %d\n", y);
+    weapon *w = wpn[y];
+    if(w) {
+      if(lng) viewDescription(w);
+      else return w->name();
+      }
+    else if(!lng) return "nothing";
+    drawScreen();
+    return "";
+    }
   vec2 v = vec2(x,y);
   if(topx != TBAR) v.x += playerpos.x - center.x;
   if(topy != TBAR) v.y += playerpos.y - center.y;
   cell& c(M[v]);
   
-  if(!c.seen) {
-    addMessage("You cannot see this place currently.");
+  if(c.it && c.explored) {
+    if(lng) viewDescription(c.it);
+    else return c.it->fullname();
     }
-  else if(c.h && !c.h->invisible())
-    viewDescription(c.h);
+  else if(!c.seen) {
+    if(lng) addMessage("You cannot see this place currently.");
+    else return "cannot see";
+    }
+  else if(c.h && !c.h->invisible()) {
+    if(lng) viewDescription(c.h);
+    else return c.h->name();
+    }
   else if(c.mushrooms) {
     hydra h(HC_MUSH, c.mushrooms, 1, 0);
-    viewDescription(&h);
+    if(lng) viewDescription(&h);
+    else return "mushrooms: " + its(c.mushrooms);
     }
-  else if(c.it)
-    viewDescription(c.it);
+  else if(c.it) {
+    if(lng) viewDescription(c.it);
+    else return c.it->fullname();
+    }
   else if(c.type == CT_WALL) {
-    addMessage("Walls are basically walls. You cannot move through them.");
+    if(lng) addMessage("Walls are basically walls. You cannot move through them.");
+    else return "wall";
     }
   else if(c.type == CT_STAIRUP) {
-    addMessage("Stairs upwards. You can step there to escape the Hydras Pit.");
+    if(lng) addMessage("Stairs upwards. You can step there to escape the Hydras Pit.");
+    else return "stairs up";
     }
   else if(c.type == CT_STAIRDOWN) {
-    addMessage("Stairs downwards. Proceed to the next level once all hydras are killed.");
+    if(lng) addMessage("Stairs downwards. Proceed to the next level once all hydras are killed.");
+    else return "stairs down";
     }
   else if(c.type == CT_HEXOUT) {
-    addMessage("Click more centrally.");
+    if(lng) addMessage("Click more centrally.");
+    else return "hex";
     }
   else if(c.dead == 1 + HC_TWIN) {
-    addMessage("Your twin is dead...");
+    if(lng) addMessage("Your twin is dead...");
+    else return "dead twin";
     }
   else if(c.dead) {
-    addMessage("A dead monster.");
+    if(lng) addMessage("A dead monster.");
+    else return "dead monster";
     }
   else {
-    addMessage("Nothing interesting there.");
+    if(lng) addMessage("Nothing interesting there.");
+    else return "nothing";
     }
   drawScreen();
+  return "";
   }
 
 #else
 
-char squareRootSign() { return '^'; }
+char squareRootSign() { return 'r'; }
 #endif
 
 void cursorOnPlayer() {
@@ -530,7 +448,56 @@ void cursorOnPlayer() {
 
 #define SDIV (MSX+1)
 
+void showResistanceHydraWeapon(hydra *h, weapon *w) {
+  if(!w) return;
+
+  col(w->gcolor());
+  
+  if(w->color < HCOLORS && havebit(h->dirty, w->color))
+    addstri("???");
+  else {
+    if(w->doubles())
+      addstri("x2  ");
+    else if(!w->stuns() && !w->wand() && !w->orb()) {
+      int val = h->res[w->color];
+      string s;
+      if(val < 0) 
+        s = "x" + its(-val);
+      else
+        s = "+" + its(val);
+
+      if(size(s) < 4) s += " ";
+      if(size(s) > 4) s.resize(4);
+      addstri(s);
+      }
+  
+    if(w->type == WT_BOW)
+      addstri(its(bowpower(w) / min(w->size, h->heads) / 2));
+    else if(w->stuns() || w->doubles() || (w->type == WT_PSLAY && w->size))
+      addstri(its(w->info().stunturns));
+
+    if(w->axe()) {
+      int grow = h->res[w->color];
+      if(grow < 0) grow = 2 * w->size;
+      if(grow) addstri(its(w->info().stunturns * (grow + w->size) / grow));
+      }
+    }
+  
+  if(w->type == WT_QUAKE) {
+    if(h->lowhead())
+      addstri(its((w->info().stunturns + 5) / 10));
+    else {
+      addstri(its(quakefun(h->heads, w->color) / h->heads));
+      }
+    }
+
+  }
+
 void drawScreen() {
+
+#ifdef NOTEYE
+  for(int i=0; i<30; i++) things[i] = NULL;
+#endif
 
   bool dead = P.curHP <= 0;
   
@@ -559,6 +526,9 @@ void drawScreen() {
 
     col(7);
     if(wpn[i]) {
+#ifdef NOTEYE
+      things[i] = wpn[i];
+#endif
       col(wpn[i]->gcolor());
       move(i, SDIV+3), addstri(wpn[i]->name().substr(0,23));
       int x = 77;
@@ -581,15 +551,25 @@ void drawScreen() {
   move(ma, SDIV);
   move(ma, SDIV);
   
+  if(!(P.flags & dfShadowAware)) shadowwarning = 0;
+  if(shadowwarning) shadowwarning--;
+  
   int deadcol;
   if(P.curHP < -999) P.curHP = -999;
   if(P.curHP <= 0) deadcol = 4;
   else if(P.curHP <= 30 && P.curHP <= P.maxHP/5) deadcol = 12;
+  else if(shadowwarning) deadcol = 5;
   else deadcol = 15;
   col(deadcol);
   addstri("LV "+its(P.curlevel+1) + " HP "+its(P.curHP) + "/" + its(P.maxHP));
   
-  move(ma, SDIV+17);
+  int indx = SDIV + 17;
+  if(P.curHP >= 1000) indx++;
+  if(P.maxHP >= 1000) indx++;
+  if(P.curHP >= 10000) indx++;
+  if(P.maxHP >= 10000) indx++;
+  
+  move(ma, indx);
   
   for(int i=0; i<ITEMS; i++) if(P.active[i]) {
     // do not draw for Nagas unless drank extra
@@ -608,6 +588,9 @@ void drawScreen() {
     hydra* h = hydras[i];
     col(h->gcolor());
     move(cy, SDIV);
+#ifdef NOTEYE
+    things[cy] = h;
+#endif
     addstri(h->shortname());
 
     if(h->zombie) {
@@ -640,45 +623,9 @@ void drawScreen() {
       ambiAttack(&M[h->pos], 1);
       }
     
-    else if(wpn[P.cArm]) {
-      weapon* w ( wpn[P.cArm] );
+    else 
+      showResistanceHydraWeapon(h, wpn[P.cArm]);
 
-      col(w->gcolor());
-      
-      if(w->color < HCOLORS && havebit(h->dirty, w->color))
-        addstri("???");
-      else {
-        if(w->doubles())
-          addstri("x2");
-        else if(!w->stuns() && !w->wand()) {
-          int val = h->res[w->color];
-          if(val < 0) addstri("x"+its(-val));
-          else {
-            addstri("+" + its(val));
-            }
-          }
-      
-        move(cy, 76);
-        if(w->type == WT_BOW)
-          addstri(its(bowpower(w) / min(w->size, h->heads) / 2));
-        else if(w->stuns() || w->doubles() || (w->type == WT_PSLAY && w->size))
-          addstri(its(w->info().stunturns));
-  
-        if(w->axe()) {
-          int grow = h->res[w->color];
-          if(grow < 0) grow = 2 * w->size;
-          if(grow) addstri(its(w->info().stunturns * (grow + w->size) / grow));
-          }
-        }
-      
-      if(w->type == WT_QUAKE) {
-        if(h->lowhead())
-          addstri(its((w->info().stunturns + 5) / 10));
-        else {
-          addstri(its(quakefun(h->heads, w->color) / h->heads));
-          }
-        }
-      }
     cy++;
     }
 
@@ -718,6 +665,8 @@ void drawStar(vec2 pos, int color) {
   col(color); move(pos.y, pos.x); addch('*');
   }
 
+bool viewTrollInventory(hydra *resistancesOf = NULL);
+
 void showResistances(hydra *h, int cy) {
   col(h->gcolor());
   
@@ -754,15 +703,23 @@ void viewDescription(sclass *x) {
   erase();
   col(x->gcolor());
   move(0, 0); addch(x->icon()); addch(' '); addstri("About: "+x->name()+"...");
-  viewMultiLine(x->describe(), cy);
+  viewMultiLine(x->describe(), cy, 2);
+  
+  hydra *h = NULL;
+  
   if(x->sct() == SCT_HYDRA) {
     shareS("meet", " the "+x->name());
-    hydra *h = (hydra*) x;
-    cy++; move(cy,0); addstr("Resistances against weapon colors:");
+    h = (hydra*) x;
+    cy++; move(cy,0); 
+    addstr("Resistances against weapon colors:");
+    if(P.race == R_TROLL) addstr(" (press 'i' for inventory)");
     cy+=2; showResistances(h, cy);
     }
   
-  ghch(IC_VIEWDESC);
+  char ch = ghch(IC_VIEWDESC);
+  
+  if(h && P.race == R_TROLL && (ch == 'i' || ch == 'I')) 
+    viewTrollInventory(h);
   }
 
 void showMenuOption(int cy, char letter, bool selected, int cx = 0) {
@@ -783,10 +740,12 @@ bool changeSelection(int dir, int& sel, int qty) {
   return true;
   }
 
-#define MAXINF 20
+#define MAXINF 100
+#define MAXINFSCR 20
 
 void fullHydraInfo() {
   int selection = 0;
+  int scrollval = 0;
   
   while(true) {
   
@@ -803,14 +762,18 @@ void fullHydraInfo() {
     }
 
   int cy = 0;
+  while(selection >= scrollval+MAXINFSCR) scrollval++;
+  while(selection < scrollval) scrollval--;
   
   sclass * infos[MAXINF];
 
   for(int i=0; i<size(hydras); i++) if(hydras[i]->aware()) {
     if(cy >= MAXINF) break;
-    showMenuOption(cy+2, 'a'+cy, cy==selection);
+    if(cy>=scrollval && cy<scrollval+MAXINFSCR)  {
+      showMenuOption(cy+2-scrollval, 'a'+cy, cy==selection);
+      showResistances(hydras[i], cy+2-scrollval);
+      }
     infos[cy] = hydras[i];
-    showResistances(hydras[i], cy+2);
     cy++;
     }
 
@@ -820,21 +783,27 @@ void fullHydraInfo() {
     cell& c(M.m[y][x]);
     if(!c.it) continue;
     weapon* w = c.it->asWpn();
-    if(c.seen && (o?!w:!!w)) {
+    if(c.explored && (o?!w:!!w)) {
       if(cy >= MAXINF) break;
-      showMenuOption(cy+2, 'a'+cy, cy==selection);
+      if(cy>=scrollval && cy<scrollval+MAXINFSCR) {
+        showMenuOption(cy+2-scrollval, 'a'+cy, cy==selection);
+        move(cy+2-scrollval, 2); c.it->draw();
+        move(cy+2-scrollval, 4); 
+        if(w)
+          addstri(w->fullname());
+        else
+          addstri(c.it->name());
+        vec2 m = pickMinus(vec2(x, y), playerpos);
+        addstri(" at ("+its(m.x)+","+its(m.y)+")");
+        }
       infos[cy++] = c.it;
-
-      move(cy+1, 2); c.it->draw();
-      move(cy+1, 4); 
-      if(w)
-        addstri(w->name() + " " + w->type + its(w->size));
-      else
-        addstri(c.it->name());
       }
     }
+  if(cy > scrollval + MAXINFSCR) {
+    move(MAXINFSCR+2, 2); col(8); addstr("(PageDown for more)");
+    }
   
-  if(cy == 0) {
+  if(cy == 0 && !scrollval) {
     addMessage("Nothing interesting around.");
     return;
     }
@@ -893,7 +862,7 @@ bool viewHelpForItem(int ii) {
   move(0,0); col(iinf[ii].color);
   addch(iinf[ii].icon); addch(' '); addstri("About the "+iinf[ii].name+"...");
 
-  int cy = 2; viewMultiLine(iinf[ii].desc, cy);
+  int cy = 2; viewMultiLine(iinf[ii].desc, cy, 2);
   
   string adjs[6] = {
     "bit long", "long", "very long", "really long", "extremely long",
@@ -1042,7 +1011,7 @@ void viewHelp() {
         ". = wait one turn\r"
         "l = look at hydras and items (full information)\r"
         "g = pick up a weapon or item, or use stairs (G for titans)\r"
-        "k = drop current weapon             v = view its description\r"
+        "k = drop current weapon             v = view current weapon\r"
         "t = throw/shoot                     T = auto-fire mode on-off\r"
         "b = switch twin control ('both')    u = switch twin order ('you')\r"
         "o = auto-explore (see later)        m = see recent messages\r";
@@ -1053,10 +1022,12 @@ void viewHelp() {
         ". = wait one turn\r"
         "f = full information about hydras and items in sight\r"
         "g = pick up a weapon or item, or use stairs\r"
-        "d = drop current weapon             v = view its description\r"
+        "d = drop current weapon             v = view current weapon\r"
         "t = throw/shoot                     T = auto-fire mode on/off\r"
         "c = switch twin control             s = switch twin order\r"
         "o = auto-explore (see later)        m = see recent messages\r";
+      
+      pag += "G = store a weapon in the Titan's inventory\r";
       
       #ifdef NOTEYE
       pag += 
@@ -1069,7 +1040,7 @@ void viewHelp() {
        "clear the current name.";
       }
         
-    int cy = 2; viewMultiLine(pag, cy);
+    int cy = 2; viewMultiLine(pag, cy, 2);
 
     int ch = ghch(IC_HELP);
   
@@ -1239,6 +1210,9 @@ bool quickGet(weapon*& w) {
   bool free[128];
   for(int c=33; c<128; c++) free[c] = true;
   
+  // don't get traps
+  if(w->wpnflags & wfTrap) return false;
+  
   int s = size(pinfo.trollwpn);
   for(int i=0; i<s; i++) {
     free[int(pinfo.trollkey[i])] = false;
@@ -1259,7 +1233,7 @@ bool quickGet(weapon*& w) {
   return true;
   }
 
-bool viewTrollInventory() {
+bool viewTrollInventory(hydra *resistancesOf) {
 
   int selection = -1;
 
@@ -1271,7 +1245,9 @@ bool viewTrollInventory() {
   
   move(0,0); col(14); 
   int s = size(pinfo.trollwpn);
-  if(wpn[P.cArm])
+  if(resistancesOf) 
+     addstri("Resistances for: "+resistancesOf->name());
+  else if(wpn[P.cArm])
     addstri("Press a key to store "+wpn[P.cArm]->name());
   else
     addstri("Take what?");
@@ -1291,12 +1267,24 @@ bool viewTrollInventory() {
   char cpick = ' ';
 
   for(int i=0; i<s; i++) {
+#ifdef NOTEYE
+    // a black space to guide NotEye
+    move(22, wid * (i / 20)); col(0); addch(' ');
+#endif
     move(2 + i % 20, wid * (i / 20));
     if(i == selection) cpick = pinfo.trollkey[i];
     col(i==selection?14:8); addch(pinfo.trollkey[i]); addch(' ');
     free[int(pinfo.trollkey[i])] = false;
     weapon* w = pinfo.trollwpn[i];
-    if(s>40) {
+    if(resistancesOf) {
+      col(w->gcolor());
+      string s = w->type + its(w->size);
+      while(s.size() < 5) s = s + " ";
+      addstri(s);
+      addch(' ');
+      showResistanceHydraWeapon(resistancesOf, w);
+      }
+    else if(s>40) {
       col(w->gcolor());
       string s = w->type + its(w->size) + " " + w->name();
       s = s.substr(0, wid-2);
@@ -1308,19 +1296,21 @@ bool viewTrollInventory() {
       }
     }
 
-  move(23, 0); col(7); if(s > 20) {
-    for(int c=33; c<127; c++) if(free[c]) addch(c);
-    }
-  else {
-    addstr("free keys: ");
-    for(int c='a'; c<='z'; c++) if(free[c]) addch(c);
-    for(int c='A'; c<='Z'; c++) if(free[c]) addch(c);
-    addstr("...");
-    }
-
-  if(cpick == ' ') {
-    for(int c=33; c<127; c++) if(free[c]) {
-      cpick = c; break;
+  if(!resistancesOf) {
+    move(23, 0); col(7); if(s > 20) {
+      for(int c=33; c<127; c++) if(free[c]) addch(c);
+      }
+    else {
+      addstr("free keys: ");
+      for(int c='a'; c<='z'; c++) if(free[c]) addch(c);
+      for(int c='A'; c<='Z'; c++) if(free[c]) addch(c);
+      addstr("...");
+      }
+  
+    if(cpick == ' ') {
+      for(int c=33; c<127; c++) if(free[c]) {
+        cpick = c; break;
+        }
       }
     }
   
@@ -1329,10 +1319,19 @@ bool viewTrollInventory() {
   
   if(ch == PANIC) return false;
   
+  if(xch == 'v') {
+    char ch = ghch(IC_TROLL);
+    for(int i=0; i<s; i++) if(pinfo.trollkey[i] == ch)
+      viewDescription(pinfo.trollwpn[i]);
+    continue;
+    }
+  
   if(xch == 'f' || xch == 'b' || xch == 't' || xch == 'k' || xch == 'l') {
     sortorder = char(xch) + sortorder;
     continue;
     }
+
+  if(resistancesOf) return false;
   
   if(ch == 10 || ch == 13) ch = cpick;
   
@@ -1419,15 +1418,35 @@ int headask() {
 hydra *enemyInSight() {
   
   for(int i=0; i<size(hydras); i++)
-    if(M[hydras[i]->pos].seen && !hydras[i]->zombie)
+    if(M[hydras[i]->pos].seen && !hydras[i]->zombie && hydras[i]->aware())
       return hydras[i];
 
   return NULL;
   }
 
+int closestHydraDistance() {
+  
+  int hd = 5000;
+
+  for(int i=0; i<size(hydras); i++)
+    if(M[hydras[i]->pos].seen && !hydras[i]->zombie && hydras[i]->aware()) {
+      int dist = len(pickMinus(playerpos, hydras[i]->pos));
+      if(dist < hd) hd = dist;
+      }
+
+  return hd;
+  }
+
+bool aeMushroom = false;
+int aeMushroomCount;
 
 int autoexplore() {
   if(!exploreOn) return 0;
+
+  if(exploreWithDestination && &M[exploreDestination] == &M[playerpos]) {
+    exploreOn = false;
+    return 0;
+    }
 
 #ifdef CURSES
       nodelay(mainwin, true);
@@ -1435,8 +1454,10 @@ int autoexplore() {
       int ch = ghch(IC_GAME);
 #else
 #ifdef NOTEYE
+  if(!exploreWithDestination) sendAutoexploreEvent();
+
   halfdelay(0); refresh(IC_GAME);
-  int ch = ghch(IC_GAME);
+  int ch = ghch(IC_GAME); cbreak();
 #else
 #ifdef MINGW
   if(kbhit()) { exploreOn = false; return 0; }
@@ -1455,11 +1476,19 @@ int autoexplore() {
   hydra *h = enemyInSight();
   
   if(h) {
-    addMessage("You see the "+h->name()+".");
+    if(exploreWithDestination) ;
+    else if(h->color == HC_SHADOW)
+      addMessage("You are afraid of the "+h->name()+".");
+    else
+      addMessage("You see the "+h->name()+".");
     drawScreen();
     exploreOn = false;
     return 0;
     }
+
+#ifdef NOTEYE
+  if(exploreWithDestination) sendAutoexploreEvent();
+#endif
   
   if(P.race != R_TROLL && M[playerpos].it && M[playerpos].it->asItem()) {
     exploreOn = false;
@@ -1468,12 +1497,14 @@ int autoexplore() {
   
   bfs(1);
   
-  if(targetdir < 0) {
+  if(targetdir < 0) 
     bfs(1, true);
-    }
-  
+
   if(targetdir < 0) {
-    addMessage("Level completely explored.");
+    if(exploreWithDestination)
+      addMessage("I don't know how to reach there.");
+    else
+      addMessage("Level completely explored.");
     drawScreen();
     exploreOn = false; 
     return 0;
@@ -1487,8 +1518,32 @@ int autoexplore() {
     c2.mushrooms = 0;
     }
   
-  if(!!c2.mushrooms)
-    exploreOn = false;
+  if(c2.mushrooms) {
+    if(aeMushroom && aeMushroomCount == c2.mushrooms) {
+      exploreOn = false;
+      return 0;
+      }
+    else {
+      aeMushroom = true;
+      aeMushroomCount = c2.mushrooms;
+      }
+    }
+
+#define AEZOMBIE 1200000
+  
+  else if(c2.h && c2.h->zombie) {
+    if(aeMushroom && aeMushroomCount == AEZOMBIE) {
+      exploreOn = false;
+      addMessage("The " + c2.h->name()+" blocks your way.");
+      return 0;
+      }
+    else {
+      aeMushroom = true;
+      aeMushroomCount = AEZOMBIE;
+      return '.';
+      }
+    }
+  else aeMushroom = false;
   
   stats.automove++;
   return INDB + targetdir;
@@ -1510,7 +1565,79 @@ bool wasDead, isDead;
 
 #include "trailer.cpp"
 
+void pickupItemAt(cell *c) {
+  item* it = c->it->asItem();
+  if(!it) return;
+  if(it->type == IT_HINT) {
+    viewDescription(it);
+    return;
+    }
+  else if(P.race == R_TROLL) {
+    if(!viewHelpForItem(it->type)) return;
+    if(!useup(it->type)) return;
+    P.inv[it->type]++; useupItem(it->type); 
+    // Trolls get speed twice, because they use up one
+    if(it->type == IT_PFAST)
+      P.active[IT_PFAST]++;
+    }
+  else {
+    P.inv[it->type]++;
+    addMessage("Picked up the "+it->name()+".");
+    if(it->type < IT_SCRO) playSound("other/pickup-powder", 100, 0);
+    else if(it->type < IT_POTS) playSound("other/pickup-scroll", 100, 0);
+    else playSound("other/pickup-potion", 100, 0);
+    }
+  delete it;
+  if(c->it == it)
+    c->it = NULL;
+  cancelspeed();
+  }
+
+bool inWaitMode;
+int waitsteps = 0;
+
+void waitmode() {
+  
+  if(noEnemies()) {
+    // false explore the level, collect all items, step on the stairs
+    for(int y=0; y<SY; y++) for(int x=0; x<SX; x++) {
+      vec2 v(x,y);
+      cell& c = M[v];
+      if(P.race != R_TROLL && c.it && c.it->sct() == SCT_ITEM)
+        pickupItemAt(&c);
+      if(P.race == R_TROLL && c.it && c.it->sct() == SCT_WPN)
+        quickGet((weapon*&) c.it);
+      
+      for(int i=0; i<DIRS; i++)
+        if(M[v+dirs[i]].type != CT_WALL)
+          c.explored = true;
+        
+      if(c.type == CT_STAIRDOWN && !c.h)
+        playerpos = v;
+      }
+    return;
+    }
+  
+  inWaitMode = true;
+  int chd = closestHydraDistance();
+  waitsteps = 0;
+  while(inWaitMode && waitsteps < 2000) {
+    moveHydras();
+    if(closestHydraDistance() < chd) inWaitMode = false;
+    waitsteps++;
+    }
+  
+  if(waitsteps > 1)
+    addMessage("Waited for "+its(waitsteps)+" turns.");
+  }
+
 void mainloop() {
+
+
+#ifdef NOTEYE
+    clearMapCache();
+#endif
+  wasDead = isDead = P.curHP <= 0;
   while(!quitgame) {
   
     if(P.race == R_NAGA) {
@@ -1527,8 +1654,12 @@ void mainloop() {
 
     wasDead = isDead;
     isDead = P.curHP <= 0;
-    if(isDead && !wasDead && !sceneid) return;
-    if(wasDead && !isDead) achievement("RESURRECTION");
+    if(isDead) printf("isDead!\n");
+    if(isDead && !wasDead && !sceneid) {
+      return;
+      }
+
+    if(wasDead && !isDead) achievement("RESURRECTIONX");
     
     los();
     createTargetLines();
@@ -1657,6 +1788,7 @@ void mainloop() {
         P.manualfire = !P.manualfire;
         if(P.manualfire) addMessage("Fire mode set to 'manual'.");
         else addMessage("Fire mode set to 'auto'.");
+        playSound("../hydra-old/pickup", 100, 0);
         break;
         
       case 't': {
@@ -1666,6 +1798,10 @@ void mainloop() {
           }
         else if(wpn[P.cArm]->polewpn())
           addMessage("Thrust "+wpn[P.cArm]->name()+" in which direction?");
+        else if(wpn[P.cArm]->orb()) {
+          activateOrb(wpn[P.cArm]);
+          break;
+          }
         else if(!wpn[P.cArm]->msl()) {
           addMessage("Your current weapon cannot be used for ranged attacks.");
           break;
@@ -1704,6 +1840,7 @@ void mainloop() {
           M[playerpos].it = wpn[P.cArm];
           wpn[P.cArm] = NULL;
           addMessage("Dropped a weapon.");
+          playSound("weapons/dropWeapon", 100, 0);
           wpnset++;
           }
         informAlt(0);
@@ -1757,9 +1894,8 @@ void mainloop() {
           else if(P.curHP <= 0) 
             addMessage("It seems you are not yet used to being dead...");
           else if(useup(ii)) {
-            P.inv[ii]--, stats.usedup[ii]++;
+            useupItem(ii);
             if(P.race == R_NAGA) singlestep();
-            if(!stats.woundwin) stats.usedb[ii]++;
             }
           }
         break;
@@ -1814,6 +1950,7 @@ void mainloop() {
           P.curlevel++;
           generateLevel();
           addMessage("You climb down the stairs.");
+          playSound("../hydra-old/pickup", 100, 0);
           
           // trolls lose their enchantments
           if(P.race == R_TROLL) {
@@ -1836,12 +1973,20 @@ void mainloop() {
           }
         else if(M[playerpos].it && M[playerpos].it->sct() == SCT_WPN) {
           weapon*& w ((weapon*&) M[playerpos].it);
+          if(w->type == WT_ORB && P.race == R_TROLL) {
+            activateOrb(w);
+            cancelspeed(); //xyz
+            break;
+            }
           if(w->type == WT_QUAKE) {
-            if(P.race == R_TROLL)
+            if(P.race == R_TROLL) {
               addMessage("You have found the ancient Club of Hydra Quakes!!");
+              playSound("../hydra-old/quake", 50, 0);
+              }
             else {
               addMessage("This giant spiked club seems to be some titanic artifact.");
               addMessage("Even you are too weak to even pick it up!");
+              playSound("../hydra-old/quake", 10, 0);
               }
             if(P.race != R_TROLL) break;
             }
@@ -1865,29 +2010,7 @@ void mainloop() {
           #endif
           }
         else {
-          item* it = M[playerpos].it->asItem();
-          if(!it) break;
-          if(it->type == IT_HINT) {
-            viewDescription(it);
-            break;
-            }
-          else if(P.race == R_TROLL) {
-            if(!viewHelpForItem(it->type)) break;
-            if(!useup(it->type)) break;
-            stats.usedup[it->type]++;
-            if(P.curlevel < LEVELS) stats.usedb[it->type]++;
-            // Trolls get speed twice, because they use up one
-            if(it->type == IT_PFAST)
-              P.active[IT_PFAST]++;
-            }
-          else {
-            P.inv[it->type]++;
-            addMessage("Picked up the "+it->name()+".");
-            }
-          delete it;
-          if(M[playerpos].it == it)
-            M[playerpos].it = NULL;
-          cancelspeed();
+          pickupItemAt(&M[playerpos]);
           #ifdef ANDROID
           emSaveGame();
           #endif
@@ -1909,7 +2032,7 @@ void mainloop() {
           }
         break;
         
-      case 'O':
+      case 'N':
         if(debugon()) {
           totalKnowledge();
           break;
@@ -1940,6 +2063,94 @@ void mainloop() {
           if(P.curHP < 1) P.curHP = 1;
           }
         break;
+      
+/*       case 'L':
+        if(debugon()) {
+          addMessage("Kill all Hydras, and create ones for achievements!");
+          while(!hydras.empty()) 
+            M[hydras[0]->pos].hydraDead(NULL);
+          if(P.curHP < 1) P.curHP = 1;
+          // beginner hydra
+          (new hydra(5, 1, 10, 20))->put();
+          // beginner perfect
+          (new hydra(2, 1, 10, 20))->put();
+          // intermediate hydra
+          (new hydra(3, 5, 10, 20))->put();
+          // hydra-100
+          (new hydra(HC_ALIEN, 20, 10, 20))->put();
+          // hydra-150
+          (new hydra(HC_WIZARD, 80, 10, 20))->put();
+          // vampire hydra
+          (new hydra(HC_VAMPIRE, 17, 10, 20))->put();
+          // big hydra
+          (new hydra(7, 100, 10, 20))->put();
+          // boss
+          (new hydra(HC_ANCIENT, 1000, 10, 20))->put();
+          // huge
+          (new hydra(9, 999999, 10, 20))->put();
+          for(int i=0; i<9; i++) {
+            hydras[i]->setgfxid();
+            printf("%d: gfxid = %d\n", i, hydras[i]->gfxid);
+            }          
+          }
+        break;
+
+      case 'M':
+        if(debugon()) {
+          addMessage("Kill all Hydras, and create ones for trading cards!");
+          while(!hydras.empty()) 
+            M[hydras[0]->pos].hydraDead(NULL);
+          if(P.curHP < 1) P.curHP = 1;
+          // fire hydra
+          // (new hydra(2, 3, 10, 20))->put();
+          // alien hydra
+          (new hydra(HC_ALIEN, 6, 10, 20))->put();
+          // vampire hydra
+          // (new hydra(HC_VAMPIRE, 8, 10, 20))->put();
+          // ivy hydra
+          // (new hydra(HC_GROW, 8, 10, 20))->put();
+          // ancient
+          // (new hydra(HC_ANCIENT, 28, 10, 20))->put();
+#ifdef NOTEYE
+          hydrapicInit = false;
+#endif
+          for(int i=0; i<1; i++) {
+            hydras[i]->setgfxid();
+            printf("%d: gfxid = %d\n", i, hydras[i]->gfxid);
+            }
+          }
+        break;
+
+      case 'N':
+        if(debugon()) {
+          addMessage("Kill all Hydras, and create ones for badges!");
+          while(!hydras.empty()) 
+            M[hydras[0]->pos].hydraDead(NULL);
+          if(P.curHP < 1) P.curHP = 1;
+          // fire hydra
+          (new hydra(0, 1, 10, 20))->put();
+          // chaos hydra
+          (new hydra(1, 2, 10, 20))->put();
+          // acid hydra
+          (new hydra(6, 3, 10, 20))->put();
+          // ice hydra
+          (new hydra(7, 4, 10, 20))->put();
+          // fire hydra
+          (new hydra(2, 5, 10, 20))->put();
+
+#ifdef NOTEYE
+          hydrapicInit = false;
+#endif
+          for(int i=0; i<5; i++) {
+            hydras[i]->setgfxid();
+            printf("%d: gfxid = %d\n", i, hydras[i]->gfxid);
+            } 
+          }
+        break; */
+
+#ifdef LOCAL
+      case 'N': drawHydraBak(); printf("drawhydrabak\n"); break;
+#endif
 
       case 'Y': 
       
@@ -1957,9 +2168,9 @@ void mainloop() {
           }
         break;
       
-      /* case 'Z':
+      case 'Z':
         if(debugon()) trailer();
-        break; */
+        break;
 
       case 'F':
         if(debugon()) {
@@ -1975,7 +2186,12 @@ void mainloop() {
         int arr[3] = { WT_BLUNT, WT_AXE, WT_BLADE };
 
         if(c >= '0' && c <= '9') {
-          h = new hydra(c - '0', headask(), 10, 20);
+          int ha = headask();
+          h = new hydra(c - '0', ha, 10, 20);
+          if(ha == 145) {
+            h->res[0] = 5;
+            h->res[1] = 6;
+            }
           }
         else switch(c) {
           case 'v': h = new hydra(HC_VAMPIRE, headask(), 10, 20); break;
@@ -1991,7 +2207,7 @@ void mainloop() {
             break;
           case 'e':
             h = new hydra(HC_ETTIN, 2, 1, 0);
-            h->ewpn = new weapon(randSCol(), headask(), arr[rand() % 3]);
+            h->ewpn = new weapon(randSCol(), headask(), arr[hrand(3)]);
             break;
           case 'm':
             h = new hydra(HC_MONKEY, headask(), 1, 0);
@@ -2000,14 +2216,14 @@ void mainloop() {
             h = new hydra(HC_SHADOW, headask(), 1, 20);
             break;
           case 'b':
-            h = new hydra(rand() % HCOLORS, headask(), 1, 20);
+            h = new hydra(randHCol(), headask(), 1, 20);
             h->dirty = 2*IS_DIRTY-1;
             break;
           case 'x':
             h = new hydra(HC_ANCIENT, headask(), 1, 20);
             break;
           case 'd':
-            h = new hydra(HC_DRAGON | (rand() % HCOLORS), headask(), 1, 20);
+            h = new hydra(HC_DRAGON | randHCol(), headask(), 1, 20);
             break;
           }
         if(h) {h->put(); addMessage("Summoned "+h->name()+" to a random location.");}
@@ -2029,6 +2245,7 @@ void mainloop() {
                 set ^= (1<<i) | (1<<j);
                 }
               addMessage("You exchange weapons with your twin.");
+              playSound("../hydra-old/pickup", 100, 0);
               moveHydras();
               }
             else {
@@ -2044,6 +2261,7 @@ void mainloop() {
             case 0:
               P.twinmode = 1;
               addMessage("You now control both twins.");
+              playSound("../hydra-old/pickup", 100, 0);
               break;
             case 1:
               P.twinmode = 0;
@@ -2051,6 +2269,7 @@ void mainloop() {
                 addMessage("You now control only "+twinName(0)+".");
               else
                 addMessage("You now control one twin.");
+              playSound("../hydra-old/pickup", 50, 0);
               break;
             case 2:
               P.twinmode = 0;
@@ -2058,6 +2277,7 @@ void mainloop() {
                 addMessage("You now control only "+twinName(0)+".");
               else
                 addMessage("You now control one twin.");
+              playSound("../hydra-old/pickup", 50, 0);
               twinswap(); singlestep(); twinswap();
               break;
               }
@@ -2091,7 +2311,8 @@ void mainloop() {
             addMessage("Execute all moves first.");
             break;
             }
-          twinswap_phase(); addMessage("Order switched.");
+          twinswap_phase(); 
+          addMessage("Order switched.");
           }
         else if(twinAlive()) {
           addMessage(twinName(1,1)+" not here yet.");
@@ -2124,6 +2345,12 @@ void mainloop() {
       
       case 'o':
         exploreOn = !exploreOn;
+        exploreWithDestination = false;
+        aeMushroom = false;
+        break;
+      
+      case 'O':
+        waitmode();
         break;
         
       default:

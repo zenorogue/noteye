@@ -2,6 +2,16 @@
 -- Copyright (C) 2010-2016 Zeno Rogue, see noteye.noe for details
 -- call functions from the NotEye library, via FFI
 
+if AVOID_FFI then
+  utf8 = {}
+  function utf8.nb(x) return 1 end
+  function utf8.dec(x) return string.byte(x,1) end
+  function utf8.enc(x) return string.char(x) end
+  function utf8.len(x) return #x end
+  function utf8.sub(x,y,z) return x:sub(y,z) end
+  return
+  end
+
 local ffi = require("ffi")
 
 ffi.cdef[[
@@ -42,17 +52,25 @@ ffi.cdef[[
 
 local noteyelib = ffi.os == "Windows" and ffi.load("noteye") or ffi.C
 
+
+utf8 = {}
+utf8.nb = noteyelib.utf8_numbytes
+utf8.dec = noteyelib.utf8_decode
+utf8.enc = function(x) return ffi.string(noteyelib.utf8_encode(x)) end
+utf8.len = noteyelib.utf8_strlen
+utf8.sub = function(x,y,z) return ffi.string(noteyelib.utf8_substr(x,y,z)) end
+
+tilesetchid = noteyelib.tileSetChid
+tilespatial = noteyelib.addSpatial
+tilecol = noteyelib.addRecolor
 tilemergep = noteyelib.addMerge
 tilemerge = noteyelib.addMerge0
 tilemergeover = noteyelib.addMerge1
-tilecol = noteyelib.addRecolor
-tilespatial = noteyelib.addSpatial
 tilelayer = noteyelib.addLayer
 getlayer = noteyelib.distillLayer
 getdistill = noteyelib.distill
 tilexf = noteyelib.addTransform
 tilealpha = noteyelib.addFill
-tilesetchid = noteyelib.tileSetChid
 
 addtile = noteyelib.addTileID
 setconsolewindowtitle = noteyelib.setconsolewindowtitle
@@ -68,8 +86,18 @@ scrset = noteyelib.scrset
 saveimage = noteyelib.saveimage
 setdirectansi = noteyelib.setdirectansi
 
+local fff = tonumber("FFFFFFFF", 16)
+
 getpixel = noteyelib.img_getpixel
-setpixel = noteyelib.img_setpixel
+function setpixel(img,x,y,p)
+  noteyelib.img_setpixel(img,x,y, bAND(p, fff))
+  end
+
+local del = delete
+function delete(x)
+  print("Deleting object: "..x)
+  del(x)
+  end
 
 function xsetpixel(img,x,y,p)
   local old = getpixel(img,x,y)
@@ -79,13 +107,6 @@ function xsetpixel(img,x,y,p)
     print(string.format("not set: p=%x get=%x old=%x (p=%d)", bOR(p, 0), getpixel(img,x,y), old, p))
     end
   end
-
-utf8 = {}
-utf8.nb = noteyelib.utf8_numbytes
-utf8.dec = noteyelib.utf8_decode
-utf8.enc = function(x) return ffi.string(noteyelib.utf8_encode(x)) end
-utf8.len = noteyelib.utf8_strlen
-utf8.sub = function(x,y,z) return ffi.string(noteyelib.utf8_substr(x,y,z)) end
 
 bAND = bit.band
 bOR = bit.bor

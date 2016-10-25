@@ -8,6 +8,7 @@ conssize = V(80, 25)
 map = rectXY(0, 0, 50, 22)
 msgbox = {x0=0, x1=80, y0=22,y1=24}
 minipos = V(1,1)
+minimapsize = V(3,5)
 
 addinfo(violenceinfo, 75, "show blood")
 addinfo(violenceinfo, 25, "show corpses")
@@ -216,8 +217,21 @@ function ytileobj(M,x,y)
   elseif M.iicon == av("-") then mergeoutit(Wand)
   elseif M.iicon == av("+") then mergeoutit(Trident)
   elseif M.itype and M.itype == av("R") then mergeoutit(Erado)
+  elseif M.iicon == av("r") then mergeoutbgo(Erado,Erado,Erado)
+  elseif M.iicon == av("t") then mergeoutbgo(Erado,Pickaxe,Pickaxe)
   elseif M.iicon == av("^") then mergeoutbgo(Erado,Pickaxe,Pickaxe)
+  elseif M.iicon == av("y") then mergeoutbgo(Pickaxe,Pickaxe,Pickaxe)
   elseif M.iicon == av("o") then mergeoutbgo(Disk,Stone,Disk)
+
+  elseif M.iicon == av("a") then mergeoutit(Machete)
+  elseif M.iicon == av("b") then mergeoutit(Dagger)
+  elseif M.iicon == av("c") then mergeoutit(Nullsector)
+  elseif M.iicon == av("d") then mergeoutit(Vorpal)
+  elseif M.iicon == av("e") then mergeoutit(GiantBlade)
+  elseif M.iicon == av("f") then mergeoutit(Goldcut)
+  elseif M.iicon == av("g") then mergeoutit(BladeTrap)
+  elseif M.iicon == av("h") then mergeoutit(DivTrap)
+  elseif M.iicon == av("i") then mergeoutit(RockTrap)
   end
   
   -- monsters etc
@@ -252,10 +266,14 @@ function ytileobj(M,x,y)
   elseif M.hicon == av("@") and not playeralive then mergeout(shz(SlayerDead))
   elseif M.hicon == av("@") and M.hcolor ~= vgaget(13) and mode == modeFPP then 
     -- do not draw the player in FPP (but do in TPP)
+    -- but apply move shift
+    shz(Slayer)
   elseif M.hicon == av("@") and M.hcolor == vgaget(15) then mergeout(shz(Slayer))
   elseif M.hicon == av("@") and M.hcolor == vgaget(14) then mergeout(shz(SlayerNaga))
   elseif M.hicon == av("@") and M.hcolor == vgaget(12) then mergeout(shz(SlayerCentaur))
-  elseif M.hicon == av("@") and M.hcolor == vgaget(13) then mergeout(shz(Twin, "twin"))
+  elseif M.hicon == av("@") and M.hcolor == vgaget(11) then mergeout(shz(SlayerTitan))
+  elseif M.hicon == av("@") and M.hcolor == vgaget(13) then 
+    mergeout(shz(Twin, "twin"))
   elseif M.hicon == av(" ") then mergeout(tilerecolor(Hydra[7], 0))
   elseif al and al>0 then
     if co == vgaget(8) then mergeout(shn(Mushroom[math.min(al,9)]))
@@ -269,20 +287,28 @@ function ytileobj(M,x,y)
   -- targets
   if M.target then mergeout(shn(tilerecolor(Target, vgaget(12)))) end
 
-  if M.stun then 
-    GoldenStar = tilerecolor(TinyStar, vgaget(14))
-    for u=1,M.stun do
-      local t = 5*os.clock()+math.pi*2*u/M.stun
-      mergeout(tilespatial(tilexf(GoldenStar, 
-        (14 + 14 * math.sin(t))/32, (4+4* math.cos(t))/32, 5/32, 5/32,
-        math.cos(t)/2, 0
-        ),
-        spFlat + spIItem + spMonst))
-      end
-    end
+  if M.stun then mergeout(stunanim[M.stun][math.floor(getticks()/10) % 100]) end
   
   return out
   
+  end
+
+stunanim = {}
+
+GoldenStar = tilerecolor(TinyStar, vgaget(14))
+for st=1,7 do
+  stunanim[st] = {}
+  for tu=0,99 do
+    local frame = 0
+    for u=1,st do
+      local t = math.pi*2*(u/st + tu/100)
+      frame = tilemerge(frame, tilexf(GoldenStar, 
+        (14 + 14 * math.sin(t))/32, (4+4* math.cos(t))/32, 5/32, 5/32,
+        math.cos(t)/2, 0
+        ))
+      end
+    stunanim[st][tu] = tilespatial(frame, spFlat + spIItem + spMonst)
+    end
   end
 
 function xinventory(C)
@@ -367,6 +393,8 @@ function xtileobj(C)
   elseif ch == ("-") then return rec(Wand)
   elseif ch == ("+") then return rec(Trident)
   elseif ch == ("^") then return rec(bgo(Erado,Pickaxe,Pickaxe))
+  elseif ch == ("r") then return rec(Erado)
+  elseif ch == ("y") then return rec(Pickaxe)
   elseif ch == ("o") then return rec(bgo(Disk,Stone,Disk))
   else return 0
   end
@@ -450,9 +478,11 @@ function xtile(C,x,y)
   if M.out == 1 then
     return OutOfMap
     end
-  if M.cached then return M.cached end
+  if M.cached then 
+    return M.cached 
+    end
   local ytf = ytilefloor(M)
-  uu = (x+3*y) % 5
+  local uu = M.uu
   checker = 0
   floorcolor = 0x504040 - checker
   if ytf == Lightfloor then
@@ -476,6 +506,7 @@ function xtile(C,x,y)
   ytf = tilemerge(ytf, shadtable[bAND(M.shadow, 15)])
   ytf = tilemerge(ytf, ytileobj(M,x,y))
   if M.cacheid then hydracache(M.cacheid, ytf) end
+  if M.animation then ytf = tilemerge(ytf, M.animation) end
   return ytf
   end
 
@@ -506,26 +537,78 @@ function ispc(C)
   return gch(C) == "@" and gco(C) == vgaget(15)
   end
 
+function centerwhere()
+  if curcoords and curcoords.twinx and mode ~= modeFPP then
+    return V((curcoords.scrx+curcoords.twinx)/2, (curcoords.scry+curcoords.twiny)/2)
+  else
+    return playerpos
+    end
+  end
+
+function findpc()
+  local lastcoords = curcoords
+  curcoords = hydracoords()
+  ncursor = V(curcoords.scrx, curcoords.scry)
+  mapon = pcat(ncursor)
+  
+  if not lastcoords then lastcoords = curcoords end
+
+  local shiftvec = V(
+    (curcoords.intx - curcoords.scrx) - (lastcoords.intx - lastcoords.scrx),
+    (curcoords.inty - curcoords.scry) - (lastcoords.inty - lastcoords.scry)
+    )
+  
+  if topx ~= curcoords.topx or topy ~= curcoords.topy then
+    topx = curcoords.topx
+    topy = curcoords.topy
+    prepareconsole()
+    end
+
+  if shiftvec.x ~= 0 or shiftvec.y ~= 0 then
+    if mapcenter then mapcenter = mapcenter - shiftvec end
+    if oplayerpos then oplayerpos = oplayerpos - shiftvec end
+    for k,v in pairs(moveanimations) do
+      if v.animxy then v.animxy = v.animxy - shiftvec end
+      end
+    end
+  
+  end
+
+function calc_realmap(t)
+  D.realmapshift = V(0,0)
+  if topx and topx ~= 0 then
+    D.realmapshift.x = D.map.size.x
+    end
+  if topy and topy ~= 0 then
+    D.realmapshift.y = D.map.size.y
+    end
+  D.realmapsize = D.map.size + D.realmapshift * 2
+  end
+
 playeralive = true
 
 function checkdeath()
-  local lch = scrget(IMG, 51, 9)
-  if gch(lch) ~= "L" then lch = scrget(IMG, 51, 10) end
-  if gch(lch) == "L" then 
-    local lco = gco(lch)
-    if lco == vgaget(15) then 
-      --print("alive")
-      playeralive = true
-    elseif lco == vgaget(12) then 
-      --print("barely")
-      playeralive = true
-    elseif lco == vgaget(4) then 
-      if playeralive then 
-        musichalt()
-        end
-      playeralive = false
-      --print("dead")
-    end
+  if oldhydra then
+    local lch = scrget(IMG, 51, 9)
+    if gch(lch) ~= "L" then lch = scrget(IMG, 51, 10) end
+    if gch(lch) == "L" then 
+      local lco = gco(lch)
+      if lco == vgaget(15) then 
+        --print("alive")
+        playeralive = true
+      elseif lco == vgaget(12) then 
+        --print("barely")
+        playeralive = true
+      elseif lco == vgaget(4) then 
+        if playeralive then 
+          musichalt()
+          end
+        playeralive = false
+        --print("dead")
+      end
+      end
+  else
+    playeralive = curcoords and curcoords.hitpoints and curcoords.hitpoints > 0
     end
   end
 
@@ -612,13 +695,14 @@ function drawBackgroundAndMap()
   return drawMap()
   end
 
-GermaniaOne = newttfont("games/GermaniaOne-Regular.ttf")
+GermaniaOne = newttfont("gfx/GermaniaOne-Regular.ttf")
 
 axTransparentUgly = {nil, nil, tmap_transorshade}
 
 do local drat = drawAscii
 function drawAscii(ax)
 
+  -- do return end
   if ax == axSemitransparent then
     local X = screen.top.x
     local Y = screen.top.y
@@ -664,14 +748,20 @@ function drawAscii(ax)
     drat(ax)
     end
 
-  local function afun(x)
-    if x > 1000 then return 0xFFFFFF end
-    return math.floor(255 * (x/1000)) * 0x10101
-    end
-    
+  end
+end
+
+function drawtrailer()
   if trailer then
 
+    local function afun(x)
+      if x > 1000 then return 0xFFFFFF end
+      return math.floor(255 * (x/1000)) * 0x10101
+      end
+
     local t = getticks() - trailer.at
+    
+    print("phase = "..trailer.phase)
     
     if t < 1000 and trailer.phase == 1 then 
       drawtile(Gfx, tilealpha(0, afun(t)), 0, 0, xscrsize.x, xscrsize.y)
@@ -744,7 +834,7 @@ function drawAscii(ax)
     end
 
   end
-end
+
 
 gotup = false lmodup = modup
 gotdn = false lmoddn = moddn
@@ -817,13 +907,12 @@ function checkmouse(ev)
   local mx = math.floor((ev.x - screen.top.x) / fontsize.x)
 
   if string.find(getline(0), "Inventory") then
-    mousesendstext("i", "Left click to use, right click for information")
+    mousesendstext("i", "Click to view and use the item")
     local ch = gch(scrget(S, 51, my))
     -- print("my = "..my.." ch = "..tostring(ch))
     if ch ~= "Y" and ch ~= "I" and ch ~= " " and KEYS[ch] then
       clickmouse = function (ev)
         nsendtext(ch)
-        if ev.button == 1 then nsendtext("y") end
         end
       end
     return
@@ -881,11 +970,21 @@ function checkmouse(ev)
         mousenem("NotEye's sound and visual options")
         return
         end
-      local ch0 = gch(scrget(S, 0, my))
-      local ch1 = string.lower(gch(scrget(S, 1, my)))
-      if ch0 == "(" and ch1 == "f" and gch(scrget(S, 2, my)) == "4" then
+      local ch0 = gch(scrget(S, 2, my))
+      local ch1 = string.lower(gch(scrget(S, 3, my)))
+      if ch0 == "(" and ch1 == "f" and gch(scrget(S, 4, my)) == "4" then
         mousenem("NotEye's sound and visual options")
       elseif ch0 == "("  then
+        mousesendstext(ch1, "Click to select this option")
+        end
+      return
+      end
+    
+    if string.find(getline(0), "Random/Daily") then
+      mousesendstext(" ", "")
+      local ch0 = gch(scrget(S, 2, my))
+      local ch1 = string.lower(gch(scrget(S, 3, my)))
+      if ch0 == "("  then
         mousesendstext(ch1, "Click to select this option")
         end
       return
@@ -925,9 +1024,18 @@ function checkmouse(ev)
         end
       while my > 0 and mx >= 0 do
         local ch = gch(scrget(S, mx,my))
-        if gco(scrget(S, mx, my)) == vgaget(8) and gch(scrget(S,mx+1,my)) == " " --and gch(scrget(S,mx+3,my)) == " " 
-          and gch(scrget(S,mx+2,my)) ~= " " and ch ~= " " then
+        if my >= 2 and my < 22 and gco(scrget(S, mx, 22)) == vgaget(0) 
+--      
+--      gco(scrget(S, mx, my)) == vgaget(8) and gch(scrget(S,mx+1,my)) == " "
+--        and gch(scrget(S,mx+2,my)) ~= " " 
+          and ch ~= " " 
+--        and (mx == 0 or gch(scrget(S,mx-1,my)) == " ") 
+          then
           mousesendstext(ch, "Take this item ("..ch..")")
+          clickmouse = function (eva) 
+            if eva.button > 1 then nsendtext(string.char(av("v")-96)) end
+            nsendtext(ch)
+            end
           return
           end
         mx = mx - 1
@@ -935,9 +1043,14 @@ function checkmouse(ev)
       end
 
     -- if string.find(getline(0), 11) the
-    if string.find(getline(11), "Enter to get help") then
+    if string.find(getline(12), "Enter to get help") then
       -- first page of Help
       mousesendsym(KEYS.RETURN, "Click to see the next page of Help")
+      return
+      end
+
+    if string.find(getline(my), "'i' for inventory") then
+      mousesendstext("i", "Click to see your inventory")
       return
       end
 
@@ -964,18 +1077,25 @@ function checkmouse(ev)
     end
   
   if mx >= 50 and my < 10 then
-    clickmouse = function () nsendtext(string.sub("1234567890", my+1, my+1)) end
+    clickmouse = function (eva) 
+      if eva.button > 1 then hydrainfo(100, my) return end
+      nsendtext(string.sub("1234567890", my+1, my+1)) 
+      end
     mousemsg = "Click to change your weapon (digits)"
     return
     end
 
-  if my >= 22 then
+  if my >= 22 and ev.x < rscreen.bot.x - 52 * minimapsize.x then
     mousesendstext("m", "Click to view last messages ('m')")
     return
     end
 
-  if mx >= 50 and mode ~= modeFPP then
+  if mx >= 50 and mode ~= modeFPP and ev.y < rscreen.bot.y - 22 * minimapsize.y then
     mousesendstext("f", "Click to get more information about hydras in sight ('f')")
+    clickmouse = function (ev) 
+      if ev.button > 1 then hydrainfo(100, my) return end
+      nsendtext("f")
+      end
     return
     end
 
@@ -983,10 +1103,15 @@ function checkmouse(ev)
     mousesendstext("f", "Click to get more information about hydras in sight ('f')")
     return
     end
+  
+  if cmini and inrect(ev, cmini) then
+    mousemsg = "Scroll the map"
+    return
+    end
 
   local d = pixeltodir(V.be(ev))
   
-  if (d == 2 or d == 6) and inhex then d = -2 end
+  -- if (d == 2 or d == 6) and inhex then d = -2 end
   
   if d >= 0 then
     local k = dirkeys[d]
@@ -995,17 +1120,31 @@ function checkmouse(ev)
       k = dirkeys[(7+d)%8]
       end
     ev.mod = 0
+    ptp = hexround(pixeltoprocess(ev))
     clickmouse = function (eva)
-      if eva.button > 1 and hydrainfo and mode ~= modeFPP then
-        evb = pixeltoprocess(eva)
+      if mode == modeFPP or mode == modeTPP then
+        eva.scancode = 0
+        eva.keycode = 0
+        eva.mod = 0
+        eva.type = 0
+        eva.type = evKeyBoth
+        rotatekey_dir(eva, d, 8)
+        nsendkey(eva)
+      elseif eva.button > 1 and hydrainfo then
+        evb = hexround(pixeltoprocess(eva))
+        print("ptp = "..tostring(evb))
         hydrainfo(evb.x, evb.y)
       else
+        evb = hexround(pixeltoprocess(eva))
+        print("ev = "..tostring(evb))
+        hydraqueuetarget(evb.x, evb.y)
         nsendkey2(k, evKeyBothText)
         end
       end
     if mode ~= modeFPP then
       local dirnames = {"E ", "NE", "N ", "NW", "W ", "SW", "S ", "SE"}
-      mousemsg = "Left click to move or attack "..dirnames[d+1]..(hydrainfo and " (or right click for info)" or "")
+      mousemsg = "L = move or attack "..dirnames[d+1]..(hydrainfo and " R = info: "..
+        hydralook(ptp.x, ptp.y) or "")
     else
       local dirnames = {"move right", "turn right", "go forward", "turn left", "go left", "turn left", "go backward", "turn right"}
       mousemsg = "Click to "..dirnames[d+1]
@@ -1015,7 +1154,7 @@ function checkmouse(ev)
       ev.type = evKeyDown
       ev.mod = 0
       if ev.button > 1 and d == -2 and hydrainfo then
-        evb = pixeltoprocess(ev)
+        evb = hexround(pixeltoprocess(ev))
         hydrainfo(evb.x, evb.y)
         return
       elseif ev.button > 1 then
@@ -1033,13 +1172,7 @@ function checkmouse(ev)
 
 local lsendmouse = handlemouse2
 
--- no minimap clicking (overriden by buttons)
-
-function handlemousewindows(ev)
-  return false
-  end
-
-havetrailer = false
+havetrailer = true
 
 function invoke_trailer()
   if trailer and trailer.phase == 3 then
@@ -1054,19 +1187,16 @@ function invoke_trailer()
   end
 
 function handlemouse2(ev)
+  if hsmousecfg == 3 then return end
   mousepos = V.be(ev)
   
-  if havetrailer and ctrlpressed() and ev.type == evMouseDown then
-    invoke_trailer()
-    return
-    end
-
   if ctrlpressed() then
     lsendmouse(ev)
     return
     end
   
   if ev.type == evMouseMotion then
+    scrollmanual = true
     lastmm = ev
   elseif ev.type == evMouseDown and clickmouse then
     clickmouse(ev)
@@ -1205,14 +1335,14 @@ function hex_drawdisplayTiles()
   dy0 = -math.ceil((tcs.y - maparea.top.y + 3*tilesize.x) / tilesize.y)
   dy1 = math.ceil((maparea.bot.y - tcs.y) / tilesize.y)
   
-  for dx=dx0,dx1 do for dy=dy0,dy1 do if((dx+dy+mcf.x+mcf.y)%2 == 0) then
+  for dx=dx0,dx1 do for dy=dy0,dy1 do if((dx+dy+mcf.x+mcf.y)%2 == inhexr) then
     drawtile(Gfx, 
       oldhydra and xhex(scrget(MAP, mcf.x+dx, mcf.y+dy)) 
       or yhex(hydramap(mcf.x+dx, mcf.y+dy, mode)),
       tcs.x + (dx-1.5) * tilesize.x, tcs.y + (dy-.75) * tilesize.y, tilesize.x*3, tilesize.y*1.5)
     end end end
 
-  for dx=dx0,dx1 do for dy=dy0,dy1 do if((dx+dy+mcf.x+mcf.y)%2 == 0) then
+  for dx=dx0,dx1 do for dy=dy0,dy1 do if((dx+dy+mcf.x+mcf.y)%2 == inhexr) then
     drawtile(Gfx, 
       oldhydra
       and xtileobj(scrget(MAP, mcf.x+dx, mcf.y+dy), mcf.x+dx, mcf.y+dy)
@@ -1236,6 +1366,11 @@ function setfppvar()
     fppvar.objpush = 2
     end
   end 
+
+function getisorot()
+  if inhex then return 0 end
+  return 1
+  end
 
 function hex_drawdisplayISO()
   
@@ -1314,14 +1449,7 @@ addHexVariant(modeISO, hex_drawdisplayISO)
 local ldrawdisplay = drawdisplay
 function drawdisplay()
   delayed_videomode()
-  local twincolor = gco(scrget(IMG, 52, 0))
-  if twincolor ~= lasttwincolor then
-    local tmp = moveanimations.player
-    moveanimations.player = moveanimations.twin
-    moveanimations.twin = tmp
-    lasttwincolor = twincolor
-    end
-  
+    
   if hydrabox then
     local curtime = os.clock() * 100
     if not animatehydrastime then
@@ -1332,6 +1460,15 @@ function drawdisplay()
     animatehydrastime =  curtime
     end
   oldhydra = VIEW or SERVER
+
+  if oldhydra then
+    local twincolor = gco(scrget(IMG, 52, 0))
+    if twincolor ~= lasttwincolor then
+      -- swapPlayerAndTwin()
+      lasttwincolor = twincolor
+      end
+    end
+
   if inhex and mode == modeTiles then
     hex_drawdisplayTiles()
   elseif inhex and (mode == modeMini or mode == modeMed) and mapon then
@@ -1345,6 +1482,7 @@ function drawdisplay()
 
   ldrawdisplay()
   mousetooltips()
+  drawtrailer()
   end
 
 function getminipos(size)
@@ -1355,93 +1493,123 @@ function getminipos(size)
     end
   end
 
+noteye_config_variable("hsmousecfg", 2, "Hydra Slayer mouse tooltips", {options = gridoptions})
+
+addtomenu(mainmenu, "x", writechoicef(
+  function() 
+    if hsmousecfg == 0 then return "Hydra Slayer mouse tooltips disabled"
+    elseif hsmousecfg == 1 then return "Hydra Slayer mouse tooltips, no icons"
+    elseif hsmousecfg == 2 then return "Hydra Slayer mouse tooltips and icons"
+    elseif hsmousecfg == 3 then return "Hydra Slayer mouse disabled"
+    end
+    end),
+  function()
+    pickinteger("hsmousecfg", (hsmousecfg+1) % 4)
+    return true
+    end
+  )
+
+
 function mousetooltips()
+  -- do return end
+  if hsmousecfg == 3 then return end
   mousemsg = ""
   if lastmm ~= nil then 
     checkmouse(lastmm)
     end
-  local X1 = rscreen.bot.x
+  local X1 = rscreen.bot.x - (minimode > 0 and 52 * minimapsize.x or 0)
   local Y1 = rscreen.bot.y
-  if mapon and lastmm ~= nil and (lastmm.x > X1-168 and lastmm.y > Y1-104 or msgreserve*fontsize.y >= 104) then
 
-    drawtile(D.output, tilerecolor(WT[0][4], 0xC0C0C0), X1-168, Y1-112, 168, 112)
+  if not VIEW and hsmousecfg ~= 0 then
+    drawtile(D.output, tileshade(vgaget(15)), screen.top.x, Y1-fontsize.y, X1-screen.top.x, fontsize.y)
+    end
+
+  if mapon and lastmm ~= nil and hsmousecfg == 2 then
+
+--  drawtile(D.output, tilerecolor(WT[0][4], 0xC0C0C0), X1-168, Y1-112, 168, 112)
     
-    Icons = renewscreen(Icons, 5, 3)
-    scrfill(Icons, 0, 0, 5, 3, 0)
     local iidx = 0
     local widx = -1
-    if lastmm.x >= X1-164 and lastmm.x < X1-4 and lastmm.y >= Y1-104 and lastmm.y < Y1-8 then
-      widx = math.floor((lastmm.x-(X1-164)) / 32) + 5 * math.floor((lastmm.y-(Y1-104)) / 32)
+    
+    local icowidth = fontsize.y >= 32 and 32 or 16
+    local icoheight = icowidth
+    
+    local Y2 = Y1 - (fontsize.y - icoheight) / 2 - icoheight
+    
+    local icospace = 99
+    
+    if mousemsg then
+      icospace = math.floor((X1 - fontsize.x*mousemsg:len()) / icowidth)
       end
-    function addicon(tile)
-      scrset(Icons, iidx % 5, math.floor(iidx / 5), tile)
+    
+    if lastmm.y >= Y1-fontsize.y then
+      widx = math.floor((X1-lastmm.x)/icowidth)
+      end
+    
+    function addicon(tile, stile)
+      if iidx >= icospace then return end
+      drawtile(D.output, icowidth >= 32 and tile or stile, X1-icowidth-icowidth*iidx, Y2, icowidth, icoheight)
       iidx = iidx+1
       return (widx+1) == iidx
       end
     
-    if addicon(AsciiMap) then
-      mousemsg = "Switch to ASCII map mode (Ctrl+M P)"
-      clickmouse = function() setmode(modeASCII) end
-      end
-    if addicon(Slayer) then
-      mousemsg = "(left click) tile mode (right click) mini-tile mode"
-      clickmouse = function(ev) if ev.button == 1 then setmode(modeTiles) else setmode(modeMini) end end
-      end
-    if addicon(FirstPP) then
-      clickmouse = function() setmode(modeISO) end
-      mousemsg = "Switch to ISO mode (Ctrl+M I)"
-      if not inhex then
-        clickmouse = function(ev) if ev.button == 1 then setmode(modeISO) else setmode(modeFPP) end end
-        mousemsg = "(left click) ISO mode (right click) FPP mode"
-        end
-      end
-    if addicon(HelpIcon) then
+--  if addicon(AsciiMap) then
+--    mousemsg = "Switch to ASCII map mode (Ctrl+M P)"
+--    clickmouse = function() setmode(modeASCII) end
+--    end
+--  if addicon(Slayer) then
+--    mousemsg = "(left click) tile mode (right click) mini-tile mode"
+--    clickmouse = function(ev) if ev.button == 1 then setmode(modeTiles) else setmode(modeMini) end end
+--    end
+--  if addicon(FirstPP) then
+--    clickmouse = function() setmode(modeISO) end
+--    mousemsg = "Switch to ISO mode (Ctrl+M I)"
+--    if not inhex then
+--      clickmouse = function(ev) if ev.button == 1 then setmode(modeISO) else setmode(modeFPP) end end
+--      mousemsg = "(left click) ISO mode (right click) FPP mode"
+--      end
+--    end
+    if addicon(HelpIcon, SmHelpIcon) then
       mousemsg = "Help"
       mousesendstext("?", "Get help ('?')")
       end
-    if addicon(SystemMenu) then
+    if addicon(SystemMenu, SmSystemMenu) then
       mousesendstext("S", "Main menu ('q')")
       end
-    if addicon(Recycle) then
+    if addicon(Recycle, SmRecycle) then
       mousesendstext("g", "Pick up something or use stairs ('g')")
       end
-    if addicon(Potion) then
+    if addicon(Potion, SmInvIcon) then
       mousesendstext("i", "Inventory ('i')")
       end
-    if addicon(WpnInfo) then
+    if addicon(WpnInfo, SmWpnInfo) then
       mousesendstext("v", "Information about the current weapon ('v')")
       end
-    if addicon(WpnDrop) then
+    if addicon(WpnDrop, SmWpnDrop) then
       mousesendstext("d", "Drop the current weapon ('d')")
       end
-    if addicon(AutoExplore) then
+    if addicon(AutoExplore, SmAutoExplore) then
       mousesendstext("o", "Auto-explore ('o')")
       end
-    if addicon(Twin) then
+    if addicon(Twin, SmTwinControl) then
       mousesendstext("c", "Switch twin control ('c')")
       end
-    if addicon(Twin) then
+    if addicon(Twin, SmTwinSelect) then
       mousesendstext("s", "Switch twin order ('s')")
       end
-    if addicon(Target) then
+    if addicon(Target, SmTargetIcon1) then
       mousesendstext("t", "Target a ranged weapon ('t')")
       end
-    if addicon(Bow) then
+    if addicon(Bow, SmTargetIcon2) then
       mousesendstext("T", "Turn on/off auto-fire mode (Shift+T)")
       end
-    if addicon(NoteyeMenu) then
+    if addicon(NoteyeMenu, SmNoteyeMenu) then
       clickmouse = noteyemenu
       mousemsg = "Go to NotEye menu (Ctrl+M)"
       end
-    
-    drawscreen(D.output, Icons, X1-164, Y1-104, 32, 32)
-
     end
 
-  if not trailer then
-    if mousemsg ~= "" and not VIEW then
-      drawtile(D.output, tileshade(vgaget(15)), screen.top.x, Y1-fontsize.y, X1-168, fontsize.y)
-      end
+  if not trailer and hsmousecfg ~= 0 then
     Mouseline = renewscreen(Mouseline, 80, 1)
     scrfill(Mouseline, 0, 0, 80, 1, 0)
     scrwrite(Mouseline, 0, 0, mousemsg, Font, vgaget(0))
@@ -1460,172 +1628,6 @@ function readgmessages()
   return lreadgmessages()
   end  
 
-function gotgmessage(s)
-  if volsound == 0 then return end
-  
-  function mac(pat, snd, vol)
-    if string.match(s, pat) and snd and snd > 0 then 
-      playsound(snd, (vol * 100 + 60) / 100)
-      return true
-      end
-    return false
-    end
-  
-  function macold(pat, snd, vol)
-    if oldhydra then return mac(pat, snd, vol) end
-    return false
-    end
-  
-  function macnew(pat, snd, vol)
-    if string.match(s, pat) then 
-      local fname = sounddir.."hydra-new/"..snd..".ogg"
-      playsoundfromfile(fname, (vol * 100 + 60) / 100)
-      return true
-      end
-    return false
-    end
-  
-  lost= mac("drink", SndDrink, 100)
-  or mac("cut through", SndPickup, 100)
-  or mac("blocks your", SndPickup, 100)
-  or macold("Switched to ", SndPickup, 100)
-  or macold("to your set", SndPickup, 100)
-  or mac("Fire mode set", SndPickup, 100)
-  or macnew("Dropped a weapon", "weapons/dropWeapon", 100)
-  or mac("You climb down", SndPickup, 100)
-  or mac("ancient Club of Hydra", SndQuake, 100)
-  or macnew("Picked up the Potion", "other/pickup-potion", 100)
-  or macnew("Picked up the Powder", "other/pickup-powder", 100)
-  or macnew("Picked up the Scroll", "other/pickup-scroll", 100)
-  or macold("Picked up the", SndPickup, 100)
-
-  or macnew("First level completed", "other/tada", 100)
-  or macnew("No mighty hydra slaying weapons yet", "other/tada", 100)
-  or macnew("You carefully improve your armor", "other/tada", 100)
-  or macnew("You stop for a while to calmly", "other/tada", 100)
-  or macnew("You feel a strange sense", "other/tada", 100)
-  or macnew("relatively safe now", "other/tada", 100)
-  or macnew("Another pack of Hydras", "other/tada", 100)
-  or macnew("Your mission on this level is accomplished", "other/tada", 100)
-  or macnew("Such powerful Hydras slain", "other/tada", 100)
-  or macnew("something big soon.", "other/tada", 100)
-  or macnew("that was not that big", "other/tada", 100)
-
-  or mac("You exchange weapons", SndPickup, 100)
-  or mac("You now control both twins", SndPickup, 100)
-  or mac("You now control on", SndPickup, 100)
-  or macnew("You kill the Ancient Hydra", "other/tada", 100)
-  or macnew("But you can still go down for more hydra slaying!", "other/tada", 100)
-  or macnew("wakes up", "other/wakesUp", 100)
-  or macnew("is fully awake again!", "other/wakesUp", 100)
-  or mac("suddenly grows a head!", SndRune, 100)
-  or macnew("of its heads away", "other/teleport", 100)
-  or macnew("teleports .* heads to the", "other/teleport", 100)
-  or macnew("steals your", "other/stealsYourWeapon", 100)
-  or macnew("crush the wall", "other/wallCrush", 100)
-  or macnew("phase through", "other/teleport", 100)
-  or macnew("mushroom grows", "other/mushroomGrows", 100)
-  or macnew("full of life", "other/fullOfLife", 100)
-  or macnew("fingernail suddenly grows", "other/fingernailGrows", 100)
-  or macnew("able to dodge arrows", "weapons/bowAttack-miss", 100)
-  or mac("You miss the", SndPhase, 100)
-
-  or mac("The mushrooms join their", SndSplash, 100)
-  or mac("The mushrooms move in front of you", "other/mushroomMovesInFrontOfYou", 100)
-  or mac("The mushroom bows to you!", SndSplash, 100)
-
-  or mac("The level shakes as you hit", SndQuake, 100)
-  or mac("huge shockwave", SndQuake, 100)
-  or mac("ground trembles", SndQuake, 100)
-  or mac("crush the wall", SndQuake, 100)
-  or mac("You raise a hydra zombie", SndRune, 100)
-  or mac("Your rune instantly destroys", SndRune, 100)
-  or mac("The mushroom grows", SndRune, 100)
-  or mac("You crush one of the mushroom's heads", SndSmash1, 100)
-  or mac("You crush the mushroom with your hands", SndSmash2, 100)
-  or mac("Sparks fly and the", SndRune, 100)
-  or mac("Your death touch kills the poor sleeping", SndRune, 100)
-  or mac("looks in terror as its stunned", SndRune, 100)
-  or mac("looks somehow normal now", SndRune, 100)
-  or mac("partially resists your spell", SndRune, 100)
-  or mac("suddenly grows some new heads", SndRune, 100)
-  or mac("confused", SndRune, 100)
-  or mac("dislike hydras", SndRune, 100)
-  or mac("turns into a mushroom", SndRune, 100)
-  or mac("turns into an otherworldly", SndRune, 100)
-  or mac("glows blindingly and changes both", SndRune, 100)
-  or mac("fingernail suddenly grows", SndRune, 100)
-  or mac("is reforged", SndRune, 100)
-  or mac("A part of", SndRune, 100)
-  or mac("You recognize the", SndRune, 100)
-  or mac("You feel the power of the Mushroom", SndDrink, 100)
-  or mac("You feel like a source", SndDrink, 100)
-  or mac("You suddenly grow a new", SndDrink, 100)
-  or mac("Ahh, that feels", SndDrink, 100)
-  or mac("You drink the", SndDrink, 100)
-  or mac("You activate the", SndRune, 100)
-
-  or macold("were .*bites", SndWoof, 100)
-  or macold("thorns at", SndWoof, 100)
-  or macold("turns to wood", SndWoof, 100)
-  or macold("chaos.*bites", SndChaos, 100)
-  or macold("breathes Chaos", SndChaos, 100)
-  or macold("wildly mutating", SndChaos, 100)
-  or macold("fire.*burns", SndFire, 100)
-  or macold("breathes fire", SndFire, 100)
-  or macold("consumed by flames", SndFire, 100)
-  or macold("swamp.*bites", SndPoison, 100)
-  or macold("spits poison", SndPoison, 100)
-  or macold("extinguishes", SndPoison, 100)
-  or macold("white.*bites", SndSilver, 100)
-  or macold("silverdust", SndSilver, 100)
-  or macold("bare metal", SndSilver, 100)
-  or macold("storm.*bites", SndStorm, 100)
-  or macold("zaps", SndStorm, 100)
-  or macold("Sparks fly", SndStorm, 100)
-  or macold("acid.*bites", SndSplash, 100)
-  or macold("spits acid", SndSplash, 100)
-  or macold("produce acid", SndSplash, 100)
-  or macold("ice.*freezes", SndIce, 100)
-  or macold("spits ice", SndIce, 100)
-  or macold("acid on your", SndIce, 100)
-  or macold("skeletal.*bites", SndBone, 100)
-  or macold("breathes Death", SndBone, 100)
-  or macold("bare bone", SndBone, 100)
-  or macold("golden.*bites", SndGold, 100)
-  or macold("shines blindingly", SndGold, 100)
-  or macold("pure gold", SndGold, 100)
-  or macold("alien.*cuts", SndCut, 100)
-  or macold("vampire.*bites", SndCut, 100)
-  or macold("ettin.*hits", SndSmash3, 100)
-  or macold("ancient.*attacks", SndSmash4, 100)
-  or macold("ivy.*crushes", SndSmash2, 100)
-  or macold("arch-.*bites", SndCut, 100)
-  or macold("monkey.*punches", SndSmash1, 100)
-  or macold("shadow.*touches", SndSmash4, 100)
-
-  or macold(" hit", SndBone, 100) --  (ash, chaos, bone, golden)
-  or macold(" burn", SndFire, 100)
-  or macold(" cut", SndCut, 100) --  (poison, silver, meteo)
-  or macold(" shock", SndStorm, 100)
-  or macold(" melt", SndSplash, 100)
-  or macold(" freeze", SndIce, 100)
-  or macold(" slam", SndSmash1, 100)
-  or macold(" turns green", SndSmash1, 100)
-  or macold(" strike", SndSmash2, 100)
-  or macold(" turns purple", SndSmash2, 100)
-  or macold(" smash", SndSmash3, 100)
-  or macold(" turns blue", SndSmash3, 100)
-  or macold(" crush", SndSmash4, 100)
-  or macold(" turns red", SndSmash4, 100) 
-
-  or macnew("reflected by ancient", "other/reflectedByAncientForce", 100)
-  or macnew("drive you mad", "other/weaponDrivesYouMad", 100)
-
-  or mac("kill the", SndDeath, 100)
-  or mac("kills the", SndDeath, 100)
-  end
-
 if hydramain and not externalhydra then function rungamex(cmdline)
   P = internal(S, Font, cmdline)
   hydrauserdir(userdir)
@@ -1633,44 +1635,56 @@ if hydramain and not externalhydra then function rungamex(cmdline)
   end
   end
 
-local lpixeltoproc = pixeltoproc
+local lpixeltoprocess = pixeltoprocess
 
-function pixeltoproc(ev, norounding)
-  local function mf(z)
-    if norounding then return z
-    else return math.floor(z)
+function hexround(v)
+  if not v then return v end
+  v = V(math.floor(v.x), math.floor(v.y))
+  if v and inhex and (v.x+v.y+inhexr)%2 > 0.01 and not norounding then 
+    v.x = v.x-1
     end
-    end
+  return v
+  end
+
+function pixeltoprocess(ev)
+--local function mf(z)
+--  if norounding then return z
+--  else return math.floor(z)
+--  end
+--  end
+--print("ptp called")
   if inhex and mode == modeMed then
     mode = modeMini
-    lpixeltoproc(ev, norounding)
+    local result = lpixeltoprocess(ev)
     mode = modeMed
+    return result
   elseif inhex and mode == modeTiles then
-    ev.x = mf(mapcenter.x + 1.5 + (ev.x - tilectr.x) / tilesize.x * 2)
-    ev.y = mf(mapcenter.y + 0.5 + (ev.y - tilectr.y) / tilesize.y)
+    return V(mapcenter.x + 1.5 + (ev.x - tilectr.x) / tilesize.x * 2,
+      mapcenter.y + 0.5 + (ev.y - tilectr.y) / tilesize.y)
   elseif inhex and mode == modeISO then
-    ev.x = mf(mapcenter.x + (ev.x - tilectr.x) / tilesize.x*2)
-    ev.y = mf(mapcenter.y + (ev.y - tilectr.y) / tilesize.y*2)
+    return V(mapcenter.x + (ev.x - tilectr.x) / tilesize.x*2,
+      mapcenter.y + (ev.y - tilectr.y) / tilesize.y*2)
   else 
-    lpixeltoproc(ev, norounding)
+    return lpixeltoprocess(ev)
     end
 
   -- compare with 0.1 to take care about precision errors?
-  if inhex and (ev.x+ev.y+inhexr)%2 > 0.01 and not norounding then 
-    ev.x = ev.x-1
-    end
+  return result
   end
 
 if sethydrabox and not hydrabox then
   hydrabox = newimage(32*64, 32, 0x8080)
   hydraheads = loadimage(gfxdir.."hydraheads.png")
+  local s = imggetsize(hydraheads)
+  hydraheads2 = newimage(s.x, s.y)
   hydraheadskey = getpixel(hydraheads, 0, 0)
-  sethydrabox(hydrabox, hydraheads)
+  sethydrabox(hydrabox, hydraheads, hydraheads2)
   animatedhydras = {}
   for u=0,63 do
     animatedhydras[u] = 
       tilespatial(addtile(hydrabox, u*32, 0, 32, 32, 0x8080), spMonst + spFlat + spIItem)
     end
+  -- saveimage(hydraheads2, gfxdir.."hydraheads2.png")
   end
 
 function sendquit()
@@ -1688,11 +1702,147 @@ function dorotate(ev)
 
 function yesno(x) return x and "yes" or "no" end
 
+intutorialmusic = true
+
+-- lfadeoutmusic = fadeoutmusic
+
+-- function fadeoutmusic(x)
+  -- print("fadeout = "..x)
+--   lfadeoutmusic(x)
+--   end
+
 -- do not play music after death
-lcheckmusic = checkmusic
 function checkmusic()
-  if playeralive then 
-    lcheckmusic() 
+  if volmusic == 0 then return end
+  if not curcoords then return end
+  
+  -- print("context = "..curcoords.context)
+
+  -- see the last lines of classes.cpp for interface context meanings
+  -- note that curcoords.level is 0-based, (-1 == tutorial, 0 = level 1, etc.)
+  
+  if
+    curcoords.context == 16 or 
+    curcoords.context == 17 or 
+    curcoords.context == 27 or 
+    curcoords.context == 28 or 
+    curcoords.context == 29 or inmenu -- (NotEye menu)
+  then inhydramenu = true end
+
+  if curcoords.context == 0 or curcoords.context == 1 then
+    inhydramenu = false
+    end
+  
+  if not playeralive or not appactive then 
+    if musicon() then stopmusic() end
+    -- print("stop: player dead")
+    return
+    end
+            
+
+  -- print("inhydramenu = "..tostring(inhydramenu))
+  
+  if curcoords.level == -1 and not inhydramenu and playeralive and not musicon() and not curcoords.cangodown then  
+    playmusicbyname(sounddir.."/music/music-tutorial.oga")
+    intutorialmusic = true
+    end
+
+  if stopmusicat then
+    -- print("stopmusicat = "..stopmusicat.." ticks = "..getticks())
+    end
+
+  if stopmusicat and stopmusicat < getticks() then
+    fadeoutmusic(5000)
+    stopmusicat = nil
+    end
+  
+  -- if musicon() and inhydramenu then
+  --  -- print("stop -- in menu")
+  --  stopmusic()
+  --  end
+  
+  -- print("level = "..(curcoords.level).." cangodown = "..tostring(curcoords.cangodown))
+  
+  if lastcoords and curcoords.cangodown and not lastcoords.cangodown then
+    -- print("react to kill on level "..(curcoords.level))
+    if curcoords.level == -1 then
+      fadeoutmusic(1500)
+    elseif curcoords.level == 9 then
+      fadeoutmusic(1500)
+    elseif curcoords.level == 11 then
+      playmusicbyname(sounddir.."/music/music-0.oga")
+      stopmusicat = getticks() + 26000
+      intutorialmusic = false
+    elseif curcoords.level == 49 then
+      playmusicbyname(sounddir.."/music/music-0.oga")
+      intutorialmusic = false
+      -- 256 == dfChallenge
+    elseif curcoords.level == 9 and bAND(curcoords.flags, 256) > 0 then
+      playmusicbyname(sounddir.."/music/music-0.oga")
+      stopmusicat = getticks() + 26000
+      intutorialmusic = false
+      end
+    end
+  
+  local startmusic  
+  if not lastcoords and curcoords and curcoords.level and curcoords.level >= 0 then
+    startmusic = true
+    end
+  
+  if lastcoords and curcoords.level ~= lastcoords.level then
+    startmusic = true
+    end
+
+  if lastcoords and lastinhydramenu and not inhydramenu then
+    startmusic = true
+    end
+  
+  if lostfocus and appactive and not inhydramenu then
+    startmusic = true
+    lostfocus = false
+    end
+  
+  if not inhydramenu and not startmusicat and appactive and playeralive and not startmusic then
+    startmusicat = getticks() + 8000
+    end
+  
+  if startmusicat and getticks() > startmusicat then
+    startmusic = true
+    end
+  
+  if startmusic and not musicon() and playeralive then
+    -- print("react to change to level "..(curcoords.level))
+    intutorialmusic = true
+    if curcoords.level == -1 then
+    elseif curcoords.level < 10 then    
+      if tid110 == 1 then tid110 = 4
+      elseif tid110 == 4 then tid110 = 5
+      else tid110 = 1 end
+      playmusicbyname(sounddir.."/music/music-1to10-"..tid110..".oga")
+    elseif curcoords.level == 10 or curcoords.level == 11 or (curcoords.level >= 47 and curcoords.level <= 49) then
+      playmusicbyname(sounddir.."/music/music-47to49.oga")
+    elseif curcoords.level < 50 then
+      playmusicbyname(sounddir.."/music/music-31to46-1.oga")
+    else 
+      playmusicbyname(sounddir.."/music/music-47to49.oga")
+      end
+    end
+  
+  lastcoords = curcoords
+  lastinhydramenu = inhydramenu
+  end
+
+musicbyname = {}
+
+function playmusicbyname(x)
+  if not musicbyname[x] then 
+    musicbyname[x] = loadmusic(x)
+--  print("loaded "..x.." as: "..musicbyname[x])
+    end
+--print("playmusic: "..x)
+  if musicbyname[x] then 
+    musicvolume(volmusic)
+    playmusic(musicbyname[x]) 
     end
   end
 
@@ -1710,11 +1860,37 @@ defaultmodep(modeTiles, 3)
 
 local lnoteyesleep = noteyesleep
   
-function noteyesleep(t)
-  lnoteyesleep(t)
+function swapPlayerAndTwin()
+  local tmp = moveanimations.player
+  moveanimations.player = moveanimations.twin
+  moveanimations.twin = tmp
+
+  tmp = monster_attack_animations.twin
+  monster_attack_animations.twin = monster_attack_animations.player
+  monster_attack_animations.player = tmp
+  end
+
+function readevents()
   hs = hydrasounds()
-  for k,v in pairs(hs) do
-    if v.delay > 0 then
+  local k = 0
+  while hs[k] do 
+    local v = hs[k]
+    k = k+1
+    if v.swap then
+      swapPlayerAndTwin()
+      --local anim = monster_attack_animations["twin"]
+      --monster_attack_animations["twin"] = monster_attack_animations["player"]
+      --monster_attack_animations["player"] = anim
+      --local anim = moveanimations["twin"]
+      --moveanimations["twin"] = moveanimations["player"]
+      --moveanimations["player"] = anim
+    elseif v.hid then
+      monster_attack_animations[v.hid] = {
+        time = getticks(), vector = V(v.dx, v.dy)
+        }
+    elseif v.autoexplore then
+      animateAutoexplore()
+    elseif v.delay > 0 then
       scheduleTask(v.delay, function()
         playsoundfromfile(sounddir.."hydra-new/"..v.sound..".ogg", v.vol)
         end )
@@ -1722,8 +1898,109 @@ function noteyesleep(t)
       playsoundfromfile(sounddir.."hydra-new/"..v.sound..".ogg", v.vol)
       end
     end
+  end
+
+function noteyesleep(t)
+  lnoteyesleep(t)
+  end
+
+function copygamedata()
+  readevents()
   shareupdate()
+  end
+  
+--local luisleep2 = uisleep2
+--function uisleep2()
+--  luisleep2()
+--  end
+
+local nhandlespecialkeys = handlespecialkeys
+function handlespecialkeys(ev)
+  if nhandlespecialkeys(ev) then return true end
+
+  if iskey(ev, KEYS.F10) and ev.type == evKeyDown then     
+    togglealtmode() -- dofile("games/hydra-genach.noe")
+    return true
+
+    end
+
+  if iskey(ev, KEYS.F9) and ev.type == evKeyDown then     
+    dofile("games/hydra-genach.noe")
+    return true
+    end
+
+  if iskey(ev, KEYS.F8) and ev.type == evKeyDown then
+    TileFullmap = V.renewscreen(TileFullmap, realmapsize)
+    V.scrcopy(MAP, V(0,0), TileFullmap, 0, realmapsize, xtile)
+    Img = newimage(tilesize.x * realmapsize.x, tilesize.y * realmapsize.y)
+    for k,v in pairs(tilelayers) do
+      V.drawscreenx(Img, TileFullmap, V(0,0), D.tilesize, getlayerX(v))
+      end
+    saveimage(Img, "bigmap.bmp")
+    print("saving the map")
+    end
+
+  if iskey(ev, KEYS.F7) and ev.type == evKeyDown then
+    TileFullmap = V.renewscreen(TileFullmap, V(60,45))
+    Img = newimage(1920, 1440)
+    for y=0,44 do for x=0,59 do 
+      uu = (x+3*y) % 5
+      floorcolor = 0x805050
+      scrset(TileFullmap,x,y, tilerecolor(WT[10][uu], floorcolor))
+      end end
+    V.drawscreenx(Img, TileFullmap, V(0,0), V(32,32), TMAP_COPY)
+    saveimage(Img, "emptymap.bmp")
+    print("saving the empty map")
+    end
+  
+  if iskey(ev, KEYS.F6) and ev.type == evKeyDown then
+    invoke_trailer()
+    return
+    end
+
+  end
+
+altmode = {tsx=32, tsy=32, mode = modeASCII,  
+  minimode = 0, msx=3, msy=5, minimoved = false,
+  imagebackgrounds = false, hsmousecfg = 0
+  }
+
+function togglealtmode()
+  local am = altmode
+  setaltmode({
+    tsx=tilesize.x, tsy=tilesize.y, 
+    mode=mode, 
+    minimode=minimode, msx=minimapsize.x, msy=minimapsize.y, minimoved = minimoved,
+    imagebackgrounds = imagebackgrounds,
+    mpx = cminipos and cminipos.x or 0, mpy = cminipos and cminipos.y or 0})
+  tilesize.x = am.tsx
+  tilesize.y = am.tsy
+  minimapsize.x = am.msx
+  minimapsize.y = am.msy
+  minimoved = am.minimoved
+  cminipos = {x = am.mpx, y = am.mpy}
+  pickmode(am.mode)
+  pickminimap(am.minimode)
+  altmode.hsmousecfg = hsmousecfg pickinteger("hsmousecfg", am.hsmousecfg)
+  pickbool("imagebackgrounds", am.imagebackgrounds)
+  end
+
+function setaltmode(am)
+  cfgscripts.altmode = function(file)
+    file:write("setaltmode({")
+    for k,v in pairs(am) do 
+      file:write(k.."="..(type(v) == "boolean" and booltf(v) or v)..",") 
+      end
+    file:write("cfg=1})\n")
+    end
+  altmode = am
+  end
+
+menuitems.missilespd.hidden = function() return true end
+
+function stopmusic_lostfocus()
+  stopmusic()
+  lostfocus = true
   end
 
 rungame(cmdline)
-

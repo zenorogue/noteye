@@ -20,7 +20,7 @@ int weapon::cutoff(int heads, bool mode) {
   
   if(type == WT_GOLD) {
     if(heads == 0) return 0; // silver should not return -1 for stunned
-    int fib[30];
+    int fib[60];
     fib[0] = 0; fib[1] = 1; int fc = 2;
     for(; fib[fc-1] <= heads; fc++)
       fib[fc] = fib[fc-2] + fib[fc-1];
@@ -94,8 +94,7 @@ void vorpalCredit() {
       }
     if(hp >= 10) shareS("cut", " "+its(hp)+" heads with the vorpal blade");
     addMessage(msg + " ("+its(vorpalhsf)+" heads = "+its(hp)+" HP)");
-    P.curHP += hp;
-    if(P.curHP > P.maxHP) P.curHP = P.maxHP;
+    removeWounds(hp);
     stats.vorpalhp += hp;
     }
   vorpalClear();
@@ -128,6 +127,33 @@ int mushroomlevel(int k) {
 string mushroomname(int k) {
   string tab[8] = {"Serf", "Lord", "Baron", "Duke", "Prince", "King", "Emperor", "God"};
   return tab[mushroomlevel(k)];
+  }
+
+int getItemForOrb(int c) {
+  int c2 = cinf[c].color;
+  for(int i=0; i<ITEMS; i++) if(i != IT_SXMUT && iinf[i].color == c2) return i;
+  return 0;
+  }
+
+int getOrbForItem(int i) {
+  for(int c=0; c<COLORS; c++) if(cinf[c].color == iinf[i].color) return c;
+  return 0;
+  }
+
+bool activateOrb(weapon *w) {
+  printf("%d -> %d -> %d\n", IT_PAMBI, getOrbForItem(IT_PAMBI), getItemForOrb(getOrbForItem(IT_PAMBI)));
+  bool b = useup(getItemForOrb(w->color), w);
+  if(b) { w->size--; w->sc.sc[WS_USE]++; }
+  return b;
+  }
+
+string weapon::fullname() {
+  string s = name();
+  s += " (";
+  s += type;
+  s += its(size);
+  s += ")";
+  return s;  
   }
 
 string weapon::name() {
@@ -183,8 +209,20 @@ string weapon::name() {
   string cname = info().wname;
   string name;
   
-  if(type == WT_PHASE)
+  if(wpnflags & wfTrap) {
+    if(type == WT_BLADE) name = "blade trap";
+    else if(type == WT_BLUNT) name = "smashing trap";
+    else if(type == WT_DIV) name = "dicing trap";
+    }
+  
+  else if(type == WT_PHASE)
     name = "wand of phase wall";
+
+  else if(type == WT_ORB) {
+    int i = getItemForOrb(color);
+    name = "Orb" + iinf[i].name.substr(6);
+    cname = "";
+    }
 
   else if(type == WT_AXE) {
     if(size < 14) name = axes[size];
@@ -411,23 +449,23 @@ int sizeToVolume(int x) {
   
   if(x > 12) x = 12;
   x = volmin[x];
-  x = x + rand() % 21;
+  x = x + hrand(21);
   return x;
   }
 
 int headsToVolume(int x) {
   int p = powerf(x);
   if(p > 10) p = 10;
-  p = 10 + p * 6 + rand() % 31;
+  p = 10 + p * 6 + hrand(31);
   return p;
   }
 
 int elementDelay() {
-  return 10 + rand() % 50;
+  return 10 + hrand(50);
   }
 
 int hydraDelay() {
-  return 50 + rand() % 100;
+  return 50 + hrand(100);
   }
 
 void playAttackSound(weapon *w, hydra *who, bool tiny = false, int delay = 0) {
@@ -435,9 +473,10 @@ void playAttackSound(weapon *w, hydra *who, bool tiny = false, int delay = 0) {
     int vol = headsToVolume(who->heads - who->sheads);
     int hd = delay + hydraDelay();
     if(who->color == HC_SHADOW)
-      playSound("hydras/hydra-shadow", 3, hd);
+      // make it loud!
+      playSound("hydras/hydra-shadow", 255, hd);
     else if(who->color == HC_VAMPIRE)
-      playSound("hydras/hydra-vampire", vol, hd);
+      playSound("hydras/hydra-vulture", vol, hd);
     else if(who->color == HC_ALIEN)
       playSound("hydras/hydra-alien", vol, hd);
     else if(who->color == HC_GROW)
@@ -465,26 +504,27 @@ void playAttackSound(weapon *w, hydra *who, bool tiny = false, int delay = 0) {
   else if(w->type == WT_MSL) playSound("weapons/shurikenAttack", vol, delay);
   else if(w->type == WT_SPEAR) playSound("weapons/spearAttack-small", vol, delay);
   else if(w->type == WT_STONE) playSound("weapons/stone", vol, delay);
+  else if(w->type == WT_RAND) playSound("weapons/mersenne-twister", vol, delay);
   else if(w->stuns() || w->type == WT_RAND) {
-    if(w->size < 2 + rand() % 4) 
+    if(w->size < 2 + hrand(4)) 
       playSound("weapons/staffAttack-small", vol, delay);
-    else if(w->size < 6 + rand() % 6) 
+    else if(w->size < 6 + hrand(6)) 
       playSound("weapons/staffAttack-medium", vol, delay);
     else
       playSound("weapons/staffAttack-heavy", vol, delay);
     }
   else if(w->axe()) {
-    if(w->size < 2 + rand() % 4) 
+    if(w->size < 2 + hrand(4)) 
       playSound("weapons/axeAttack-small", vol, delay);
-    else if(w->size < 6 + rand() % 6) 
+    else if(w->size < 6 + hrand(6)) 
       playSound("weapons/axeAttack-medium", vol, delay);
     else
       playSound("weapons/axeAttack-heavy", vol, delay);
     }
   else if(w->cuts() || w->xcuts() || w->axe()) {
-    if(w->size < 2 + rand() % 4) 
+    if(w->size < 2 + hrand(4)) 
       playSound("weapons/swordAttack-small", vol, delay);
-    else if(w->size < 6 + rand() % 6) 
+    else if(w->size < 6 + hrand(6)) 
       playSound("weapons/swordAttack-medium", vol, delay);
     else
       playSound("weapons/swordAttack-heavy", vol, delay);
@@ -506,14 +546,18 @@ void playSwitchSound(weapon *w) {
   else if(w->cuts() || w->xcuts()) playSound("weapons/switchToSword", vol);
   else if(w->type == WT_STONE) playSound("weapons/switchToStone", vol);
 
-  playSound(cinf[w->color].soundfile, sizeToVolume(w->size) / 2);
+  // playSound(cinf[w->color].soundfile, sizeToVolume(w->size) / 2);
   }
 
-void cell::attack(weapon *w, int power, hydra *who) {
+void addAnimation(cell *c, int headid, int cutcount, int color);
+
+void cell::attack(weapon *w, int power, sclass *who) {
+
+  hydra *whoh = who ? who->asHydra() : NULL;
   
-  if(h == twin && who) {
+  if(h == twin && whoh) {
     twinswap();
-    hydraAttackPlayer(who, true);
+    hydraAttackPlayer(whoh, true);
     twinswap();
     if(h->heads <= 0) hydraDead(NULL);
     return;
@@ -525,7 +569,7 @@ void cell::attack(weapon *w, int power, hydra *who) {
   if(mushrooms && w->type == WT_TIME) { 
     mushrooms += power;
     w->addStat(WS_MHEAD, power, 0);
-    playAttackSound(w, who, true);
+    playAttackSound(w, whoh, true);
     addMessage("You attack the mushroom!");
     return;
     }
@@ -535,22 +579,32 @@ void cell::attack(weapon *w, int power, hydra *who) {
     w->addStat(WS_MHEAD, power, 0);
     if(mushrooms) addMessage("You attack the mushroom!");
     else addMessage("You cut through the mushroom!"), w->addStat(WS_MKILL, 1, 0);
-    playAttackSound(w, who, true);
+    playAttackSound(w, whoh, true);
     return;
     }
   if(mushrooms && w->xcuts()) {
     int cutcount = w->cutoff(mushrooms, false);
     w->addStat(WS_MHEAD, cutcount, 0);
     mushrooms -= cutcount;
+    
+    if(w->type == WT_GOLD) for(int u=1; u<w->size; u++) {
+      if(w->cutoff(mushrooms, false) >= 0) {
+        int cutcount = w->cutoff(mushrooms, false);
+        w->addStat(WS_MHEAD, cutcount, 0);
+        mushrooms -= cutcount;
+        }
+      }
+
     addMessage("You attack the poor mushroom with your mighty weapon!");
-    playAttackSound(w, who, true);
+    playAttackSound(w, whoh, true);
     return;
     }
   
   int spec = 0;
-  if(who && who->lowhead()) spec = MOT_ETTIN;
-  else if(who && who->zombie) spec = MOT_ZOMBIE;
-  else if(who && who != twin) spec = MOT_HYDRA;
+  if(whoh && whoh->lowhead()) spec = MOT_ETTIN;
+  else if(whoh && whoh->zombie) spec = MOT_ZOMBIE;
+  else if(whoh && whoh != twin) spec = MOT_HYDRA;
+  else if(who == w) spec = MOT_TRAP;
   
   if(h->color == HC_TWIN) stats.twinwounds += h->heads;
   
@@ -578,8 +632,8 @@ void cell::attack(weapon *w, int power, hydra *who) {
   else if(w->cuts()) {
     cutcount = power;
     h->heads -= cutcount; 
-    if(who && who->color == HC_VAMPIRE)
-      who->heads += power, stats.vampire += power;
+    if(whoh && whoh->color == HC_VAMPIRE)
+      whoh->heads += power, stats.vampire += power;
     if(h->sheads > h->heads) {
       w->addStat(WS_HSTUN, h->sheads-h->heads, spec);
       h->cutStunHeads();
@@ -696,31 +750,41 @@ void cell::attack(weapon *w, int power, hydra *who) {
   
   if(h->invisible()) xs = "";
   
+  if(w->color < HCOLORS) {
+    h->dirty &= ~(1<<w->color);
+    if(h->color == w->color) hydraKnowDirty(h);
+    }
+
+  int splashcol = (h->dirty & IS_DIRTY) ? HC_ANCIENT : h->color & HC_DRMASK;
+
   if(w->type == WT_TIME && h->zombie) {
     M[h->pos].mushrooms = h->heads;
     h->heads = 0;
-    addMessage(form(who, "turn") + " the "+origname+" back into mushrooms! " + xs);
-    playAttackSound(w, who);
+    addMessage(form(whoh, "turn") + " the "+origname+" back into mushrooms! " + xs);
+    playAttackSound(w, whoh);
     }
-  else if(who && !(h->aware() || who->aware()))
+  else if(whoh && !(h->aware() || whoh->aware()))
     ;
   else if(h->heads <= 0) {
     addMessage(form(who, "kill") + " the "+origname+"! " + xs);
     if(power > stats.maxambi) stats.maxambi = power;
-    playAttackSound(w, who);
+    playAttackSound(w, whoh);
+    addAnimation(this, splashcol, cutcount, 0);
     }
   else if(h->heads == h->sheads && !isStunned) {
     addMessage(form(who, "completely stun") + " the "+origname+"! "+xs);
-    playAttackSound(w, who);
+    playAttackSound(w, whoh);
     }
   else {
-    addMessage(form(who, w->info().hverb) + " the "+origname+"! "+xs);
-    playAttackSound(w, who);
+    if(who && inWaitMode) ;
+    else {
+      addMessage(form(who, w->info().hverb) + " the "+origname+"! "+xs);
+      playAttackSound(w, whoh);
+      }
+    addAnimation(this, splashcol, cutcount, 0);
     }
   
   if(h->color == HC_TWIN) stats.twinwounds -= h->heads;  
-
-  if(w->color < HCOLORS) h->dirty &= ~(1<<w->color);
 
   if(!h->heads) {
     w->addStat(WS_HKILL, 1, spec);
@@ -729,14 +793,14 @@ void cell::attack(weapon *w, int power, hydra *who) {
     if(h->color == HC_ETTIN && w->cuts() && w->size == 2) achievement("WELLPREPARED");
     if(w->type == WT_VORP)
       vorpalCredit();
-    hydraDead(who);
+    hydraDead(whoh);
     }
 
   else if(h->heads >= COLLAPSE) {
     stats.owncrush++;
     addMessage("The "+h->name()+" collapses under the weight of its own heads!");
     achievement("COLLAPSE");
-    hydraDead(who);
+    hydraDead(whoh);
     }
 
   }
@@ -952,7 +1016,7 @@ int ambiAttack(cell *c, int virt) {
   if(!virt) for(int b=0; b<P.arms; b++) if(havebit(P.ambiArm, b)) {
     wpn[b]->addStat(WS_USE, 1, 0), stats.ambiwpn++;
     attackEffect(wpn[b], target && target->res[wpn[b]->color] < 0);
-    int ambidelay = rand() % 50;
+    int ambidelay = hrand(50);
     if(wpn[b]->type == WT_PREC) ;
     else if(wpn[b]->type == WT_ROOT) ambidelay += 50;
     else if(wpn[b]->xcuts()) ambidelay += 100;
@@ -1094,7 +1158,27 @@ weapon *weapon::reduce() {
     return new weapon(color, size/3, WT_RAIN);
   else if(type == WT_RAND && size >= 2) {
     int pos[5] = { WT_BLADE, WT_MSL, WT_SHLD, WT_DIV, WT_AXE };
-    return new weapon(rand() % HCOLORS, 1 + rand() % (size-1), pos[rand() % 5]);
+    return new weapon(randHCol(), 1 + hrand(size-1), pos[hrand(5)]);
+    }
+  else if(type == WT_ORB && size >= 3) {
+    int it = getItemForOrb(color);
+    if(it == IT_RFUNG) return new weapon(getOrbForItem(IT_RSTUN), size/3, WT_ORB);
+    if(it == IT_RCONF) return new weapon(getOrbForItem(IT_RDEAD), size/3, WT_ORB);
+    if(it == IT_RNECR) return new weapon(getOrbForItem(IT_RSTUN), size/3, WT_ORB);
+
+    if(it == IT_RDEAD) return new weapon(getOrbForItem(IT_RSTUN), size/2, WT_ORB);
+    if(it == IT_RSTUN) return new weapon(getOrbForItem(IT_RDEAD), size/2, WT_ORB);
+
+    if(it == IT_PAMBI) return new weapon(getOrbForItem(IT_RCANC), size/3, WT_ORB);
+    if(it == IT_PSWIP) return new weapon(getOrbForItem(IT_PCHRG), size/3, WT_ORB);
+
+    if(it == IT_RCANC) return new weapon(getOrbForItem(IT_PFAST), size/3, WT_ORB);
+
+    if(it == IT_PFAST) return new weapon(getOrbForItem(IT_RGROW), size/3, WT_ORB);
+    if(it == IT_PCHRG) return new weapon(getOrbForItem(IT_RGROW), size/3, WT_ORB);
+
+    if(it == IT_RGROW) return new weapon(getOrbForItem(IT_RGROW), size/3, WT_ORB);
+    return NULL;
     }
   else return NULL;
   }
@@ -1125,6 +1209,32 @@ void weapon::grow() {
               );
         }
       break;
+    
+    case WT_ORB: {
+      int i = getItemForOrb(color);
+      if(i == IT_RGROW) size += 2;
+      if(i == IT_PFAST || i == IT_PCHRG) size++;
+      int chcount = 0;
+      if(i == IT_RSTUN || i == IT_RDEAD) chcount = 3;
+      if(i == IT_RFUNG || i == IT_RNECR || i == IT_RCONF) chcount = 5;
+      if(i == IT_PAMBI || i == IT_PSWIP) chcount = 2;
+      if(chcount) {
+        P.orbcharge++;
+        if(P.orbcharge == chcount-1) {
+          addMessage("The "+lname+" requires one more charge to recharge!");
+          size--;
+          break;
+          }
+        else if(P.orbcharge < chcount) {
+          addMessage("The "+lname+" requires "+its(chcount-P.orbcharge)+" more charges to recharge!");
+          size--;
+          break;
+          }
+        else P.orbcharge = 0;
+        }
+      addMessage("The "+lname+" glows with new power!");
+      break;
+      }
     
     case WT_DECO:
       size += 4; // 5 in total
@@ -1257,9 +1367,32 @@ bool transmute(weapon *w) {
   wpnset++;
   if(w->type == WT_GOLD) {
     addMessage("The "+lname+" glows blindingly and changes both its color and shape!");
+    playSound("../hydra-old/rune", sizeToVolume(w->size), 0);
     w->color = 13 - w->color;
     return true;
     }
+  if(w->type == WT_ORB) {
+    int i1 = getItemForOrb(w->color);
+    int i2 = i1;
+    if(i1 == IT_RSTUN) i2 = IT_RDEAD;
+    if(i1 == IT_RDEAD) i2 = IT_RSTUN;
+    if(i1 == IT_PCHRG) i2 = IT_PFAST;
+    if(i1 == IT_PFAST) i2 = IT_PCHRG;
+    if(i1 == IT_RCANC) i2 = IT_RGROW;
+    if(i1 == IT_RGROW) i2 = IT_RCANC;
+    if(i1 == IT_RCONF) i2 = IT_RNECR;
+    if(i1 == IT_RNECR) i2 = IT_RFUNG;
+    if(i1 == IT_RFUNG) i2 = IT_RCONF;
+    if(i1 == IT_PSWIP) i2 = IT_PAMBI;
+    if(i1 == IT_PAMBI) i2 = IT_PSWIP;
+    if(i1 == i2) return false;
+    addMessage("The "+lname+" glows!");
+    playSound("../hydra-old/rune", 50, 0);
+    w->color = getOrbForItem(i2);
+    if(i2 == IT_RCANC) w->size = w->size * 3/10;
+    if(i1 == IT_RCANC) w->size = w->size * 10/3;
+    return true;
+    }    
   /* if(w->type == WT_VORP) {
     addMessage("The transmutation causes the "+lname+" to lose its accumulated power!");
     vorpalClear();
@@ -1276,17 +1409,17 @@ bool transmute(weapon *w) {
   return true;
   }
 
-bool encode(int heads, int sheads, int& code) {
+int encode(int heads, int sheads, int& code) {
   if(heads < AMAX) {
     code = heads + sheads * AMAX + AMAXS;
-    return true;
+    return 2;
     }
   else if(heads < AMAXS) {
     code = heads;
-    return sheads == 0;
+    return sheads == 0 ? 2 : 1;
     }
   code = 0;
-  return false;
+  return 0;
   }
 
 bool decode(int& heads, int& sheads, int code) {
@@ -1349,7 +1482,7 @@ struct hydraAnalyzer {
   
   void addEdge(int y, int hd, int sh, int w) {
     int y2;
-    if(encode(hd, sh, y2)) {
+    if(encode(hd, sh, y2) > 0) {
       int i = size(cf);
       cfrom c; c.from = y; c.wpn = w; c.next = lcf[y2];
       cf.push_back(c);
@@ -1652,6 +1785,8 @@ void ambiAttackFull(cell *c, decomposer& D) {
     if(ambiAttack(c, 0)) {
       if(P.active[IT_PFAST]) {
         P.active[IT_PFAST]--;
+        playSound("potion/potion-extreme-speed", 100, 0);
+
         P.twinspd--;
         }
       else moveHydras();
@@ -1695,7 +1830,7 @@ bool tryBow(int dir, bool justLine) {
     if(apos == opos) {
       if(justLine) return true;
       addMessage("You shoot yourself!");
-      P.curHP -= thc;
+      takeWounds(thc);
       w->addStat(WS_HKILL, thc, 0);
       return true;
       }
@@ -1720,6 +1855,7 @@ bool tryBow(int dir, bool justLine) {
     if(xc.h && !justLine) {
       if(xc.h->dodger()) {
         addMessage("The "+xc.h->name()+" is able to dodge arrows!");
+        playSound("weapons/bowAttack-miss", sizeToVolume(thc), 0);
         }
       else {
         if(xc.h && xc.h->invisible()) continue;
@@ -1762,15 +1898,16 @@ bool tryBow(int dir, bool justLine) {
 bool tryLineAttack(int dir, bool doFire, bool justLine) {
 
   if(!wpn[P.cArm]) return false;
+  weapon *wpnUsed = wpn[P.cArm];
   
-  bool missile = wpn[P.cArm]->msl() && doFire;
-  bool charge =  wpn[P.cArm]->cuts() &&
-    P.active[IT_PCHRG] && !missile && !wpn[P.cArm]->axe();
+  bool missile = wpnUsed->msl() && doFire;
+  bool charge =  wpnUsed->cuts() &&
+    P.active[IT_PCHRG] && !missile && !wpnUsed->axe();
 
-  if(missile && wpn[P.cArm]->type == WT_BOW) {
+  if(missile && wpnUsed->type == WT_BOW) {
     if(tryBow(dir, justLine)) {
       if(justLine) return true;
-      wpn[P.cArm]->sc.sc[WS_USE]++;
+      wpnUsed->sc.sc[WS_USE]++;
       cancelspeed();
       }
     return true;
@@ -1778,12 +1915,12 @@ bool tryLineAttack(int dir, bool doFire, bool justLine) {
   
   if(!missile && !charge) return false;
   
-  int thc = wpn[P.cArm]->size;
+  int thc = wpnUsed->size;
   int dist = 0;
   
-  if(wpn[P.cArm]->type == WT_STONE) thc *= thc;
+  if(wpnUsed->type == WT_STONE) thc *= thc;
   
-  bool multi = charge || wpn[P.cArm]->type == WT_MSL;
+  bool multi = charge || wpnUsed->type == WT_MSL;
   
   // we reuse dist to mark places already visited by the line attack
   for(int y=0; y<SY; y++) for(int x=0; x<SX; x++)
@@ -1792,7 +1929,7 @@ bool tryLineAttack(int dir, bool doFire, bool justLine) {
   
   while(true) {
     dist++; vec2 apos = wrap(playerpos + dirs[dir] * dist);
-    if(wpn[P.cArm]->type == WT_DISK) thc = wpn[P.cArm]->size * dist;
+    if(wpnUsed->type == WT_DISK) thc = wpnUsed->size * dist;
     cell& xc(M[apos]);
     M[apos].ontarget = true;
     if(dist == SX*SY*DIRS) return false; // looping charges are not allowed
@@ -1800,8 +1937,8 @@ bool tryLineAttack(int dir, bool doFire, bool justLine) {
     if(xc.type == CT_WALL || (multi ? !xc.explored : !xc.seen)) {
       if(charge || justLine) return false;
       addMessage(thc > 0 ? 
-        "You don't see enough heads in this direction to throw the "+wpn[P.cArm]->name()+"." :
-        "Noooo, the "+wpn[P.cArm]->name()+" would fall on something else!"
+        "You don't see enough heads in this direction to throw the "+wpnUsed->name()+"." :
+        "Noooo, the "+wpnUsed->name()+" would fall on something else!"
         );
       return true;
       }
@@ -1810,12 +1947,12 @@ bool tryLineAttack(int dir, bool doFire, bool justLine) {
       }
     else {
       if(xc.dist == 0) {
-        int hd = xc.seen ? xc.headsAt(wpn[P.cArm]) : xc.mushrooms;
+        int hd = xc.seen ? xc.headsAt(wpnUsed) : xc.mushrooms;
         if(xc.h && xc.h->invisible()) hd = 0; // invisible, so not counted
         thc -= hd;
         if(hd > 0 && thc > 0 && !multi) {
           if(!justLine)
-            addMessage("Not enough heads there to throw the "+wpn[P.cArm]->name()+"!");
+            addMessage("Not enough heads there to throw the "+wpnUsed->name()+"!");
           return true;
           }
         xc.dist = 1;
@@ -1829,31 +1966,31 @@ bool tryLineAttack(int dir, bool doFire, bool justLine) {
   if(charge)
     addMessage("You charge!");
   else
-    addMessage("You throw the "+wpn[P.cArm]->name()+".");
+    addMessage("You throw the "+wpnUsed->name()+".");
 
-  thc = wpn[P.cArm]->size;
-  if(wpn[P.cArm]->type == WT_STONE) thc *= thc;
+  thc = wpnUsed->size;
+  if(wpnUsed->type == WT_STONE) thc *= thc;
   
   int destroy = 0;
   int damage = 0;
   int musha = 0, beast = 0, mushb = 0;
   dist = 0;
   
-  wpn[P.cArm]->addStat(WS_USE, 1, 0);
+  wpnUsed->addStat(WS_USE, 1, 0);
 
   while(true) {
     dist++; vec2 apos = wrap(playerpos + dirs[dir] * dist);
-    if(wpn[P.cArm]->type == WT_DISK) thc = wpn[P.cArm]->size * dist;
+    if(wpnUsed->type == WT_DISK) thc = wpnUsed->size * dist;
     cell& xc(M[apos]);
     int hc;
     if(thc)
-    if((hc = xc.headsAt(wpn[P.cArm])))
+    if((hc = xc.headsAt(wpnUsed)))
     if(!xc.h || !xc.h->dodger() || charge) {
       if(xc.h) { beast++; if(mushb) musha++; } else if(beast) mushb++; else musha++;
       if(hc <= thc) {
         destroy++;
         if(xc.h && !xc.seen) stats.invisible++;
-        xc.attack(wpn[P.cArm], hc, NULL), thc -= hc;
+        xc.attack(wpnUsed, hc, NULL), thc -= hc;
         if(thc == 0 && charge) {
           playerpos = playerpos + dirs[dir] * dist;
           break;
@@ -1862,7 +1999,7 @@ bool tryLineAttack(int dir, bool doFire, bool justLine) {
       else {
         damage++;
         if(xc.h) xc.h->increaseAwareness();
-        xc.attack(wpn[P.cArm], thc, NULL), thc = 0;
+        xc.attack(wpnUsed, thc, NULL), thc = 0;
         if(charge) {
           if(xc.h) {
             stats.stunchrg += xc.h->heads - xc.h->sheads;
@@ -1877,15 +2014,15 @@ bool tryLineAttack(int dir, bool doFire, bool justLine) {
         }
       }
     if(missile && xc.dist == 2) {
-      P.curHP -= thc;
+      takeWounds(thc);
       if(thc) {
-        addMessage("The "+wpn[P.cArm]->name()+" returns and hits you!"),
+        addMessage("The "+wpnUsed->name()+" returns and hits you!"),
         stats.mslselfdam += thc, stats.mslself++;
-        if(P.curHP <= 0) shareFixed("commited suicide with the "+wpn[P.cArm]->name());
-        if(P.curHP < 0) achievement("SUICIDE");
+        if(P.curHP <= 0) shareFixed("commited suicide with the "+wpnUsed->name());
+        if(P.curHP <= 0) achievement("SUICIDE");
         }
       else {
-        addMessage("The "+wpn[P.cArm]->name()+" lands gently back in your hand."),
+        addMessage("The "+wpnUsed->name()+" lands gently back in your hand."),
         stats.mslgent++;
         achievement("BOOMERANG");
         }
@@ -1893,7 +2030,7 @@ bool tryLineAttack(int dir, bool doFire, bool justLine) {
       }
     if(thc == 0 && !xc.it) {
       if(missile) {
-        xc.it = wpn[P.cArm], wpn[P.cArm] = NULL;
+        xc.it = wpnUsed, wpn[P.cArm] = NULL;
         }
       break;
       }
@@ -1907,13 +2044,14 @@ bool tryLineAttack(int dir, bool doFire, bool justLine) {
     if(beast && mushb) stats.mixfungb++;
     if(beast > stats.maxmsl) stats.maxmsl = beast;
     if(beast >= 11) achievement("LONGTHROW");
-    if(beast >= 3) shareFixed("killed "+its(beast)+" enemies at once with the "+wpn[P.cArm]->name());
+    if(beast >= 3) shareFixed("killed "+its(beast)+" enemies at once with the "+wpnUsed->name());
     }
   else {
     P.active[IT_PCHRG]--;
+    playSound("potion/potion-weaponcharge-attack", 100);
     if(beast > stats.maxchrg) stats.maxchrg = beast;
     if(beast >= 11) achievement("LONGCHARGE");
-    if(beast >= 3) shareFixed("charged at "+its(beast)+" enemies at once with the "+wpn[P.cArm]->name());
+    if(beast >= 3) shareFixed("charged at "+its(beast)+" enemies at once with the "+wpnUsed->name());
     }
   cancelspeed();
   return true;
@@ -1930,7 +2068,10 @@ bool tryWandUse(weapon *w, int dir, bool justLine) {
     addMessage("Safety checks on the "+wpn[P.cArm]->name()+" prevent you from using it!");
     return false;
     }
-  if(!justLine) addMessage("You phase through a wall!");
+  if(!justLine) {
+    addMessage("You phase through a wall!");
+    playSound("other/teleport", 100, 0);
+    }
   vec2 pos = playerpos;
   while(true) {
     vec2 pos2 = pos + dirs[dir];
@@ -1970,6 +2111,7 @@ bool tryWandUse(weapon *w, int dir, bool justLine) {
     c.explored = true;
     if(c.h && c.h->isAncient()) {
       addMessage("You feel reflected by an ancient force!");
+      playSound("other/reflectedByAncientForce", 100, 0);
       dir = (dir+4) & 7;
       continue;
       }
@@ -2062,14 +2204,22 @@ string weapon::describe() {
   
   bool showmat = true;
 
-  if(!stuns() && !doubles() && !wand() && color != HC_OBSID) dx = 
+  if(wpnflags & wfTrap) dx += 
+    "You are not sure whether these traps have been placed by giants to scare the "
+    "slayers away, or by the slayers to help with fighting hydras. "
+    "Anyway, when a hydra (or you) steps into a trap, it is attacked with a specific "
+    "powerful attack (or missed, if the attack cannot hurt the given hydra). "
+    "Then, the trap disappears, whether it hits or misses. "
+    "Hydras tend to intuitively avoid traps, unless they can smell their prey, and "
+    "they are pursuing it.\n\n";
+
+  if(!stuns() && !doubles() && !wand() && !orb() && color != HC_OBSID) dx += 
     "Hydras usually regrow heads after your attack; the number of heads "
     "regrown depends on the sword's color, and can be seen next to the "
     "hydra on the right side of the screen (for currently selected sword) "
     "or on the 'f' screen (for all types of swords). ";
-
-  if(msl())
-    dx += 
+    
+  if(msl()) dx += 
       "There are two ways to use a missile weapon: 1) just select it and "
       "press one of the "+its(DIRS)+" directions to fire, 2) select it and press 't'"
       "(and then a direction). You can change which one you prefer by "
@@ -2104,7 +2254,7 @@ string weapon::describe() {
       }
     else 
       s = "A magical sword is a hydra slayer's main weapon. This one can "
-        "cut "+namenum(size)+" heads in a single attack. It cannot cut less, "
+        "cut "+namenum(size)+" heads in a single attack. It cannot cut fewer, "
         "so you will need to use something else against smaller hydras.";
     }
   
@@ -2114,7 +2264,7 @@ string weapon::describe() {
       "a long time, which is sometimes very helpful in the art of hydra "
       "slaying. On a good side, it never causes a hydra to regrow heads.";
     if(size > 1)
-      s += " This one can stun "+namenum(size)+" heads in one hit (and no less).";
+      s += " This one can stun "+namenum(size)+" heads in one hit (and no fewer).";
     }
   
   if(type == WT_DIV) {
@@ -2153,7 +2303,7 @@ string weapon::describe() {
         "you from some kind of attack.";
     else
       s = "Many hydra slayers carry shields for protection; if you carry "
-        "this one, it will makes "+namenum(size)+" attacking heads count as "
+        "this one, it will make "+namenum(size)+" attacking heads count as "
         "one unprotected. It also provides some extra elemental protection "
         "from attacks of one or two specific types of hydras. Shields also "
         "can be used to bash hydras to stun them, but most shields are not "
@@ -2244,8 +2394,11 @@ string weapon::describe() {
     s = "This artifact is similar to a divisor sword, but a bit different; "
       "you feel there is some magic which makes it work a bit like many "
       "normal divisor swords at once. However, you feel that this magic is "
-      "limited; you suppose it becomes an usual divisor sword after it is "
-      "depleted.";
+      "limited...\n"
+      "Decomposer finds the smallest number that the number of heads of the given "
+      "hydra is disible by (except 1), and works as such a divisor. After its last "
+      "charge is drained, it permanently becomes the divisor which it was in its "
+      "last attack. Does not work on primes.";
     }
 
   if(type == WT_QUAKE) {
@@ -2268,11 +2421,10 @@ string weapon::describe() {
       "a nasty number of heads which cannot be affected by any divisor, or "
       "even by most of the legendary artifacts. The legendary Primeslayer "
       "is an artifact which has been designed precisely to fight such "
-      "hydras; it has no power otherwise. Unfortunately, it has its limits, "
-      "and it cannot work on really large hydras.";
+      "hydras; it has no power otherwise.";
 
     if(size)
-    s += "\nIt also has been additionally enchanted to also provide some "
+    s += "\nIt has been additionally enchanted to also provide some "
       "stunning.";
     }
   
@@ -2309,7 +2461,7 @@ string weapon::describe() {
       "That thing is really beautiful, you know many noble ladies "
       "who would love to have something like this for decoration. "
       "However, as a simple hydra slayer, you don't really care about "
-      "that. You know another use of it: stunning hydras from afar!\n"
+      "that. You know another use for it: stunning hydras from afar!\n"
       "There is one special thing about ranged stunning weapons: "
       "The number of stunned heads is not proportional to its size, "
       "but to its square.";
@@ -2321,7 +2473,7 @@ string weapon::describe() {
       "It has different properties than thrown knives and shurikens, "
       "though. It is impossible to attack several enemies in a row. "
       "However, it has a special magical enchantment which makes it "
-      "cut much many more heads, precisely, the product of the "
+      "cut many more heads, precisely, the product of the "
       "chakram's size and the distance it travelled before hitting "
       "the hydra.";
     }
@@ -2340,6 +2492,17 @@ string weapon::describe() {
       "to protect you from being killed as a result. Of course, the obstacle "
       "does not receive such protection and is destroyed. Really powerful "
       "hydras are protected from such an attack though.";
+    
+    showmat = false;
+    }
+
+  if(type == WT_ORB) {
+    s =
+      "This Orb can be used to repeatedly invoke the power of a given powder or "
+      "potion. The downsides are that it can be only used a limited number of "
+      "times, and that it is quite big, and thus it takes up a weapon slot.\n"
+      "Orbs are activated by hitting a wall or hydra, or by pressing 't' (throw)."
+      "Just as items, they cannot be picked up by Titans.";
     
     showmat = false;
     }
@@ -2552,7 +2715,7 @@ void mersenneTwist(weapon *w, hydra *h) {
   int bsm = WMAX + 10, bbi = WMAX + 10, vsm = 0, vbi = 0, spos;
   
   for(int i=0; i<w->size; i++) {
-    int v = 1 + rand() % limit;    
+    int v = 1 + hrand(limit);
     encode(h->heads - v, h->sheads, spos);
     if(wnd[spos] < bsm) bsm = wnd[spos], vsm = v;
 
@@ -2562,7 +2725,7 @@ void mersenneTwist(weapon *w, hydra *h) {
   
   addMessage("Your weapon twists the "+h->name()+"!");
   
-  if(rand() % (vsm + vbi) < vbi) {
+  if(hrand(vsm + vbi) < vbi) {
     h->heads -= vsm;
     w->addStat(h->color == HC_MUSH ? WS_MHEAD : WS_HHEAD, vsm, 0);
     }
@@ -2619,6 +2782,6 @@ void weaponMessage(weapon *w) {
   char typ = w->type;
   if(typ == WT_FUNG || typ == WT_DANCE || typ == WT_VORP || typ == WT_LOG || typ == WT_DECO ||
     typ == WT_PREC || typ == WT_PSLAY || typ == WT_PHASE || typ == WT_GOLD || typ == WT_SUBD ||
-    typ == WT_SPEED || typ == WT_QUI)
+    typ == WT_SPEED || typ == WT_QUI || typ == WT_ORB)
     shareS("find", " the "+w->name());
   }

@@ -40,11 +40,13 @@ int lh_newfont(lua_State *L) {
 
 int lh_getchar(lua_State *L) {
   checkArg(L, 2, "getchar");
+  luamapstate = L;
   return noteye_retInt(L, luaO(1, Font)->gettile(luaStr(2)));
   }
 
 int lh_getcharav(lua_State *L) {
   checkArg(L, 2, "getcharav");
+  luamapstate = L;
   return noteye_retInt(L, luaO(1, Font)->gettile(luaInt(2)));
   }
 #endif
@@ -359,14 +361,14 @@ int DynamicFont::gettile(int i) {
   if(ti.count(i)) return ti[i];
   myuchar uc = utf8_encode_array(i);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-  lua_pushstring(L, (char*) &uc);
-  if (lua_pcall(L, 1, 1, 0) != 0) {
-    noteyeError(16, "error running dynamicfont", lua_tostring(L, -1));
+  lua_rawgeti(luamapstate, LUA_REGISTRYINDEX, ref);
+  lua_pushstring(luamapstate, (char*) &uc);
+  if (lua_pcall(luamapstate, 1, 1, 0) != 0) {
+    noteyeError(16, "error running dynamicfont", lua_tostring(luamapstate, -1));
     return 0;
     }
-  int res = noteye_argInt(L, -1);
-  lua_pop(L, 1);
+  int res = noteye_argInt(luamapstate, -1);
+  lua_pop(luamapstate, 1);
   
   ti[i] = res;
   return res;

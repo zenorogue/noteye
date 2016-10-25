@@ -18,6 +18,11 @@ struct wpnscore {
   wpnscore() { for(int i=0; i<7; i++) sc[i] = 0; }
   };
 
+struct challengedata {
+  int32_t wounds[CLEVELS];      // wounds per level
+  int32_t itcost[CLEVELS];      // item cost per level
+  };
+
 struct statstruct {
   mytime_t tstart;     // real time of game start
   int32_t wounds;      // total wounds
@@ -143,8 +148,12 @@ struct statstruct {
   int32_t autoatt;       // attacks suggested
   int32_t autokill;      // kills on auto-attack
   int32_t alienkill;     // alien hydra kills
+  
+  int32_t savecheck;     // saved consistency check value
+  
+  int32_t waitturns;     // turns of rest
 
-  int32_t reserve[29];   // space reserved for new stats in new versions of Hydra Slayer
+  int32_t reserve[27];   // space reserved for new stats in new versions of Hydra Slayer
   };
 
 struct pstruct {
@@ -187,36 +196,54 @@ struct pstruct {
 
   int32_t geometry;    // number of movement directions: 4, 6, or 8  
   int32_t vorpalc;     // heads cut by vorpal so far
-  int32_t reserve[8];  // reserved for future
+
+  char orbcharge, res1, res2, res3; // how many times an Orb has been partially charged
+
+  int32_t oldversion;  // version when the game was started
+  int32_t reserve[6];  // reserved for future
   };
 #pragma pack(pop)
 
-#define dfDebug        1 // debugging mode
-#define dfSeeAll       2 // see all cheat
-#define dfAutoAttack   4 // auto attack mode
-#define dfBackups      8 // backups allowed
-#define dfTutorial    16 // we are playing the tutorial
-#define dfAutoON      32 // auto attack mode is actually on
-#define dfShadowAware 64 // are we aware of the shadow hydra
+#define dfDebug            1 // debugging mode
+#define dfSeeAll           2 // see all cheat
+#define dfAutoAttack       4 // auto attack mode
+#define dfBackups          8 // backups allowed
+#define dfTutorial        16 // we are playing the tutorial
+#define dfAutoON          32 // auto attack mode is actually on
+#define dfShadowAware     64 // are we aware of the shadow hydra
+#define dfCleanup        128 // not really killing hydras
+#define dfChallenge      256 // challenge game
+#define dfRaceSeeded     512 // race/geometry depending on the set
+#define dfDaily         1024 // daily challenge
+#define dfFree          2048 // a free version has been used
+#define dfSteam         4096 // a Steam version has been used
+#define dfSaveEdit      8192 // savefile tampering detected
+#define dfMemEdit      16384 // memory tampering detected
+#define dfConsist      32768 // consistency check
+#define dfDailyAgain   65536 // daily again
+#define dfScoreFromSteam 131072 // score received from Steam
 
-// the game is not valid for scoring if one of these is activated
-#define dfsInvalid     (1|4|8|16)
+
+// the game is not valid for (normal) scoring if one of these is activated
+#define dfsInvalid     (1|16|128|256)
 
 struct playerinfo {
   statstruct stats;
   pstruct player;
   string charname;
   string username;
-  string twin[2];           // twin names
-  bool curgame;             // this is the current game
-  vector<struct weapon*> whist; // weapon history
-  vector<int32_t> whistAt;      // weapon history: where was it dropped
-  vector<struct weapon*> trollwpn;     // troll weaponry
-  vector<int32_t> trollkey;     // troll weapon hotkeys
-  bool reserve;             // more reserve
+  string twin[2];                  // twin names
+  bool curgame;                    // this is the current game
+  vector<struct weapon*> whist;    // weapon history
+  vector<int32_t> whistAt;         // weapon history: where was it dropped
+  vector<struct weapon*> trollwpn; // troll weaponry
+  vector<int32_t> trollkey;        // troll weapon hotkeys
+  bool reserve;                    // more reserve
+  challengedata cdata;             // data for the challenge
   };
 
 playerinfo pinfo;
+bool fixedseed = false;
 
 // abbreviations
 statstruct& stats(pinfo.stats);
@@ -233,6 +260,7 @@ struct sclass {
   void put();
   void putOn(vec2 v);  
   virtual string name() { return "sclass"; }
+  virtual string fullname() { return name(); }
   virtual void csave();
   virtual void cload() = 0;
   virtual struct item* asItem() { return NULL; }
@@ -240,8 +268,10 @@ struct sclass {
   virtual struct hydra* asHydra() { return NULL; }
   virtual string describe() { return "sclass"; }
   virtual int gcolor() { return 8; }
-  virtual char icon() { return '?'; }
-  virtual void draw() { col(gcolor()); 
+  virtual int icon() { return '?'; }
+  virtual int iconExtended() { return icon(); }
+  virtual void draw() { 
+    col(gcolor()); 
     addch(icon());
     }
   virtual string getname() { return "the " + name(); }
@@ -261,7 +291,7 @@ struct item : sclass {
   string name() { return iinf[type].name; }
   string getname();
   void draw() { col(gcolor()); addch(icon()); }
-  char icon() { return iinf[type].icon; }
+  int icon() { return iinf[type].icon; }
   void csave();
   void cload();
   string describe();
@@ -300,6 +330,7 @@ void twinswap();
 #define WT_RAIN  'X'
 #define WT_RAND  '?'
 #define WT_QUI   ':'
+#define WT_ORB   'i'
 
 #define WS_USE   0
 #define WS_HHEAD 1
@@ -309,7 +340,7 @@ void twinswap();
 #define WS_MKILL 5
 #define WS_HSTUN 6
 
-#define MOT 30
+#define MOT 31
 #define MOT_BLADE  0
 #define MOT_OBSID  1
 #define MOT_BLUNT  2
@@ -340,6 +371,7 @@ void twinswap();
 #define MOT_RANDOM 27
 #define MOT_TIME   28
 #define MOT_RAIN   29
+#define MOT_TRAP   30
 
 string typenames[MOT] = { 
   "normal blade", "meteorite blade", "blunt weapon", "divisor", "eradicator", "missile", "shield",
@@ -347,8 +379,10 @@ string typenames[MOT] = {
   "decomposer", "logblade", "pickaxe", "primeslayer", "bow", "vorpal", 
   "axe", "stone", "blade disk", "spear", "phasewall",
   "golden sector", "silver sector", "sub-divisor",
-  "Mersenne twister", "timeblade", "rainbow blade"
+  "Mersenne twister", "timeblade", "rainbow blade", "trap"
   };
+
+#define wfTrap 1
 
 struct weapon : sclass {
   int32_t color;
@@ -359,13 +393,16 @@ struct weapon : sclass {
   int32_t ocolor, osize; // original data
   
   wpnscore sc;  // weaponscore
+  int wpnflags; // weapon flags, such as 'trap'
   
   string name();
+  string fullname();
   int sct() { return SCT_WPN; }
   virtual struct weapon* asWpn() { return this; }
 
   weapon(int _c, int _s, int _t) { 
     color = ocolor = _c; size = osize = _s; type = _t; level = P.curlevel;
+    wpnflags = 0;
     }
 
   int getMot() {
@@ -411,7 +448,9 @@ struct weapon : sclass {
   colorInfo& info() { return cinf[color]; }
   int gcolor() { return info().color; }
   string describe();
-  char icon() {
+
+  int icon() {
+    if(wpnflags & wfTrap) return ('^');
     if(type == WT_BLADE) return ('(');
     else if(type == WT_DANCE) return ('{');
     else if(type == WT_TIME) return ('{');
@@ -419,7 +458,7 @@ struct weapon : sclass {
     else if(type == WT_VORP)  return ('{');
     else if(type == WT_BLUNT) return (')');
     else if(type == WT_FUNG) return ('|');
-    else if(type == WT_PICK) return ('^');
+    else if(type == WT_PICK) return ('y');
     else if(type == WT_MSL) return ('*');
     else if(type == WT_SHLD) return (']');
     else if(type == WT_ROOT) return squareRootSign();
@@ -436,9 +475,26 @@ struct weapon : sclass {
     else if(type == WT_SPEAR) return ('+');
     else if(type == WT_AXE) return (';');
     else if(type == WT_QUI) return ('}');
-    else if(type == WT_PHASE || type == WT_SPEED) return ('-');
+    else if(type == WT_PHASE || type == WT_SPEED || type == WT_ORB) return ('-');
     else return ('/');
     }
+
+  int iconExtended() {
+    if(wpnflags & wfTrap) {
+      if(type == WT_BLADE) return 'g';
+      if(type == WT_DIV) return 'h';
+      if(type == WT_BLUNT) return 'i';
+      }
+    if(type == WT_BLADE && size == 2) return 'a';
+    if(type == WT_BLADE && size == 1) return 'b';
+    if(type == WT_DIV   && size == 0) return 'c';
+    if(type == WT_VORP  && size >= 0) return 'd';
+    if(type == WT_BLADE && size >= 100) return 'e';
+    if(type == WT_GOLD) return 'f';
+    return icon();
+    }
+  
+  weapon *asTrap() { wpnflags |= wfTrap; return this; }
     
   void grow();
   
@@ -453,6 +509,10 @@ struct weapon : sclass {
   bool wand() {
     return
       type == WT_PHASE;
+    }
+  bool orb() {
+    return
+      type == WT_ORB;
     }
   bool cuts() { 
     return 
@@ -530,9 +590,9 @@ void vorpalRegenerate();
 //============================
 
 int randRegrow(int maxval, bool strong) {
-  int glim = rand() % maxval;
+  int glim = hrand(maxval);
   if(strong) glim = (glim + maxval) / 2;
-  int maxlim = 13 + rand() % 4;
+  int maxlim = 13 + hrand(4);
   if(glim <= maxlim) return glim;
   return maxlim;
   }
@@ -628,7 +688,7 @@ struct hydra : sclass {
   bool isTwin() { return color == HC_TWIN; }
   int gcolor() { return (dirty & IS_DIRTY ? 4 : info().color); }
 
-  char icon() {
+  int icon() {
     if(color == HC_TWIN) return '@';
     else if(color == HC_SHADOW) return ' ';
     else return hydraicon(heads);
@@ -637,7 +697,7 @@ struct hydra : sclass {
   int power() { return powerf(heads-sheads); }
 
   void cutStunHeads() {
-    stunforce = ((stunforce+sheads-1) / sheads) * heads;
+    stunforce = (heads * (long long) stunforce) / sheads;
     sheads = heads;
     }    
 
@@ -667,7 +727,8 @@ struct shieldinfo {
 shieldinfo SI;
 
 bool nagavulnerable; // naga is after its first move
-bool shadowAware;    // are we aware of existence of a shadow hydra
+// bool shadowAware;    // are we aware of existence of a shadow hydra
+int shadowwarning;   // switch colors on shadow
 
 vector<hydra*> stairqueue;
 hydra *twin;
@@ -689,6 +750,10 @@ void tryStealing(hydra *H, bool postmove);
 #define CT_STAIRDOWN 3
 #define CT_HEXOUT 4
 
+#ifdef NOTEYE
+struct animinfo;
+#endif
+
 struct cell {
   int type;
   int mushrooms;
@@ -698,11 +763,14 @@ struct cell {
   bool seen;
   bool explored;
   bool ontarget;
-  vec2 pos;
+  // vec2 pos;
   int dist;   // distance from the player
   signed char govia; // direction the player should take to go there
   bool isEmpty() { return !type && !mushrooms && !it && !h; }
   bool isPassable(bool canCutMushrooms = false);
+#ifdef NOTEYE
+  vector<animinfo> animations;
+#endif
   void clear() { 
     type = CT_EMPTY; mushrooms = 0; dead = 0; 
     if(it) {
@@ -731,7 +799,8 @@ struct cell {
     if(h) return h->heads;
     return mushrooms;
     }
-  void attack(weapon* x, int power, hydra *who); // who = who attacks
+  weapon *trapped() { if(!it) return NULL; weapon *w = it->asWpn(); if(w && (w->wpnflags & wfTrap)) return w; return NULL; }
+  void attack(weapon* x, int power, sclass *who); // who = who attacks
   void hydraDead(hydra *killer);
   };
 
@@ -773,10 +842,14 @@ hydra *stunnedHydra; // stunned Hydra, to animate stun
 int stunnedColor;    // color of stun-stars
 int animframe;       // animation frame
 bool exploreOn;      // is the auto-explore currently switched on
+bool exploreWithDestination; // is the auto-explore trying to reach some destination
+vec2 exploreDestination;     // .. and this destination
+
+
 
 vector<string> msgs;
 void addMessage(string s);
-void viewMultiLine(string s, int& cy);
+void viewMultiLine(string s, int& cy, int narrow = 0);
 void viewHelp();
 int ghch(int context);
 bool yesno(int context);
@@ -827,6 +900,7 @@ bool quitgame = false;  // should we quit
 #define IC_CALL      25 // call debug
 #define IC_MYESNO    26 // yes/no question in menu
 #define IC_CHEATMENU 27 // cheat menu
-#define IC_VIEWACH   28 // cheat menu
+#define IC_VIEWACH   28 // view achievements
+#define IC_CHALLENGE 29 // challenge menu
 
 bool gameExists;        // has the game been generated?

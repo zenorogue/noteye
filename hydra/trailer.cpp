@@ -23,7 +23,7 @@ void clearItems() {
   }
   
 void central() {
-  playerpos = vec2(SX/4 + rand() % SX/2, SY/4 + rand() % SY/2);
+  playerpos = vec2(SX/4 + hrand(SX/2), SY/4 + hrand(SY/2));
   }
 
 int sceneid = 0;
@@ -35,14 +35,14 @@ void place(hydra *h, vec2 v) {
   }
 
 int rmush() {
-  if(rand() % 5 == 0) return rand() % 10;
+  if(hrand(5) == 0) return hrand(10);
   return 0;
   }
 
 void placeAtDistance(hydra *h, int d) {
-  vec2 dx(d, rand() % (2*d+1) - d);
-  if(rand() % 2) dx = vec2(-dx.x, dx.y);
-  if(rand() % 2) dx = vec2(dx.y, dx.x);
+  vec2 dx(d, hrand(2*d+1) - d);
+  if(hrand(2)) dx = vec2(-dx.x, dx.y);
+  if(hrand(2)) dx = vec2(dx.y, dx.x);
   
   for(int u=0; u<=10; u++) {
     vec2 vh = playerpos + dx * u / 10;
@@ -165,7 +165,7 @@ void trailer() {
       wpn[1] = new weapon(dcolors[1], 2, WT_BLADE);
       placeAtDistance(new hydra(dcolors[5], 5, 5, 20), 2);
       placeAtDistance(new hydra(dcolors[6], 2, 5, 20), 5);
-      scene("A longsword cuts five heads in a single strike.", "No more, and no less.");
+      scene("A longsword cuts five heads in a single strike.", "No more, and no fewer.");
       break;
     
     case 7:
@@ -194,6 +194,8 @@ void trailer() {
       P.inv[IT_PARMS] = 1;
       P.inv[IT_PSEED] = 4;
       P.inv[IT_PAMBI] = 1;
+      P.inv[IT_PLIFE] = 1;
+      P.inv[IT_RDEAD] = 1;
       placeAtDistance(new hydra(dcolors[7], 3, 6, 20), 2);
       scene("Use magical powders and potions.", "Sometimes making the hydra stronger is the only way to kill it.");
       break;

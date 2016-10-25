@@ -98,10 +98,13 @@ extern "C" { namespace noteye {
 #ifdef __cplusplus
   }}
 
+#include <stdio.h>
+
 namespace noteyetranslate {
   inline void move(int y, int x) { noteye::noteye_move(y,x); }
   inline void erase() { noteye::noteye_erase(); }
   inline void addch(char ch) { noteye::noteye_addch(ch); }
+  inline void addchx(int ch) { noteye::noteye_addchx(ch); }
   inline void addstr(const char *buf) { noteye::noteye_addstr(buf); }
   inline void refresh() { noteye::noteye_refresh(); }
   inline void clrtoeol() { noteye::noteye_clrtoeol(); }

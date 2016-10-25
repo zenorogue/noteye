@@ -1,18 +1,18 @@
 all: ../noteye
 
 #for development:
-#CFLAGS=-Wall -Werror -g
+CFLAGS=-Wall -Werror -g
 #CC=g++-4.6
 
 #for release:
-CFLAGS=-O9 -Wall 
+#CFLAGS=-O9 -Wall 
 CC=g++
 
 TGT=
 #TGT=-m32
 
 #link with lua or luajit?
-#note: recent versions of NotEye no longer work with standard Lua
+#add -DAVOID_FFI if using standard Lua
 #LUAVER=-llua5.1
 LUAVER=-lluajit-5.1
 

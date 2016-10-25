@@ -23,6 +23,13 @@ void createLog(bool saved) {
   // current: include weapon and last message info
   glog.clear();
   glog.push_back("Hydra Slayer v" VER " character log for "+rinf[P.race].rname+" "+pinfo.charname+" ("+pinfo.username+")\n");
+  if(P.flags & dfDaily)
+    glog.push_back("The Daily Challenge number "+its(P.gameseed)+"\n");
+  else if(P.flags & dfChallenge)
+    glog.push_back("The Random Challenge (seed: "+its(P.gameseed)+")\n");
+  else 
+    glog.push_back("Game seed: "+its(P.gameseed)+"\n");
+
   if(P.vchanged)
     glog.push_back("Version has been changed while playing this savegame.\n");
   if(debugon())
@@ -120,6 +127,8 @@ void createLog(bool saved) {
   glog.push_back("  "+its(stats.wounds)+ " total wounds ("+its(P.curHP)+" of "+its(P.maxHP)+" HP left)\n");
 
   glog.push_back("  "+its(stats.turns)+ " total turns (hydra movements)\n");
+  if(stats.waitturns)
+    glog.push_back("  "+its(stats.waitturns)+ " turns of waiting (not included above)\n");
   glog.push_back("  "+its(stats.tstart) + " total seconds of real time\n");
 
   if(P.geometry == 3) {
@@ -242,6 +251,8 @@ void createLog(bool saved) {
     if(i == MOT_ZOMBIE)
       STATI(necro,     " total mushroom heads converted to zombie heads\n");
     }
+  
+  addAchievementsToLog();
   }
 
 void weaponToLog(weapon* w, string header) {
@@ -257,6 +268,7 @@ void weaponToLog(weapon* w, string header) {
     s += w->name();
     swap(w->ocolor, w->color);
     swap(w->osize, w->size);
+    if(w->osize != w->size) s += " (" + its(w->osize) + ")";
     s += " ";
     }
   if(w->level < -10) s += "from a Giant on Level "+its(-10-w->level);
@@ -307,11 +319,23 @@ void addCurrentInfoToLog() {
       weaponToLog(pinfo.whist[i], "(L" + its(pinfo.whistAt[i]+1) +") ");
     }
 
+  if(P.flags & dfChallenge) {
+    glog.push_back("\n");
+    glog.push_back("Wounds per level:\n");
+    string s;
+    s = "Heads  "; for(int i=0; i<CLEVELS; i++) s += itsf(cheadcount[i], 5); 
+    glog.push_back(s+"\n");
+    s = "Wounds "; for(int i=0; i<CLEVELS; i++) s += itsf(pinfo.cdata.wounds[i], 5); 
+    glog.push_back(s+"\n");
+    s = "Items  "; for(int i=0; i<CLEVELS; i++) s += itsf(pinfo.cdata.itcost[i], 5); 
+    glog.push_back(s+"\n");
+    }
+
   glog.push_back("\n");
   glog.push_back("Last messages:\n");
   int from = size(msgs)-loglines;
   if(from < 0) from = 0;
-  for(int f=from; f<size(msgs); f++) glog.push_back("  "+msgs[f]+"\n");
+  for(int f=from; f<size(msgs); f++) glog.push_back("  "+msgs[f]+"\n");  
   }
 
 void editString(string& s, string title = "Enter the name: ") {
@@ -329,17 +353,38 @@ void editString(string& s, string title = "Enter the name: ") {
     }
   }
 
+bool invalidGame() {
+  return P.flags & dfsInvalid;
+  }
+
+bool validChallengeGame() {
+  return (P.flags & dfsInvalid) == dfChallenge;
+  }
+
 void recordToHall() {
-  if(P.flags & dfsInvalid) return;
-  P.version = VERSION;
-  savefile = fopen(scorename.c_str(), "ab");
-  error = !savefile;
-  if(error) return;
-  save(P);
-  save(stats);
-  saveString(pinfo.charname);
-  saveString(pinfo.username);
-  fclose(savefile);
+  if(!invalidGame()) {
+    P.version = VERSION;
+    savefile = fopen(scorename.c_str(), "ab");
+    error = !savefile;
+    if(error) return;
+    save(P);
+    save(stats);
+    saveString(pinfo.charname);
+    saveString(pinfo.username);
+    fclose(savefile);
+    }
+  if(validChallengeGame()) {
+    P.version = VERSION;
+    savefile = fopen(challname.c_str(), "ab");
+    error = !savefile;
+    if(error) return;
+    save(P);
+    save(stats);
+    saveString(pinfo.charname);
+    saveString(pinfo.username);
+    save(pinfo.cdata);
+    fclose(savefile);
+    }
   }
 
 char sorttype;
@@ -366,38 +411,68 @@ bool pisort(const playerinfo& p1, const playerinfo& p2) {
   return pistat(p1) < pistat(p2);
   }
 
+vector<playerinfo> pi;
+
+bool eqstr(const string& s1, const string& s2) {
+  if(s1.size() != s2.size()) return false;
+  for(int i=0; i<(int) s1.size(); i++)
+    if(tolower(s1[i]) != tolower(s2[i])) return false;
+  return true;
+  }
+
 void viewHall(bool current) {
-  savefile = fopen(scorename.c_str(), "rb");
-  if(!savefile) return;
-  vector<playerinfo> pi;
-  error = false;
-  
-  while(not(feof(savefile))) {
-    playerinfo Pi;
-    load(Pi.player);
-    if(error) break;
-    loadStats(Pi.stats, Pi.player.saveformat);
-    Pi.charname = loadString();
-    Pi.username = loadString();
-    Pi.curgame = false;
-    pi.push_back(Pi);
+  bool inChallenge = P.flags & dfChallenge;
+  savefile = fopen((inChallenge?challname:scorename).c_str(), "rb");
+  pi.clear();
+  if(savefile) {
+    error = false;
+    
+    while(not(feof(savefile))) {
+      playerinfo Pi;
+      load(Pi.player);
+      printf("error encountered: %d\n", error);
+      if(error) break;
+      loadStats(Pi.stats, Pi.player.saveformat);
+      Pi.charname = loadString();
+      Pi.username = loadString();
+      Pi.curgame = false;
+      if(inChallenge) load(Pi.cdata);
+      if(inChallenge && Pi.player.gameseed != P.gameseed) continue;
+      pi.push_back(Pi);
+      }
+    fclose(savefile);
     }
-  fclose(savefile);
   if(current) {
     pinfo.curgame = true; pi.push_back(pinfo);
     }
   
-  sorttype = 'h'; stable_sort(pi.begin(), pi.end(), pisort);  
+  int tosync = (P.flags & dfDaily) ? 1 : 0;
+  sorttype = 'h'; stable_sort(pi.begin(), pi.end(), pisort);
   
   int startat = 0;
   bool global = true;
   
   int crace = -1;
+  
+  static int cfamemode = 0;
 
   while(true) {
     
     erase();
-    move(0, 35); col(11); addstri(" Hki Mk  Wnd Cost$ Bi mUt end of game time");
+    
+    if(inChallenge) {
+      move(0, 5); col(15);
+      if(P.flags & dfDaily) addstri("Daily #"+its(P.gameseed));
+      else addstri("Random #"+its(P.gameseed));
+      move(0, 30); col(11); 
+      if(cfamemode)
+        for(int i=1; i<=CLEVELS; i++) addstri(itsf(i, 5));
+      else
+        addstri("wounds items kills time");
+      }
+    else {
+      move(0, 35); col(11); addstri(" Hki Mk  Wnd Cost$ Bi mUt end of game time");
+      }
     
     int cury = 1, at = startat;
     
@@ -411,72 +486,126 @@ void viewHall(bool current) {
   
       move(cury, 5); col(Pi.curgame ? 14 : 8); for(int i=0; i<10; i++) addstr(" . ");
       
-      int etcol[9] = { 4, 7, 6, 12, 15, 14, 13, 10, 11}; col(etcol[Pi.stats.endtype]);
+      int etcol[9] = { 4, 7, 6, 12, 15, 14, 13, 10, 11}; 
+      col(etcol[Pi.stats.endtype]);
+      
+      // printf("name [%d] = %s <%x>\n", at, Pi.username.c_str(), Pi.player.flags);
       
       move(cury, 5); addstri(Pi.charname);
-      move(cury, 15); addstri(Pi.username);
+      if(!eqstr(Pi.username, Pi.charname)) {
+        move(cury, 15); addstri(Pi.username);
+        }
       
-      move(cury, 33); col(rinf[Pi.player.race].color); addch(rinf[Pi.player.race].rkey);
-  
-      move(cury, 35);
-      col(15);
-      addstri(itsf(Pi.stats.hydrakill, 4));
-      addstri(itsf(Pi.stats.maxmsl + Pi.stats.maxchrg + Pi.stats.maxkill, 3));
+      if(inChallenge) {
+        move(cury, 28); col(rinf[Pi.player.race].color); addch(rinf[Pi.player.race].rkey);
+        move(cury, 30); col(Pi.curgame ? 14 : (Pi.player.flags & dfScoreFromSteam) ? 11 : 7);
+        switch(cfamemode) {
+          case 0: {
+            int tic = 0, tw = 0;
+            for(int i=0; i<CLEVELS; i++) tw += Pi.cdata.wounds[i];
+            for(int i=0; i<CLEVELS; i++) tic += Pi.cdata.itcost[i];
+            addstri(itsf(tw, 6)+itsf(tic, 6)+itsf(Pi.stats.hydrakill, 6));
+            time_t gameend = Pi.stats.gameend;
+            struct tm *tmp = localtime(&gameend);
+            char buf[100]; col(7);
+            strftime(buf, 100, " %y/%m/%d %H:%M:%S", tmp);
+            addstri(buf);
+            break;
+            }
+          
+          case 1: case 2:
+            for(int i=0; i<CLEVELS; i++) 
+              if(cfamemode == 2)
+                addstri(itsf(Pi.cdata.itcost[i], 5));
+              else
+                addstri(itsf(Pi.cdata.wounds[i], 5));            
+            break;
+          }
+        }
 
-      if(fame_fullwin) {
-        if(Pi.stats.endtype < 6) {
-          col(8); 
-          addstri(" full winners only");
-          }
-        else {
-          col(11);
-          if(Pi.stats.armscore2 == 0) Pi.stats.armscore2 = 9999;
-          addstri(itsf(Pi.stats.woundwin2, 5));
-          addstri(itsf(Pi.stats.treasure2, 6));
-          addstri(itsf(Pi.stats.armscore2, 7));
-          }
-        }
       else {
-        if(Pi.stats.endtype < 3) {
-          col(8); 
-          addstri("  for winners only");
+      
+        move(cury, 33); col(rinf[Pi.player.race].color); addch(rinf[Pi.player.race].rkey);
+    
+        move(cury, 35);
+        col(15);
+        addstri(itsf(Pi.stats.hydrakill, 4));
+        addstri(itsf(Pi.stats.maxmsl + Pi.stats.maxchrg + Pi.stats.maxkill, 3));
+  
+        if(fame_fullwin) {
+          if(Pi.stats.endtype < 6) {
+            col(8); 
+            addstri(" full winners only");
+            }
+          else {
+            col(11);
+            if(Pi.stats.armscore2 == 0) Pi.stats.armscore2 = 9999;
+            addstri(itsf(Pi.stats.woundwin2, 5));
+            addstri(itsf(Pi.stats.treasure2, 6));
+            addstri(itsf(Pi.stats.armscore2, 7));
+            }
           }
         else {
-          col(14);
-          if(Pi.stats.treasure == 0) Pi.stats.treasure = 99999;
-          if(Pi.stats.woundwin == 0) Pi.stats.woundwin = 9999;
-          addstri(itsf(Pi.stats.woundwin, 5));
-          addstri(itsf(Pi.stats.treasure, 6));
-          addstri(itsf(Pi.stats.bossinv,  3));
-          addstri(itsf(Pi.stats.armscore, 4));
+          if(Pi.stats.endtype < 3) {
+            col(8); 
+            addstri("  for winners only");
+            }
+          else {
+            col(14);
+            if(Pi.stats.treasure == 0) Pi.stats.treasure = 99999;
+            if(Pi.stats.woundwin == 0) Pi.stats.woundwin = 9999;
+            addstri(itsf(Pi.stats.woundwin, 5));
+            addstri(itsf(Pi.stats.treasure, 6));
+            addstri(itsf(Pi.stats.bossinv,  3));
+            addstri(itsf(Pi.stats.armscore, 4));
+            }
           }
+
+        addstri(" ");
+        time_t gameend = Pi.stats.gameend;
+        struct tm *tmp = localtime(&gameend);
+        char buf[100]; col(7);
+        strftime(buf, 100, "%y/%m/%d %H:%M:%S", tmp);
+        addstri(buf);
         }
       
-      addstri(" ");
-      time_t gameend = Pi.stats.gameend;
-      struct tm *tmp = localtime(&gameend);
-      char buf[100]; col(7);
-      strftime(buf, 100, "%y/%m/%d %H:%M:%S", tmp);
-      addstri(buf);
       
       // addstri(Pi.stats.maxambi ? itsf(Pi.stats.maxambi, 5) : "     ");
       // addstri(Pi.stats.owncrush ? itsf(Pi.stats.owncrush, 2) : "  ");
       at++; cury++;
       }
   
-    col(7);
-    move(20, 0);
-    addstr("Wnd-wounds to win, Cost-cost of inv used to win, Bi-inv items used on boss");
-    move(21, 0);
-    addstr("mUt-mutation score; Hki-total hydras killed, Mk-sum of multikill scores");
-  
-    move(23, 0); col(10);
-    string filter = global ? "global" : "player";
-    string isfull = fame_fullwin ? "full" : "part";
-    string racename = crace == -1 ? "ALL" : rinf[crace].rname;
-    addstri("WCBUHME-sort, Q-menu, F-"+filter+", A-achievements, P-"+isfull+" R-"+racename);
+    if(inChallenge) {
+      move(20, 0); col(7);
+      switch(cfamemode) {
+        case 0: addstr("(P) general info displayed"); break;
+        case 1: addstr("(P) wounds per level displayed"); break;
+        case 2: addstr("(P) item cost per level displayed"); break;
+        }
+      string filter = global ? "global" : "player";
+      string racename = crace == -1 ? "all races" : rinf[crace].rname;
+      move(21, 0); 
+      addstri("(Q) menu (F) "+filter);
+      if(!(P.flags & dfDaily)) addstri(" (R) "+racename);
+      if(tosync) { move(20, 40); downloadDailyScores(pi, tosync); }
+      }
+    else {
+      col(7);
+      move(20, 0);
+      addstr("Wnd-wounds to win, Cost-cost of inv used to win, Bi-inv items used on boss");
+      move(21, 0);
+      addstr("mUt-mutation score; Hki-total hydras killed, Mk-sum of multikill scores");
     
+      move(23, 0); col(10);
+      string filter = global ? "global" : "player";
+      string isfull = fame_fullwin ? "full" : "part";
+      string racename = crace == -1 ? "ALL" : rinf[crace].rname;
+      addstri("WCBUHME-sort, Q-menu, F-"+filter+", A-achievements, P-"+isfull+" R-"+racename);
+      }
+
+    if(tosync) halfdelay(1); else cbreak();
     int c = ghch(IC_HALL);
+    if(tosync) cbreak();
     switch(c) {
       case 'w': case 'c': case 'b': case 'u': case 'h': case 'm': case 'e':
         sorttype = c;
@@ -504,7 +633,10 @@ void viewHall(bool current) {
         break;
       
       case 'p':
-        fame_fullwin = !fame_fullwin;
+        if(inChallenge)
+          cfamemode = (1+cfamemode) % 3;
+        else
+          fame_fullwin = !fame_fullwin;
         break;
       
       case 'r':
@@ -530,15 +662,19 @@ void viewHall(bool current) {
   }
 
 void clearGame() {
-  if(!gameExists) return;
-  for(int i=0; i<LEVELS; i++) {
+  // if(!gameExists) return;
+  for(int i=0; i<GLEVELS; i++) {
     for(int j=0; j<size(toput[i]); j++) delete toput[i][j];
     toput[i].clear();
     }
   gameExists = false;
   
+  pinfo.player.flags |= dfCleanup;
+  
   while(size(hydras))
     M[hydras[0]->pos].hydraDead(NULL);
+
+  pinfo.player.flags &= ~dfCleanup;
 
   clearLevel();
   
@@ -551,16 +687,18 @@ void clearGame() {
   bool salt = P.altkeys;
   bool squi = P.quickmode;
   bool simp = P.simplehydras;
+  int gs = P.gameseed;
   
   memset(&stats, 0, sizeof(stats));
-  memset(&P, 0, sizeof(P));
+  memset(&P, 0, sizeof(P)); 
+  memset(&pinfo.cdata, 0, sizeof(pinfo.cdata));
   
   swap(P.manualfire, sman);
   swap(P.altkeys, salt);
   swap(P.quickmode, squi);
   swap(P.simplehydras, simp);
   
-  P.race = race; P.flags = deb;
+  P.race = race; P.flags = deb; P.gameseed = gs;
   
   pinfo.whist.clear();
   pinfo.whistAt.clear();
@@ -623,8 +761,20 @@ void cheatMenu() {
 
 void mainloop();
 void initGame();
-bool selectRace();
+bool selectRace(bool rchal);
+void randomChallengeMenu();
 
+void calcEndtype() {
+  if(P.curHP <= 0 || (P.race == R_TWIN && !twinAlive()))
+    stats.endtype = 0;
+  else if(M[playerpos].type == CT_STAIRUP)
+    stats.endtype = 2;
+  else
+    stats.endtype = 1;
+  if(stats.solved >= LEVELS || stats.woundwin) stats.endtype += 3;
+  if(stats.solved >= 50) stats.endtype += 3;
+  }
+  
 void mainmenu() {
 
   while(!quitgame) {
@@ -638,22 +788,18 @@ void mainmenu() {
     
       stats.solved = P.curlevel;
       if(canGoDown()) stats.solved++;
-      if(P.curHP <= 0 || (P.race == R_TWIN && !twinAlive()))
-        stats.endtype = 0;
-      else if(M[playerpos].type == CT_STAIRUP)
-        stats.endtype = 2;
-      else
-        stats.endtype = 1;
-      if(stats.solved >= LEVELS) stats.endtype += 3;
-      if(stats.solved >= 50) stats.endtype += 3;
+      calcEndtype();
       }
-    else stats.endtype = 10;
+    else {
+      emSaveGame();
+      stats.endtype = 10;
+      }
 
     erase();
   
     move(0, 2); col(4); addstr("Hydra Slayer v" VER " by Zeno Rogue");
     
-    move(2, 0); col(15);
+    move(2, 2); col(15);
     
     if(saveerror) {
       col(12);
@@ -699,55 +845,86 @@ void mainmenu() {
 
     col(7);
     
+    int cy = 4;
     if(!gameExists) {
-      move(4, 0); addstr("(T) start the Tutorial");
-      move(5, 0); addstr("(N) start a new game");
-      move(6, 0); addstr("(Q) quit the game");
-      #ifdef NOTEYE
-      move(7, 0); addstr("(F4) sound/gfx settings");
-      #endif
+      move(cy++, 2); addstr("(T) start the Tutorial");
+      move(cy++, 2); addstr("(N) start a new game");
+      move(cy++, 2); addstr("(W) start a new random/daily challenge");
+      move(cy++, 2); addstr("(Q) quit the game");
       }
     else {
-      move(4, 0); addstr("(Z) Return to game (also Space/Enter/Esc)");
-      move(5, 0); addstr(stats.endtype%3 ? "(S) Save the game and quit" : "(S) Save the body and quit");
-      move(6, 0); if(!debugon()) addstr("(Q) Quit this character");
-      move(7, 0); addstr("(X) Quit without recording to Hall of Fame");
-      move(8, 0); addstri("(D) Cheats");
+      move(cy++, 2); addstr("(Z) Return to game (also Space/Enter/Esc)");
+      move(cy++, 2); addstr(stats.endtype%3 ? "(S) Save the game and quit" : "(S) Save the body and quit");
+      
+      if(P.flags & dfChallenge) {
+        move(cy++, 2); addstr("(Q) Quit the random challenge");
+        }
+      else {
+        move(cy++, 2); if(!debugon()) addstr("(Q) Quit this character");
+        move(cy++, 2); addstr("(X) Quit without recording to Hall of Fame");
+        }
       }
 
-    move(10, 0); addstr("(A) View Achievements and the Hall of Fame");
-    move(11, 0); addstr("(O) open another savefile");
-    if(gameExists) addstr(" (R to rename)");
+    if(gameExists && !(P.flags & dfChallenge)) {
+      move(cy++, 2); addstri("(D) Cheats");
+      }
+    move(cy++, 2); 
+    if(gameExists && (P.flags & dfChallenge)) {
+      if(P.flags & dfDaily)
+        addstr("(A) View scores for the Daily Challenge");
+      else
+        addstr("(A) View scores for the Random Challenge");
+      }
+    else {
+      addstr("(A) View Achievements and the Hall of Fame");
+      }
+    move(cy++, 2); addstr("(O) open another savefile");
+    if(gameExists) { move(cy++, 2); addstr("(R) rename the current savefile"); }
 
     if(P.flags & dfBackups) {
-      move(12, 0);
+      move(cy++, 2);
       addstri("(B) Backup your game");
 
-      move(12, 40);
+      move(cy++, 40);
       addstri("(Shift+B) Reload the game from the backup");
       }
     
-    
-    move(13, 0);
-    addstri("(C) Character name: " + pinfo.charname);
-    
-    move(14, 0);
+    move(cy++, 2);
     addstri("(P) Player name: " + pinfo.username);
     
-    
-    if(P.race == R_TWIN) {
-      col(13);
-      move(15, 0);
+    move(cy++, 2);
+    addstri("(C) Character name: " + pinfo.charname);
+        
+    if(P.race == R_TWIN && gameExists) {
+      col(7);
+      move(cy++, 2);
       if(P.twinsNamed)
-        addstr("(T) just call them 'you' and 'your twin'");
+        addstr("(T) twins are named:");
       else
-        addstr("(T) name twins individually");
-      move(16, 0);
+        addstr("(T) twins have no individual names");
+      move(cy++, 2);
       if(P.twinsNamed)
         addstri("(1) "+pinfo.twin[0]+" (2) "+pinfo.twin[1]);
       }
     
-    move(0, 79);
+    move(cy++, 2); addstr("(L) open the directory with logs and saves");
+
+    #ifdef NOTEYE
+    move(cy++, 2); addstr("(F4) NotEye settings (sounds, graphics, etc.)");
+    move(cy++, 2); addstr("(F10) Switch to the alternate mode");
+    #endif
+    
+    if(gameExists) { 
+      col(8); move(1, 26); 
+      if(P.flags & dfDaily)
+        addstri("                      Daily Challenge number "+its(P.gameseed)); 
+      else if(P.flags & dfChallenge)
+        addstri("    seed of the current Random Challenge: "+its(P.gameseed)); 
+      else if(!(P.flags & dfTutorial))
+        addstri("                seed of the current game: "+its(P.gameseed)); 
+      }    
+    
+    move(0, 79); cbreak();
     int c = ghch(IC_QUIT);
     
     switch(c) {
@@ -787,28 +964,51 @@ void mainmenu() {
         viewHelp();
         break;
       
+      case 'l': {
+        string ud = userdir;
+
+#ifdef LINUX
+        if(system(("nautilus "+ud).c_str())) ;
+#endif
+#ifdef MAC
+        system(("open "+ud).c_str());
+#endif
+#ifdef WINDOWS
+        system(("start "+ud+"\\.").c_str());
+#endif
+        break;
+        }
+      
       case 'a': case 'A':
         viewHall(gameExists);
         break;
       
       case 'n': case 'N':
         if(gameExists) break;
-        if(selectRace()) {
+        if(selectRace(false)) {
           initGame();
           mainloop();
           }
         break;
       
       case 'd': case 'D':
-        if(gameExists) cheatMenu();
+        if(gameExists) {
+          if((P.flags & (dfChallenge | dfDebug)) == dfChallenge) continue;
+          cheatMenu();
+          }
         else {
           move(17, 0); col(15); addstr("Start the game in Debug mode? (y/n)");
           if(!yesno(IC_MYESNO)) continue;
-          if(selectRace()) {
+          if(selectRace(false)) {
             P.flags = dfDebug;
             initGame(); mainloop();
             }
           }
+        break;
+
+      case 'w':
+        if(gameExists) break;
+        randomChallengeMenu();
         break;
 
       case 's': case 'S': case 'q': case 'Q': case 'x': case 'X': {
@@ -907,7 +1107,93 @@ void mainmenu() {
 
 void mainloop();
 
-bool selectRace() {
+#define CHALLENGE_EACH 86400
+
+string cts(char x ) { string s; s += x; return s; }
+
+void randomChallengeMenu() {
+/*        move(17, 0); col(15); addstr("Start a Challenge game? (y/n)");
+        if(!yesno(IC_MYESNO)) continue;
+        P.flags = dfChallenge;
+        initGame(); mainloop(); */
+        
+  while(true) {
+    int challenge_id = time(NULL);
+    challenge_id -= 1453676909;
+    challenge_id += CHALLENGE_EACH * 10;
+    if(challenge_id < 0) challenge_id = 0;
+    int secleft = CHALLENGE_EACH - (challenge_id % CHALLENGE_EACH);
+    challenge_id /= CHALLENGE_EACH;
+    
+    erase();
+    
+    col(14); move(0, 2); addstr("Random/Daily Challenge");
+    
+    col(7);
+    
+    int cy = 1;
+
+    viewMultiLine(
+      "In this mode, you can play a random challenge, where hydras and equipment "
+      "are much more random than in the normal game. You will have to base your strategy "
+      "around what you find, nothing is guaranteed! "
+      "It is most fun to play the same "
+      "random challenge as other players, and compare the results! The Steam version "
+      "provides daily challenges for this. Note that achievements cannot be obtained in this mode."
+      , cy, 2);
+
+    char sbuf[80];
+    sprintf(sbuf, "%02d:%02d:%02d", secleft/60/60, (secleft/60)%60, secleft%60);
+    
+    move(10, 2); col(15); addstri("Select the daily challenge: ("+string(sbuf)+" until the next one)");
+    
+    for(int i=0; i<10; i++) {
+      int cid = challenge_id + i - 9;
+      string s = s0;
+      move(12+i, 2); addstri("(" + cts('A'+i) + ") Day "+its(cid)+": " + rinf[raceForSeed(cid)].rname + ", " + geometryName(geometryForSeed(cid)));
+      }
+    
+    move(8, 2); col(15); addstr("(R) play a random challenge!");
+    
+    int c = ghch(IC_CHALLENGE); 
+    
+    if(c >= 'a' && c <= 'j') {
+      fixedseed = true;
+      P.gameseed = challenge_id + (c-'a')-9;
+      P.flags = dfChallenge | dfDaily | dfRaceSeeded;
+      initGame(); mainloop();
+      return;
+      }
+    
+    else switch(c) {
+
+      case 'q': case 27:
+        return;
+      
+      case 'r': 
+        if(selectRace(true)) {
+          P.flags = dfChallenge;
+          initGame();
+          mainloop();
+          return;
+          }
+        break;
+      
+      case 't': 
+        move(17, 0); col(15); addstr("Start the random challenge in Debug mode? (y/n)");
+        if(!yesno(IC_MYESNO)) continue;
+        if(selectRace(true)) {
+          P.flags = dfChallenge | dfDebug;
+          initGame();
+          mainloop();
+          return;
+          }
+        break;
+      }
+    }
+  }
+
+bool selectRace(bool rchal) {
 
   while(!quitgame) {
     erase();
@@ -933,16 +1219,24 @@ bool selectRace() {
       }
     
     int cy = 3;
-    col(7); viewMultiLine(rinf[P.race].desc, cy);
+    col(7); viewMultiLine(rinf[P.race].desc, cy, 2);
 
     move(21, 2); col(7); 
-    addstr("Geometry: ");
-    switch(P.geometry) {
-      case 16: addstr("(D) knight movement (secret)"); break;
-      case 8:  addstr("(D) 8 directions (traditional geometry)"); break;
-      case 6:  addstr("(D) 6 directions (hex board)"); break;
-      case 4:  addstr("(D) 4 directions (for laptop users)"); break;
-      case 3:  addstr("(D) variable (4/6/8)"); break;
+    addstri("Geometry: (D) " + geometryName(P.geometry));
+    
+    move(20, 2); col(7);
+    if(fixedseed)
+      addstri("Seed: (S) "+its(P.gameseed));
+    else
+      addstr("Seed: (S) random");
+
+    move(19, 2);
+    addstri("(N) Character name: " + pinfo.charname);
+    
+    if(P.race == R_TWIN) {
+      move(19, 40);
+      if(!P.twinsNamed) addstr("(0) give names to twins");
+      else addstri("(1) "+pinfo.twin[0]+" (2) "+pinfo.twin[1]);
       }
 
     move(23, 2); col(15); addstri("Press Enter to start playing as "+pinfo.charname+" the "+rinf[P.race].rname+"!");
@@ -951,6 +1245,22 @@ bool selectRace() {
     
     switch(c) {
 
+      case '0':
+        P.twinsNamed = !P.twinsNamed;
+        break;
+      
+      case '1':
+        if(P.twinsNamed) editString(pinfo.twin[0]);
+        break;
+        
+      case '2':
+        if(P.twinsNamed) editString(pinfo.twin[1]);
+        break;
+        
+      case 'n':
+        editString(pinfo.charname);
+        break;
+        
       case 'q': case 27:
         return false;
       
@@ -964,6 +1274,14 @@ bool selectRace() {
         P.geometry = c - '0';
         break;
       
+      case 's': {
+        string seedstr = fixedseed ? its(P.gameseed) : "";
+        editString(seedstr, "Enter the seed (leave empty for random): ");
+        if(seedstr == "") fixedseed = false;
+        else fixedseed = true, P.gameseed = atoi(seedstr.c_str());
+        break;
+        }
+
       case '^':
         P.geometry = 16;
         break;

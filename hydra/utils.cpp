@@ -19,10 +19,11 @@ using namespace std;
 
 #ifdef NOTEYE
 #define NOCURSES
-#define NOTEYE_TRANSLATE
 #include "../src/noteye-curses.h"
 using namespace noteye;
+using namespace noteyetranslate;
 const char *hydraver = VER;
+#define addch addchx
 #define main hydraMain
 
 int getVGAcolorX(int a) { 
@@ -48,7 +49,31 @@ void refresh(int context) { refresh(); }
 #include <stdio.h>
 #include <memory.h>
 #include <math.h>
+#include <time.h>
+
 //#include <io.h>
+
+// randomness
+
+#include "mtrand.cpp"
+#define HRANDMAX 0x7FFFFFFF
+
+MTRand_int32 randgen, *currand = &randgen;
+
+int hrandpos() { return (*currand)() & HRANDMAX; }
+
+int hrand(int i) {
+  return (*currand)() % i;
+  }
+
+int onein(int i) { return hrand(i) == 0; }
+
+struct tmprand {
+  MTRand_int32 what;
+  MTRand_int32 *last;
+  tmprand(int i): what(i) { last = currand; currand = &what; what(); what(); what(); }
+  ~tmprand() { currand = last; }
+  };
 
 string s0;
 
@@ -159,7 +184,7 @@ int hydraiconid(int heads) {
   else return 35;
   }
 
-char hydraicon(int heads) {
+int hydraicon(int heads) {
   return ".123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" [hydraiconid(heads)];
   }
 
@@ -170,13 +195,10 @@ int powerf(int p) {
   };
 
 float randf(float min, float max) {
-  int r = rand() % 1000;
-  r *= 1000;
-  r += rand() % 1000;
-  return min + (max-min) * (r / 999999.0);
+  return min + (max-min) * (hrandpos() / (HRANDMAX+.0));
   }
 
-bool squareroot(int x) {
+int squareroot(int x) {
   int i = 0;
   while(i*i < x) i++;
   if(i*i > x) return -1;
@@ -188,9 +210,9 @@ int primediv(int x) {
   return -1;
   }
 
-#define SIEVE 20010
+#define SIEVE 1000010
 
-vector<short> sieve;
+vector<int> sieve;
 
 int getPrimeIndex(int x) {
   if(size(sieve) == 0) {
@@ -231,6 +253,27 @@ string butlast(string x) {
   return x.substr(0, x.size()-1);
   }
 
-char squareRootSign();
+int squareRootSign();
 
+void clearMapCache();
+void sendSwapEvent();
+#define ATT_TWIN -1
+#define ATT_PLAYER -2
+void sendAttackEvent(int hid, vec2 from, vec2 to);
 void playSound(const char *fname, int vol = 100, int msToWait = 0);
+
+bool invalidGame();
+
+int getOrbForItem(int i);
+void takeWounds(int thc);
+void removeWounds(int thc);
+void useupItem(int icost);
+void calcEndtype();
+
+void hydraKnowDirty(struct hydra *H);
+
+extern bool inWaitMode;
+extern int waitsteps;
+
+extern vector<string> glog;
+

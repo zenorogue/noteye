@@ -4,6 +4,8 @@
 #define LEVELS   12
 #define LEVELS2  50
 
+#define CLEVELS  10
+
 struct levelinfo {
   int maxheads;
   int growlimit;
@@ -82,12 +84,13 @@ itemInfo iinf[ITEMS+1] = {
     },
   { "Powder of Growth", '$', 10, 'g', 3,
     "Made by Apollo himself, this powder gives the Hydra additional heads. Who would use that? Well, master hydra slayers "
-    "know that less heads is not always less trouble...\n"
+    "know that fewer heads is not always less trouble...\n"
     "The number of heads grown is chosen so that it will be possible to kill the Hydra "
     "with current weaponry and the smallest amount of wounds possible.\n"
     "If there are several possibilities, one with the smallest number of new heads "
     "(greater than 0) is chosen. If it is impossible to slay hydra by growing heads, no heads are grown.\n"
-    "The number of heads grown might not be optimal for very large Hydras, but still, it should help.\n"
+    "For very large hydras (over 20000 heads), it tries to grow as many heads as needed to make you able to use one of your divisors or powerful weapons; "
+    "if this would require more than 100 heads, only a part is grown.\n"
     "The Powder of Growth calculates the strategies in the same way as the Potion of Knowledge does.\n"
     },
   { "Powder of Conflict", '$', 12, 'o', 50,
@@ -143,8 +146,8 @@ itemInfo iinf[ITEMS+1] = {
     },
   { "Potion of Knowledge", '!', 14, 'k', 5,
     "Created by Athena herself, this potion gives hints about how to kill any visible Hydra most efficiently with only your weapons.\n"
-    "Good efficience means a small number of wounds. In case of a tie, usually a faster method is chosen.\n"
-    "For very large Hydras it might not work at all, or not recommend stunning while it should. "
+    "An efficient kill is one that gives you as few wounds as possible. In case of a tie, usually a faster method is chosen.\n"
+    "For very large Hydras (over roughly 20000 heads) it might not work at all, or (over roughly 100 heads) not recommend stunning while it should. "
     "It does not take your powders (including active ones) and missile weapons into account. Also assumes that "
     "stunning lasts for long enough, which is usually not true for shield bashing, and maybe even for emerald weapons.\n"
     "This potion works correctly for ambidextrous users, but might be really slow when you have a lot of choices.\n"
@@ -183,6 +186,9 @@ itemInfo iinf[ITEMS+1] = {
     "No hint about this.\n"
     }
   };
+
+// use up an item
+bool useup(int ii, struct weapon *orb = NULL);
 
 // letters available: ouvxyz
 
@@ -262,7 +268,7 @@ colorInfo cinf[COLORS] = {
   { "golden ",  14,  6, "hit", "elements/gold",
     "Your %s is now made of pure gold!",
     "Gold is a heavy precious material with many special properties, including "
-    "resistance to acid, and an ability to prevent head regrow in some hydras. "
+    "resistance to acid, and an ability to prevent head regrowth in some hydras. "
     },
 
   { "emerald ", 2, 15, "slam", NULL,
@@ -318,6 +324,14 @@ colorInfo cinf[COLORS] = {
 #define HC_DRAGON  64
 #define HC_DRMASK  63
 
+#define ANIM_PLUS 20
+#define ANIM_HAMMER 21
+#define ANIM_DUST 22
+#define ANIM_ZIG 23
+#define ANIM_CANCEL 24
+
+#define ANIM_MAX 25
+
 struct hydraInfo {
   string hname;
   int atttype;
@@ -363,7 +377,7 @@ hydraInfo hyinf[HYDRAS] = {
     "Small lightnings appear whenever one of the heads gets close to a "
     "wall."
     },
-  { "acid ", 6, 3, 9, 9, 6, "bites", "spits acid at",
+  { "acid ", 6, 3, 9, 9, 4, "bites", "spits acid at",
     "A nasty liquid is dripping from the fangs of this hydra. It seems to "
     "burn the ground after it falls."
     },
@@ -378,7 +392,7 @@ hydraInfo hyinf[HYDRAS] = {
     "bones... or maybe are they used to regrow heads?"
     },
 
-  { "golden ", 9, 14, 1, 1, 1, "bites", "shines blindingly on",
+  { "golden ", 9, 14, 1, 1, 6, "bites", "shines blindingly on",
     "This hydra glows like Sun, and you look forward to improving your armor "
     "by adding some of its golden scales."
     },
@@ -540,7 +554,7 @@ raceInfo rinf[RACES] = {
 #endif
     },
   { "Titan", 't', '@', 12,
-    "Titans are too impatient to keep item others than weapons (such as powders, scrolls, "
+    "Titans are too impatient to keep items other than weapons (such as powders, scrolls, "
     "and potions) for later, so they use them up immediately after pick up. Although this does "
     "not mean that they have to use the effect immediately (as they can walk a bit before the "
     "effect actually goes off), they are unable to keep any effects for another level (except "
@@ -555,7 +569,7 @@ raceInfo rinf[RACES] = {
 #endif
     },
   { "Twins", 'w', '@', 13,
-    "You start with less HP and an ability to wield just one "
+    "You start with fewer HP and an ability to wield just one "
     "weapon. However, you have your twin with you, and you are both "
     "self-claimed experts at hydra slaying!\n"
     "You can press 's' to switch the twins at any time, and 'c' to switch "
@@ -587,8 +601,12 @@ raceInfo rinf[RACES] = {
 const char* helpinfo[HELPLEN] = {
 
 "\bjHydra Slayer v" VER " by Zeno Rogue <zeno@attnam.com>\n"
+#ifndef STEAM
 "released under GNU General Public License version 2 and thus "
 "comes with absolutely no warranty; see COPYING for details\n"
+#else
+"(Steam)\n"
+#endif
 
 "\bgHydra Slayer is a Roguelike game focused on one thing: slaying Hydras. "
 "It is inspired by Greek mythology, Dungeon Crawl, MathRL seven day "
@@ -641,7 +659,7 @@ const char* helpinfo[HELPLEN] = {
 "Of course, some new hydra slaying weapons and magics were created later, "
 "but they were nothing compared to the previous major achievement. The "
 "numbers of Hydras kept decreasing, and finally, they disappeared, and "
-"were almost forgotten... And less and less people became acquainted with "
+"were almost forgotten... And fewer and fewer people became acquainted with "
 "the hydra slaying techniques, as other people laughed at them, because "
 "their profession was completely useless in these times.\n",
 
@@ -689,15 +707,22 @@ const char* helpinfo[HELPLEN] = {
 "- go to the nearest non-explored space not behind mushrooms,\r"
 "- go to the nearest inventory item through mushrooms,\r"
 "- go to the nearest non-explored space through mushrooms,\r"
-"- go to the stairway down.",
+"- go to the stairway down.\n\n",
+
+"Also, pressing O (shift+O) if there are no enemies on the level will collect "
+"all items (or all weapons, for Titan). If there are enemies on level, it will "
+"quickly pass turns until you are attacked, a hydra dies (useful with Powder of "
+"Conflict or Fungal Necromancy), a hydra approaches you, or 2000 turns pass."
 
 "\boArt, game design, texts, and programming by Zeno Rogue, 2010-2016.\n"
-"\boSounds effects by Brett Cornwall <brett (at) brettcornwall.com>, under the Creative Commons BY-SA 4.0 license.\n"
+"\boSounds effects and music by Brett Cornwall <brett@brettcornwall.com>, under the Creative Commons BY-SA 4.0 license.\n"
 //"\bjHydra Slayer uses the following music from Rogue Bard:\n"
 //"* \"The naive Bard\" by Bushy (a cover by Mingos)\n"
 //"* \"Azog's March\" by jice\n"
 //"See more at http://roguebard.eptalys.net\n"
-"\biThanks to Ancient, Xecutor, JLC, sbluen, cephalopid, Legend, and "
-"CommentLurker for their bug reports, suggestions, and other help!\n\n"
+"\biThanks to Ancient, Xecutor, JLC, sbluen, cephalopid, Legend, "
+"CommentLurker, tricosahedron, zulmetefza, Ryan Dorkoski, #16, "
+"Bloodysetsail, and vo3435 "
+"for their bug reports, suggestions, and other help!\n\n"
 "\boAnd thanks to you for playing!"
 };

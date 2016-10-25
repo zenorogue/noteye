@@ -3,6 +3,8 @@
 
 using namespace std;
 
+int hydranoteyeflag;
+
 int hydrapic_col;
 int hydrapic_tail;
 int hydrapic_id;
@@ -40,7 +42,7 @@ int nhead;
 
 int headx[640], heady[640], headr[640];
 
-SDL_Surface *hydrabox, *hydraheads;
+SDL_Surface *hydrabox, *hydraheads, *hydraheads2;
 
 int *hydraboxc; // 'changes' field which keeps track of updates
 
@@ -53,14 +55,48 @@ static int& qpixel(SDL_Surface *surf, int x, int y) {
   return pi[x];
   }
 
-void drawhead(int x, int y, int ridx) {
+#define HEADX 12
+#define HEADY 15
+
+int headkey;
+
+void prepareheads() {
+  for(int id=0; id<ANIM_MAX; id++)
+  for(int ky=0; ky<HEADY; ky++) for(int kx=0; kx<HEADX; kx++) {
+    hydrapic_col = id < HYDRAS ? getVGAcolorX(hyinf[id].color) : 0xFF0000;
+    hydrapic_col &= 0xF0F0F0;
+    hydrapic_col >>= 4;
+    
+    int dx = id*HEADX+kx, dy = ky;
+
+    int hdc = qpixel(hydraheads, dx, dy);
+    int& hdc2 = qpixel(hydraheads2, dx, dy);
+    headkey = qpixel(hydraheads, 0, 0);
+
+    if(hdc != (int) 0xFF008080 && hdc != (int) 0xFF007F7F) {
+      hdc -= 0xFF000000;
+      if(hdc > 9 && hdc < 15) hdc = 9;
+      hdc2 = (hdc && hdc <= 9 ? (hdc+6) * hydrapic_col : hdc);
+      }
+    else hdc2 = headkey;
+    }
+  }
+
+void drawhead(int x, int y, int ridx, int hid) {
   x -= 5; y -= 5;
   int by = 0;
   int hm = 0;
   for(int u=0; u<16; u++) hm += nrand0(ridx+u);
-  if(hm % 4 == 0) by = 15;
-  for(int ky=0; ky<15; ky++) for(int kx=0; kx<12; kx++) {
-    int hdc = qpixel(hydraheads, hydrapic_id*12+kx, by+ky);
+  
+  int lcc = hrandpos() & 0xFF030303;
+  
+  if(hydranoteyeflag & 1) {
+    if(hid % 3 == 1) by = HEADY;
+    }
+  else
+    if(hm % 4 == 0) by = HEADY;
+  for(int ky=0; ky<HEADY; ky++) for(int kx=0; kx<HEADX; kx++) {
+    int hdc = qpixel(hydraheads, hydrapic_id*HEADX+kx, by+ky);
     // for some reason, on Mac it is 0xFF007F7F, not 0xFF008080
     if(hdc != (int) 0xFF008080 && hdc != (int) 0xFF007F7F) {
       hdc -= 0xFF000000;
@@ -68,7 +104,7 @@ void drawhead(int x, int y, int ridx) {
       // another Mac weirdness
       if(hdc > 9 && hdc < 15) hdc = 9;
       if((ax|31) == 31 && (ay|31) == 31) 
-        hmap[ay][ax] = (hdc && hdc <= 9 ? (hdc+6) * hydrapic_col : hdc);
+        hmap[ay][ax] = (hdc && hdc <= 9 ? (hdc+6) * hydrapic_col : hdc) ^ lcc;
       }
     }
   }
@@ -136,8 +172,10 @@ void splitdown(int dx0, int dy0, int dx1, int dyl, int dyr, int ex0, int ex1, in
   int sa = q;
   
   if(splits > 0) {
+    // for(int t=1; t<q; t++) printf("%d ", frand(fidx+t, 16)); printf("\n");
     for(int t=1; t<q; t++) if(frand(fidx+t, 2)) sa--;
     }
+  // if(q==6) printf("%d -> %d\n", q, sa);
   
   if(dx1 == dx0+1) {
     int width = 1 + (28-dx1) / 6;
@@ -184,10 +222,17 @@ void hydrapicDraw(hydra *H) {
   if(hds >= 1000) splits++;
   if(hds >= 100) hds = 100, splits+=2;
   else if(hds > 33) splits++;
-  splitdown(4, 4, 28, 29, 29, 4, 28, hds, 1, id2, id2, splits);
+  
+  if(H->color == HC_ALIEN)
+    splitdown(4, 4, 28, 29, 29, 4, 28, hds, 1, id2, id2, splits);
+  else if(H->color == 2)
+    splitdown(4, 4, 28, 29, 29, 12, 28, hds, 1, id2, id2, splits);
+  else
+    splitdown(4, 4, 28, 29, 29, 4, 28, hds, 1, id2, id2, splits);
+
   drawshadows();
   for(int h=0; h<nhead; h++) 
-    drawhead(headx[h], heady[h], headr[h]);
+    drawhead(headx[h], heady[h], headr[h], nhead-h);
   
   // fire hydras
   if(hydrapic_id == 2) {
@@ -236,3 +281,335 @@ void hydrapicAnimate(int i) {
     }
   else while(i--) rseq[rand() % PRIME]++;
   }
+
+struct animinfo {
+  int t;
+  double dx;
+  double dy;
+  int headid;
+  int color;
+  };
+
+void addAnimation(cell *c, int headid, int cutcount, int color = 0) {
+  int cclimit = 10;
+  while(cutcount > cclimit) { cutcount /= 2; cclimit++; if(cutcount<cclimit) cutcount = cclimit; }
+  while(cutcount--) {
+    animinfo ai;
+    ai.t = SDL_GetTicks();
+    ai.dx = randf(-1, 1);
+    ai.dy = randf(-1, 1);
+    ai.headid = headid;
+    ai.color = color;
+    c->animations.push_back(ai);
+    }
+  }
+
+Image *headimage;
+int headtile[ANIM_MAX];
+
+double r64(double z) { return floor(z * 64 + .5) / 64; }
+
+int getAnimation(cell *c) {
+  int res = 0;
+  int d = 0;
+  int t = SDL_GetTicks();
+  for(; d<size(c->animations); d++) {
+    animinfo& ai = c->animations[d];
+    if(ai.t < t - 250) {
+      c->animations[d] = c->animations[size(c->animations)-1];
+      c->animations.resize(size(c->animations)-1);
+      d--; continue;
+      }
+    
+    double tt = (t - ai.t) / 250.0;
+    
+    if(!headtile[ai.headid]) {
+      headtile[ai.headid] = 
+        addTransform(
+         addTile(headimage, ai.headid * HEADX, 0, HEADX, HEADY, headkey),
+         (32-HEADX)/64., (32-HEADY)/64., HEADX/32., HEADY/32., 0, 0);
+      // printf("headtile %d = %d\n", ai.headid, headtile[ai.headid]);
+      }
+    
+    int h = headtile[ai.headid];
+    h = addLayer(h, 1);
+    if(ai.color) h = addRecolor(h, getVGAcolor(ai.color), recDefault);
+    h = addTransform(h, r64(ai.dx*tt), r64(ai.dy*tt), 1, 1, 0, 0);
+    res = addMerge(res, h, false);
+    }
+  return res;
+  }
+
+bool doshadow(cell &c1, cell &c2) {
+//if(c1.seen && !c2.seen) return true;
+  if(c1.explored && !c2.explored) return true;
+  if(c1.explored && c2.explored)
+    if(c1.type != CT_WALL && c2.type == CT_WALL) return true;
+  return false;
+  }
+
+map<long long, int> gmapcache;
+
+long long lastid;
+
+void cacheMap(int id, int val) {
+  gmapcache[lastid] = val;
+  }
+
+void clearMapCache() {
+  gmapcache.clear();
+  // also clear the animations
+  for(int y=0; y<MSY; y++) for(int x=0; x<MSX; x++)
+    M.m[y][x].animations.clear();
+  M.out.animations.clear();
+  }
+
+// return the player coordinates (internal and on-screen)
+void getcoordsLua(lua_State *L) {
+  noteye_table_new(L);
+  noteye_table_setInt(L, "intx", playerpos.x);
+  noteye_table_setInt(L, "inty", playerpos.y);
+  noteye_table_setInt(L, "scrx", topx == TBAR ? playerpos.x : center.x);
+  noteye_table_setInt(L, "scry", topy == TBAR ? playerpos.y : center.y);
+  noteye_table_setInt(L, "topx", topx);
+  noteye_table_setInt(L, "topy", topy);
+  if(P.race == R_TWIN && P.twinmode && twin) {
+    vec2 twinpos = playerpos + pickMinus(twin->pos, playerpos);
+    noteye_table_setInt(L, "twinx", twinpos.x);
+    noteye_table_setInt(L, "twiny", twinpos.y);
+    }
+  // more information
+  noteye_table_setInt(L, "level", P.curlevel);
+  if(canGoDown())
+    noteye_table_setInt(L, "cangodown", 1);
+  noteye_table_setInt(L, "hitpoints", P.curHP);
+  extern int current_context;
+  noteye_table_setInt(L, "context", current_context);
+  noteye_table_setInt(L, "flags", P.flags);
+  return;
+  }
+
+// return a multi-layer tile as a Lua table
+void drawMapLua(lua_State *L, int x, int y, int mode) {
+  vec2 v = vec2(x,y);
+  if(topx != TBAR) v.x += playerpos.x - center.x;
+  if(topy != TBAR) v.y += playerpos.y - center.y;
+  cell& c(M[v]);
+  
+  noteye_table_new(L);
+  if(&c == &M.out) {
+    noteye_table_setInt(L, "out", 1);
+    return;
+    }
+  
+  int shadow = 0;
+  if(doshadow(M[v], M[v+vec2(+1, 0)])) shadow |= 1;
+  if(doshadow(M[v], M[v+vec2(-1, 0)])) shadow |= 2;
+  if(doshadow(M[v], M[v+vec2( 0,+1)])) shadow |= 4;
+  if(doshadow(M[v], M[v+vec2( 0,-1)])) shadow |= 8;
+
+  int floorid;    
+  if(c.type == CT_STAIRDOWN) floorid = 3;
+  else if(c.type == CT_STAIRUP) floorid = 2;
+  else if(c.type == CT_WALL) floorid = 1;
+  else floorid = 0;
+
+  bool onplayer = wrap(v) == wrap(playerpos);
+  int uu = (((v.x+3*v.y) % 5)+5)%5;
+  
+  bool hvis =
+    (c.h && (c.h->visible() ? c.seen : seeallmode()));
+    
+  int anim = getAnimation(&c);
+
+  if(!onplayer && !hvis && !anim && !(mode == 8 && (c.mushrooms || c.it || c.dead))) {
+    long long cacheid = shadow&15;
+    cacheid <<= 3; cacheid += uu;
+    /* printf("cache x=%d y=%d (%d-%d) (%d-%d) uu=%d\n", v.x, v.y, 
+      playerpos.x, center.x, playerpos.y, center.y, uu); */
+    cacheid <<= 1; if(c.type == CT_HEXOUT) cacheid++;
+    cacheid <<= 1; if(c.ontarget) cacheid++;
+    if(c.explored) {
+      cacheid <<= 6; if(c.mushrooms) cacheid |= 1+hydraiconid(c.mushrooms);
+      cacheid <<= 7; if(c.it) cacheid |= c.it->iconExtended();
+      cacheid <<= 5; if(c.it) cacheid |= c.it->gcolor();
+      cacheid <<= 2; cacheid |= floorid;
+      cacheid <<= 1; cacheid |= c.seen;
+      cacheid <<= 5; cacheid |= c.dead == HC_TWIN+1 ? 31 : c.dead;
+      }
+    else { cacheid <<= (6+7+5+2+1+5); cacheid |= 30; }
+    if(gmapcache.count(cacheid)) {
+      noteye_table_setInt(L, "cached", gmapcache[cacheid]);
+      return;
+      }
+    noteye_table_setInt(L, "cacheid", cacheid);
+    lastid = cacheid;
+    }
+
+  if(wrap(v) == wrap(playerpos)) {
+    noteye_table_setInt(L, "hicon", '@');
+    int col = P.race == R_NAGA ? 14 : P.race == R_CENTAUR ? 12 : 
+      P.race == R_TROLL ? 11 : 15;
+    noteye_table_setInt(L, "hcolor", getVGAcolor(col));
+    }
+  
+  noteye_table_setInt(L, "shadow", shadow);
+  noteye_table_setInt(L, "uu", uu);
+
+  if(c.type == CT_HEXOUT)
+    noteye_table_setInt(L, "hex", 1);
+    
+  if(c.ontarget && &c != &M.out)
+    noteye_table_setInt(L, "target", 1);
+  
+  if(anim)
+    noteye_table_setInt(L, "animation", anim);
+
+  if(c.explored) {
+  
+    if(hvis) {
+      noteye_table_setInt(L, "hcolor", getVGAcolorX(c.h->gcolor()));
+      noteye_table_setInt(L, "hicon", c.h->icon());
+      noteye_table_setInt(L, "hid", c.h->uid);
+      if(c.h->sheads)
+        noteye_table_setInt(L, "stun", 1 + 6 * c.h->sheads / c.h->heads);
+
+      if(hydrabox && !P.simplehydras)
+      if(c.h->color != HC_TWIN && c.h->color != HC_ETTIN && c.h->color != HC_MONKEY) {
+        hydrapicDraw(c.h);
+        noteye_table_setInt(L, "gfxid", c.h->gfxid);
+        }
+      }
+  
+    if(c.mushrooms) {
+      noteye_table_setInt(L, "hicon", hydraicon(c.mushrooms));
+      noteye_table_setInt(L, "hcolor", getVGAcolorX(8));
+      }
+    
+    if(c.it) {
+      noteye_table_setInt(L, "icolor", getVGAcolorX(c.it->gcolor()));
+      noteye_table_setInt(L, "iicon", c.it->iconExtended());
+      if(c.it->asWpn()) noteye_table_setInt(L, "itype", c.it->asWpn()->type);
+      }
+    
+    noteye_table_setInt(L, "floor", ".#<>" [floorid]);
+    
+    if(c.dead == HC_TWIN+1) noteye_table_setInt(L, "dead", -1);
+    else if(c.dead) noteye_table_setInt(L, "dead", getVGAcolorX(hyinf[c.dead-1].color));
+    
+    if(c.seen) noteye_table_setInt(L, "seen", 1);
+    }
+  }
+
+#ifdef NOTEYE
+int current_context;
+
+int ghch(int context) { current_context = context; return noteye_getch(); }
+
+struct soundtoplay {
+  int type;
+  int vol, delay; const char *sfname;
+  int hid; vec2 v;  
+  };
+
+vector<soundtoplay> soundqueue;
+
+void playSound(const char *fname, int vol, int msToWait) {
+  if(!fname) return;
+  soundtoplay P;
+  P.type = 0; P.vol = vol; P.delay = msToWait; P.sfname = fname;
+  soundqueue.push_back(P);
+  }
+
+void sendSwapEvent() {
+  soundtoplay P;
+  P.type = 1;
+  soundqueue.push_back(P);
+  }
+
+void sendAutoexploreEvent() {
+  soundtoplay P;
+  P.type = 3;
+  soundqueue.push_back(P);
+  }
+
+void sendAttackEvent(int hid, vec2 from, vec2 to) {
+  soundtoplay P;
+  P.type = 2; P.v = pickMinus(to, playerpos) - pickMinus(from, playerpos); P.hid = hid;
+  soundqueue.push_back(P);
+  }
+
+int lh_getSounds(lua_State *L) {
+  noteye_table_new(L);
+  for(int i=0; i<size(soundqueue); i++) {
+    soundtoplay& P(soundqueue[i]);
+    noteye::noteye_table_opensubAtInt(L, i);
+    if(P.type == 0) {
+      noteye_table_setStr(L, "sound", P.sfname);
+      noteye_table_setInt(L, "vol", P.vol);
+      noteye_table_setInt(L, "delay", P.delay);
+      }
+    else if(P.type == 1) {
+      noteye_table_setInt(L, "swap", 1);
+      }
+    else if(P.type == 3) {
+      noteye_table_setInt(L, "autoexplore", 1);
+      }
+    else if(P.type == 2) {
+      if(P.hid == ATT_TWIN)
+        noteye_table_setStr(L, "hid", "twin");
+      else if(P.hid == ATT_PLAYER)
+        noteye_table_setStr(L, "hid", "player");
+      else noteye_table_setInt(L, "hid", P.hid);
+      noteye_table_setInt(L, "dx", P.v.x);
+      noteye_table_setInt(L, "dy", P.v.y);
+      }
+    noteye_table_closesub(L);
+    }
+  soundqueue.clear();
+  return 1;
+  }
+
+void drawHydraBak() {
+  Image *i = new Image(1920, 1440, 0);
+  
+  for(int u=0; u<2; u++) {
+
+  for(int y=0; y<1440; y+=32) for(int x=0; x<1920; x+=32) {
+    while(!hydras.empty()) 
+      M[hydras[0]->pos].hydraDead(NULL);
+    int hbcol[14] = { HC_ALIEN, HC_GROW, HC_ANCIENT, HC_WIZARD, HC_SHADOW, HC_VAMPIRE };
+    int hdcnt[12] = {1,2,3,4,5,6,8,12,16,64,256,512};
+    
+    int col = ((x+3*y)>>5)%10;
+    if(u ==1 && hrand(100) < 25) col = hbcol[hrand(6)];
+    
+    int siz = hdcnt[hrand(9)];
+    
+    if(col == HC_ANCIENT || col == HC_GROW || col == HC_ANCIENT || col == HC_VAMPIRE)
+      siz = 64 * (1 +hrand(4));
+
+    (new hydra(col, siz, 10, 20))->put();
+    hydrapicInit = false;
+    hydras[0]->setgfxid();
+    hydrapicAnimate(0);
+    hydrapicDraw(hydras[0]);
+    int sh = 32*hydras[0]->gfxid;
+    if(hydras[0]->color == HC_SHADOW) sh = 0;
+    // printf("%d %d id=%d\n", y, x, hydras[0]->gfxid);
+    for(int dy=0; dy<32; dy++) for(int dx=0; dx<32; dx++) {
+      int p = qpixel(hydrabox, sh+dx, dy);
+/*      if(p == 0x8080)
+        p = (dx==0 || dy == 0 || dx == 31 || dy == 31) ? 0 :
+            (dx==1 || dy == 1 || dx == 30 || dy == 30) ? 0x402010 : 0x804020; */
+      qpixel(i->s, x+dx, y+dy) = p;
+      }
+    }
+  
+  SDL_SaveBMP(i->s, u ? "bighydras.bmp" : "smallhydras.bmp");
+  }
+  delete i;
+  }
+
+#endif
+

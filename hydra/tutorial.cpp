@@ -116,7 +116,7 @@ const char* tutorialTexts[13] = {
   "There is a three-headed hydra before you! And it will be a problem. "
   "Hydra slaying weapons have magical enchantments which allow them to cut "
   "several heads at once, but there is a cost: it is impossible to attack a "
-  "hydra which has less heads. So your shortsword will be useless, for now. "
+  "hydra which has fewer heads. So your shortsword will be useless, for now. "
   "You can attack with your machete, but the hydra will now have more than "
   "4 heads after it. If you think about it, you will see that it is impossible "
   "to kill it with your current weapons: it will always have an odd number "
@@ -145,7 +145,7 @@ const char* tutorialTexts[13] = {
   
   "Hopefully you now know the basics of Hydra slaying.\nIn the next chamber, "
   "there is a display of some items that are commonly used by Hydra slayers. "
-  "You can pick up them and read what they do from your inventory ('i'). "
+  "You can pick them up and read what they do from your inventory ('i'). "
   "You can also press 'f'/'l' to get a list of all items, weapons, and hydras "
   "in your sight, and to get detailed information about each of them. "
   "Note that hydras will show the number of heads regrown when attacked by "
@@ -165,7 +165,7 @@ const char* tutorialTexts[13] = {
   "will be even able to find rare artifact weapons, with very special "
   "hydra slaying powers.\n"
   "But there is a general rule that the more powerful the weapon is, "
-  "the less hydras it is able to affect. A shortsword cuts 4 heads, but "
+  "the fewer hydras it is able to affect. A shortsword cuts 4 heads, but "
   "it works only on "
   "hydras with at least 4 heads, and a Bisector takes half of the heads, "
   "but only if the number of heads is even.\nThe challenge is to find the "
@@ -224,7 +224,7 @@ void generateTutorialLevel() {
         break;
       
       case 'r':
-        C.type = rand() % 2 ? CT_EMPTY : CT_WALL;
+        C.type = hrand(2) ? CT_EMPTY : CT_WALL;
         break;
       
       case '1':
@@ -281,10 +281,10 @@ void generateTutorialLevel() {
         break;
       
       case '[': {
-        if(rand() % 2)
-          w = new weapon(rand() % HCOLORS, 1 + rand() % 3, WT_BLADE);
+        if(hrand(2))
+          w = new weapon(randHCol(), 1 + hrand(3), WT_BLADE);
         else
-          w = new weapon(HCOLORS + rand() % SCOLORS, 1 + rand() % 5, WT_BLUNT);
+          w = new weapon(randSCol(), 1 + hrand(5), WT_BLUNT);
         w->putOn(v);
         break;
         }
@@ -293,7 +293,7 @@ void generateTutorialLevel() {
         int arr[8] = { IT_RCANC, IT_RGROW, IT_SXMUT, IT_SGROW,
           IT_PSWIP, IT_PFAST, IT_PARMS, IT_PSEED };
         
-        (new item(arr[rand() % 8]))->putOn(v);
+        (new item(arr[hrand(8)]))->putOn(v);
         break;
         }
       
@@ -306,7 +306,7 @@ void generateTutorialLevel() {
         break;
         
       case 'O':
-        C.mushrooms = 5 + rand() % 5;
+        C.mushrooms = 5 + hrand(5);
         break;
         
       default:
