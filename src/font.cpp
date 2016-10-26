@@ -360,7 +360,7 @@ int DynamicFont::gettile(const char *s) {
 int DynamicFont::gettile(int i) {
   if(ti.count(i)) return ti[i];
   myuchar uc = utf8_encode_array(i);
-
+  
   lua_rawgeti(luamapstate, LUA_REGISTRYINDEX, ref);
   lua_pushstring(luamapstate, (char*) &uc);
   if (lua_pcall(luamapstate, 1, 1, 0) != 0) {
