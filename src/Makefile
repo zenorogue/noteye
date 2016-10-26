@@ -1,11 +1,11 @@
 all: ../noteye
 
 #for development:
-CFLAGS=-Wall -Werror -g
+#CFLAGS=-Wall -Werror -g
 #CC=g++-4.6
 
 #for release:
-#CFLAGS=-O9 -Wall 
+CFLAGS=-O9 -Wall 
 CC=g++
 
 TGT=
