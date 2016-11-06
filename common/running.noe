@@ -538,8 +538,8 @@ function moveminimap(ev)
 -- actually also called on ev.button == 1
 
 function handlemouse(ev)
-  if mouseoutfocus and (ignorefocus or not appactive) then return end
   lastmouseeventtime = getticks()
+  if mouseoutfocus and (ignorefocus or not appactive) then return end
   
   if ev.type == evMouseWheel then
     if mousepos then
