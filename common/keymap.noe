@@ -539,6 +539,17 @@ function sendvector(v)
     end
   end
 
+-- mouse focus option
+
+noteye_config_variable("mouseoutfocus", true, "ignore mouse when out of focus")
+
+menuitems.mouseoutfocus = addtomenu(keysmenu, "m", 
+  writechoicef(function() return "ignore mouse when out of focus: \ve"..boolonoff(mouseoutfocus) end),
+  function ()
+    pickbool("mouseoutfocus", not mouseoutfocus)
+    return true
+    end
+  )
 -- joystick handling
 
 joypos = V(0,0)

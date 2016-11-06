@@ -8,6 +8,7 @@
 appactive = true
 mouse_inside = true
 mousepressed = false
+ignorefocus = false
 
 -- FPS calculation and control
 
@@ -230,6 +231,7 @@ evhandlers[0] = function(ev)
     -- print(addindent().."savecpu")
     savecpu()
     end
+  ignorefocus = false
   return 2
   end
 
@@ -305,6 +307,7 @@ evhandlers[evWindowEvent] = function(ev)
     end
   
   if ev.subtype == w.FOCUS_GAINED then
+    ignorefocus = true
     appactive = true
     end
     
@@ -535,6 +538,7 @@ function moveminimap(ev)
 -- actually also called on ev.button == 1
 
 function handlemouse(ev)
+  if mouseoutfocus and (ignorefocus or not appactive) then return end
   lastmouseeventtime = getticks()
   
   if ev.type == evMouseWheel then
