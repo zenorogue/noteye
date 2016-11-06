@@ -539,7 +539,6 @@ function moveminimap(ev)
 
 function handlemouse(ev)
   lastmouseeventtime = getticks()
-  if mouseoutfocus and (ignorefocus or not appactive) then return end
   
   if ev.type == evMouseWheel then
     if mousepos then
@@ -553,6 +552,8 @@ function handlemouse(ev)
   else
     mousepos = V.be(ev)
     end
+
+  if mouseoutfocus and (ignorefocus or not appactive) then return end
 
   if ev.type == evMouseMotion then
     lastmm = ev
