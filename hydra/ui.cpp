@@ -439,7 +439,7 @@ string helpAbout(int x, int y, bool lng) {
 
 #else
 
-char squareRootSign() { return 'r'; }
+int squareRootSign() { return 'r'; }
 #endif
 
 void cursorOnPlayer() {
