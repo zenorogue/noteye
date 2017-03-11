@@ -283,6 +283,7 @@ struct WinProcess : Process {
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.bInheritHandle = true;
+    sa.lpSecurityDescriptor = NULL;
     
     hStdout = GetStdHandle(STD_OUTPUT_HANDLE); 
   
