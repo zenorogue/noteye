@@ -15,11 +15,11 @@ function rendertext(font, size, text, color, img, where, align, effects)
     if effects.cropto then 
       where = V.cropto(where, rectTB(effects.cropto.top, effects.cropto.bot - si))
       end
-    if effects.on then
+    if effects.on and img then
       drawtile(img, tileshade(effects.on), where.x, where.y, si.x, si.y)
       end
     end
-  drawtile(img, ti, where.x, where.y, si.x, si.y)
+  if img then drawtile(img, ti, where.x, where.y, si.x, si.y) end
   return rectTS(where, si)
   end
 
@@ -29,6 +29,7 @@ function renderlongtext(font, size, text, color, img, box, align, effects)
   
   local bt = box.top
   
+  if not text then text = "(empty)" end
   text = text.."\n"
   
   align = align or 0
@@ -59,7 +60,7 @@ function renderlongtext(font, size, text, color, img, box, align, effects)
         local i = tonumber(s:sub(3))
         if i then
           bt = V(box.top.x - (box.size.x - tilex) * align, bt.y)
-          V.drawtile(img, i, rectTS(bt, V(tilex, tiley)))
+          if img then V.drawtile(img, i, rectTS(bt, V(tilex, tiley))) end
           bt = bt + V(0, tiley)
           end
         

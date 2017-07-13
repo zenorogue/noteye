@@ -27,18 +27,24 @@ function vecerror(x)
   end
 
 function V.mt.__add(a,b)
+  if type(a) == "number" or not a or not a.x or not a.y then
+    vecerror()
+    end
   if type(b) == "number" then
     return V(a.x+b, a.y+b)
-  elseif not V.isvec(b) then
+  elseif not V.isvec(b) or not b.x or not b.y then
     vecerror()
     end
   return V(a.x+b.x, a.y+b.y)
   end
 
 function V.mt.__sub(a,b)
+  if not a or type(a) == "number" or not a.x or not a.y then
+    vecerror()
+    end
   if type(b) == "number" then
     return V(a.x-b, a.y-b)
-  elseif not V.isvec(b) then
+  elseif not V.isvec(b) or not b.x or not b.y then
     vecerror()
     end
   return V(a.x-b.x, a.y-b.y)
@@ -181,6 +187,7 @@ function rectS(size)
   end
 
 function rectTS(top, size)
+  if not top then print(debug.traceback()) end
   return rectTB(top, top+size)
   end
 

@@ -472,6 +472,7 @@ bool checkEventSDL(lua_State *L) {
       noteye_table_setInt(L, "state", SDL_GetMouseState(NULL, NULL));
       noteye_table_setInt(L, "button", mev.button);
       noteye_table_setInt(L, "clicks", mev.clicks);
+      noteye_table_setInt(L, "timestamp", mev.timestamp);
       return true;
       }
 

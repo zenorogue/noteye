@@ -178,6 +178,11 @@ function calcfps()
 
 function savecpu()
   local st = 0
+   
+  if donotsavecpu then
+    donotsavecpu = false
+    return
+    end
   
   if maxcpu < 100 then
     
@@ -197,11 +202,30 @@ function savecpu()
     if t > st then st = t end
     end
   
+  if screenhidden then 
+    st = st + 250 
+    end
+  
+  if not appactive then 
+    st = st + 100
+    end
+  
   if st > 0 then
     noteyesleep(st)
     end
   end
-  
+
+function handleanimstop()
+  if appactive and animstopped then
+    getticks = animstopped
+    animstopped = nil
+  elseif not appactive and not animstopped then
+    local t = getticks()
+    animstopped = getticks
+    function getticks() return t end
+    end  
+  end
+    
 evhandlers[0] = function(ev)
   cleanupRepeatedKeys = false
   if delayedKeyEvent and not speedupState then 
@@ -225,6 +249,7 @@ evhandlers[0] = function(ev)
     noteye_pcall("copymap", 2, nil, copymapall)
     noteye_pcall("drawandrefresh", 2, nil, drawandrefresh)
     noteye_pcall("checkmusic", 1, nil, checkmusic)
+    noteye_pcall("handleanimstop", 1, nil, handleanimstop)
     noteye_pcall("calcfps", 1, nil, calcfps)
     -- print(addindent().."uisleep2")
     uisleep2()
@@ -249,10 +274,10 @@ function uisleep2()
     end
   end
 
-evhandlers[evKeyUp] = handlekeyevent
-evhandlers[evKeyDown] = handlekeyevent
-evhandlers[evTextInput] = handlekeyevent
-evhandlers[evKeyConsole] = handlekeyevent
+evhandlers[evKeyUp] = function(ev) handlekeyevent(ev) end
+evhandlers[evKeyDown] = function(ev) handlekeyevent(ev) end
+evhandlers[evTextInput] = function(ev) handlekeyevent(ev) end
+evhandlers[evKeyConsole] = function(ev) handlekeyevent(ev) end
 evhandlers[evMouseUp] = function(ev) handlemouse(ev) end
 evhandlers[evMouseDown] = function(ev) handlemouse(ev) end
 evhandlers[evMouseMotion] = function(ev) handlemouse(ev) end
@@ -279,9 +304,13 @@ evhandlers[evQuit] = function(ev)
 
 evhandlers[evWindowEvent] = function(ev)
 
-  -- print("subtype = "..ev.subtype.." data1 = "..ev.data1.." data2 = "..ev.data2)
-
   local w = SDL_WINDOWEVENT
+  
+  if false then 
+    local evname = ev.subtype
+    for k,v in pairs(w) do if ev.subtype == v then evname = k end end
+    print("subtype = "..evname)
+    end
   
   if ev.subtype == w.RESIZED then
     if ev.data1 >= 80 and ev.data2 >= 24 then
@@ -315,9 +344,36 @@ evhandlers[evWindowEvent] = function(ev)
     appactive = false
     stopmusic_lostfocus()
     end
+  
+  if ev.subtype == w.HIDDEN then
+    screenhidden = true
+    end
+
+  if ev.subtype == w.SHOWN then
+    screenhidden = false
+    end
+
+  if ev.subtype == w.MINIMIZED then
+    screenhidden = true
+    end
+
+  if ev.subtype == w.RESTORED then
+    screenhidden = false
+    end
+
+  if ev.subtype == w.MAXIMIZED then
+    screenhidden = false
+    end
+    
+  if ev.subtype == w.CLOSE then
+    handlecloseevent()
+    end
 
   end
 
+function handlecloseevent()
+  end
+  
 lastbackup = 0
 
 evhandlers[evProcScreen] = function(ev)
@@ -359,7 +415,6 @@ protectevents = false
 
 function mainloopcyc_small()
   inmenu = nil
-  -- print(addindent().."getevent")
   
   local ev = getevent()
   
@@ -585,7 +640,7 @@ function mousesendsvector()
   end
 
 function movetowards(ev, whereto, direction)
-  if mousesendsvector() and whereto then
+  if mousesendsvector() and whereto and playerpos then
     sendvector(V.floor(whereto) - playerpos - map.top)
 
   elseif direction then
@@ -622,10 +677,10 @@ function handlemouse2(ev)
   
     if ctrlpressed() then
       if ev.dy > 0 then
-        if tilesize.x < maparea.size.y/3 then zoomtiles(2, ev) end
+        if tilesize.x < maparea.size.y/3 then zoomin(ev) end
         end
       if ev.dy < 0 then
-        if not (tilesize * map.size < maparea.size) then zoomtiles(.5, ev) end
+        if not (tilesize * map.size < maparea.size) then zoomout(ev) end
         end
       ctrlzoomingactive = true
       scrolltoplayer = false

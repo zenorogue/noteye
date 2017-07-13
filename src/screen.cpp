@@ -204,6 +204,14 @@ int lh_scrsave(lua_State *L) {
   return 0;
   }
 
+vector<int> layerstodraw;
+
+int lh_uselayer(lua_State *L) {
+  checkArg(L, 1, "uselayer");
+  layerstodraw.push_back(luaInt(1));
+  return 0;
+  }
+
 int lh_drawScreen(lua_State *L) {
   check1(luaInt(1));
   Image *dest = luaO(1, Image);
@@ -215,11 +223,29 @@ int lh_drawScreen(lua_State *L) {
   M.tx = tx; M.ty = ty;
   M.txy = M.tyx = M.tzx = M.tzy = 0;
   
-  for(int y=0; y<scr->sy; y++)
-    for(int x=0; x<scr->sx; x++) {
-      M.x = ox+x*tx; M.y = oy+y*ty;
-      drawTile(dest, M, tmFlat->apply(scr->get(x,y)));
+  if(layerstodraw.size() == 0) {  
+    for(int y=0; y<scr->sy; y++)
+      for(int x=0; x<scr->sx; x++) {
+        M.x = ox+x*tx; M.y = oy+y*ty;
+        drawTile(dest, M, tmFlat->apply(scr->get(x,y)));
+        }
+    }
+  else {
+    layerstodraw.push_back(-1);
+    for(int pos = 0; pos < (int) layerstodraw.size(); pos++) { 
+      for(int y=0; y<scr->sy; y++) {
+        for(int p=pos; layerstodraw[p] != -1; p++) {
+          int lr = layerstodraw[p];
+          for(int x=0; x<scr->sx; x++) {
+            M.x = ox+x*tx; M.y = oy+y*ty;
+            drawTile(dest, M, tmFlat->apply(tmLayer[lr]->apply(scr->get(x,y))));
+            }
+          }
+        }
+      while(layerstodraw[pos] != -1) pos++;
       }
+    layerstodraw.clear();
+    }
   
   dest->changes++;
   return 0;

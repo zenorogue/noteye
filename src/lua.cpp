@@ -249,6 +249,7 @@ void initLua() {
   noteye_globalfun("scrwrite", lh_scrwrite);
   noteye_globalfun("scrcopy", lh_scrcopy);
   noteye_globalfun("scrfill", lh_scrfill);
+  noteye_globalfun("uselayer", lh_uselayer);
   noteye_globalfun("drawscreen", lh_drawScreen);
   noteye_globalfun("drawscreenx", lh_drawScreenX);
   noteye_globalfun("drawscreenIso", lh_drawScreenIso);
@@ -505,5 +506,6 @@ void lua_stackdump (lua_State *L) {
       }
       printf("\n");  /* end the listing */
     }
+
 
 }

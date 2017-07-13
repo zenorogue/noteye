@@ -274,8 +274,8 @@ function setvideomodex()
         flag = flag - SDL_WINDOW.OPENGL
         actualRenderer = rendererSoftware 
         end
-      res = openwindow(Gfx, D.xscrsize.x, D.xscrsize.y, flag, renflags)
-      end
+      res = openwindow(Gfx, D.xscrsize.x, D.xscrsize.y, flag, renflags, D.windowpos.x, D.windowpos.y)
+      end                                                              
 
     if res == false then
       -- probably the font was too big
@@ -686,14 +686,19 @@ function drawMiniMap()
 
 drawmap = {}
 
+function uselayers()
+  for k,v in pairs(tilelayers) do
+    uselayer(v) uselayer(-1)
+    end
+  end
+
 drawmap[modeMini] = function()
   setmaparea()
   if mapon then
     MiniTiles = V.renewscreen(MiniTiles, D.map.size)
     V.scrcopy(MAP, 0, MiniTiles, 0, D.map.size, xtile)
-    for k,v in pairs(tilelayers) do
-      V.drawscreenx(D.output, MiniTiles, D.screen.top + D.fontsize * D.map.top, D.fontsize, getlayerX(v))
-      end
+    uselayers(tilelayers)
+    V.drawscreen(D.output, MiniTiles, D.screen.top + D.fontsize * D.map.top, D.fontsize)
     return false
     end
   end
@@ -768,9 +773,8 @@ drawmap[modeTiles] = function()
   local tcs3 = tcs2 + D.tileext.size * D.tilesize
   
   --profstart("scrx")
-  for k,v in pairs(tilelayers) do
-    V.drawscreenx(D.output, TileCut, tcs2, D.tilesize, getlayerX(v))
-    end
+  uselayers()
+  V.drawscreen(D.output, TileCut, tcs2, D.tilesize)
   --profend("scrx")
   return getAxCommon()
   end
@@ -793,10 +797,9 @@ drawmap[modeMed] = function()
   MedTiles = renewscreen(MedTiles, medsize, D.map.size.y)
   scrcopy(MAP, tx, 0, MedTiles, 0, 0, medsize, D.map.size.y, xtile)
 
-  for k,v in pairs(tilelayers) do
-    V.drawscreenx(D.output, MedTiles, screen.top + map.top * D.fontsize, 
-      D.fontsize * V(2,1), getlayerX(v))
-    end
+  uselayers()
+  V.drawscreenx(D.output, MedTiles, screen.top + map.top * D.fontsize, 
+    D.fontsize * V(2,1))
 
   D.playerat = V(
     (((map.top.x+mapcenter.x+0.5) - (map.top.x+tx)) * 2 + map.top.x) * D.fontsize.x,
@@ -1291,7 +1294,7 @@ addtomenu(modesmenu, "z", writechoicef(
   function()  
     local tsx = asknum(tilesize.x, "new tile width", tilesize.x, zoomnote)
     if tsx ~= tilesize.x and tsx > 0 and tsx < 300 then
-      zoomtiles(tsx / tilesize.x, playerpos)
+      zoomto(tsx, playerpos)
       clearmoveanimations()
       end
     end
@@ -1573,6 +1576,41 @@ function zoomtiles(factor, ev)
     settilectr()
     evc2 = pixeltoprocess(ev)
     mapcenter = mapcenter + evc - evc2
+    end
+  end
+
+function getzoomsizes()
+  zoomsizes = {1, 2, 3}
+  
+  local z = 1
+  for k in 1,10 do
+    zoomsizes.insert(z*4)
+    zoomsizes.insert(z*5)
+    zoomsizes.insert(z*6)
+    z = z * 2
+    end
+  end
+
+function zoomto(newsize, ev)
+  zoomtiles(newsize / tilesize.x, ev)
+  end
+  
+function zoomin(ev)
+  local t = tilesize.x
+  local m = 1
+  while true do 
+    if t < 5.5*m then zoomto(t+m, ev) return
+    else m = m*2 end
+    end
+  end
+
+function zoomout(ev)
+  local t = tilesize.x
+  if t < 1.8 then zoomto(1, ev) return end
+  local m = 1
+  while true do 
+    if t < 6.5*m then zoomto(t-m, ev) return
+    else m = m*2 end
     end
   end
 

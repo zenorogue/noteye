@@ -13,6 +13,7 @@ namespace noteye {
 
 lua_State *internalstate;
 lua_State *uithread;
+lua_State *uithread_out;
 
 bool uithread_err; // there was an error with uithread
 
@@ -53,6 +54,7 @@ void noteye_refresh() {
     if(uithread_err) return;
     uithread_running = true;
     int status = lua_resume(uithread,0);
+    luamapstate = uithread_out;
     uithread_running = false;
     if(status != LUA_YIELD) {
       noteyeError(8, "error: did not yield", lua_tostring(uithread, -1), status);
@@ -455,9 +457,11 @@ int lh_uicreate(lua_State *L) {
   // kill the old thread?
   lua_setglobal(L, "threadtemp");
   uithread = lua_newthread(L);
+  uithread_out = L;
   lua_getglobal(uithread, "threadtemp");
   uithread_running = true;
   int status = lua_resume(uithread, 0);
+  luamapstate = uithread_out;
   uithread_err = false;
   if (status != LUA_YIELD) {
     noteyeError(10, "error running uicreate", lua_tostring(uithread, -1), status);
@@ -478,6 +482,7 @@ void noteye_uiresume() {
     }
   uithread_running = true;
   int status = lua_resume(uithread, 0);
+  luamapstate = uithread_out;
   uithread_running = false;
   if(status != LUA_YIELD) {
     noteyeError(14, "uiresume did not yield", lua_tostring(uithread, -1), status);
