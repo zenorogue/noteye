@@ -798,7 +798,7 @@ drawmap[modeMed] = function()
   scrcopy(MAP, tx, 0, MedTiles, 0, 0, medsize, D.map.size.y, xtile)
 
   uselayers()
-  V.drawscreenx(D.output, MedTiles, screen.top + map.top * D.fontsize, 
+  V.drawscreen(D.output, MedTiles, screen.top + map.top * D.fontsize, 
     D.fontsize * V(2,1))
 
   D.playerat = V(
@@ -1133,13 +1133,17 @@ function pixeltoprocess(ev)
 
 -- convert a pixel to a direction (return integer)
 
+function playerpos_center()
+  return playerpos + 0.5
+  end
+
 function pixeltodir(ev)
   if mode == modeFPP or mode == modeTPP then
     return vectodir(V(ev.x - fppvar.vxm, ev.y - fppvar.vym), 32)
   elseif playerpos then
     local e = pixeltoprocess(ev)
     if not e then return end
-    local dir = vectodir(e-map.top-playerpos-0.5, 0.8)
+    local dir = vectodir(e-map.top-playerpos_center(), 0.8)
     return dir
     end
   end
