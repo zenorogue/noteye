@@ -30,19 +30,37 @@ void noteye_globalfun(const char *name, int f(lua_State *L)) {
 
 int lh_getevent(lua_State *L) {
 
-  if(checkEventSDL(L)) return 1;
+  if(checkEventSDL(L, 0)) return 1;
   
   for(int i=0; i<size(eventobjs); i++) {
     if(objs[eventobjs[i]] && objs[eventobjs[i]]->checkEvent(L)) {
       return 1;
       }
     }
+
+  lua_newtable(L);
+  noteye_table_setInt(L, "type", 0);
+  return 1;
+  }
+
+int lh_getevent_timeout(lua_State *L) {
+
+  checkArg(L, 1, "lh_getevent_timeout");
+  for(int i=0; i<size(eventobjs); i++) {
+    if(objs[eventobjs[i]] && objs[eventobjs[i]]->checkEvent(L)) {
+      return 1;
+      }
+    }
+
+  if(checkEventSDL(L, luaInt(1))) return 1;
+  
   lua_newtable(L);
   noteye_table_setInt(L, "type", 0);
   return 1;
   }
 
 int lh_sleep(lua_State *L) {
+  checkArg(L, 1, "lh_sleep");
   SDL_Delay(luaInt(1));
   return 0;
   }
@@ -298,6 +316,7 @@ void initLua() {
   noteye_globalfun("setfont", lh_setfont);
 
   noteye_globalfun("getevent", lh_getevent);
+  noteye_globalfun("getevent_timeout", lh_getevent_timeout);
   noteye_globalfun("sleep", lh_sleep);
   noteye_globalfun("getticks", lh_getticks);
   noteye_globalfun("getkeystate", lh_getkeystate);

@@ -406,12 +406,12 @@ int lh_SDL_ShowCursor(lua_State *L) {
 #endif
 
 #ifndef LIBTCOD
-bool checkEventSDL(lua_State *L) {
+bool checkEventSDL(lua_State *L, int timeout) {
   initMode();
   if(sdlerror) return false;
   fflush(logfile);
   SDL_Event ev;
-  while(SDL_PollEvent(&ev)) {
+  while(timeout ? SDL_WaitEventTimeout(&ev, timeout) : SDL_PollEvent(&ev)) {
 
     if(ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP) {
       SDL_KeyboardEvent& kev(ev.key);
