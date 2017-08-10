@@ -640,3 +640,9 @@ function consoleout_truecolor()
   setdirectansi(4)
   end
 
+function deenum(x, enum)
+  local res = x
+  for k,v in pairs(enum) do if v == x then res = k end end
+  return res
+  end
+
