@@ -505,7 +505,7 @@ function pickrotate(rnp, rak)
   end
 
 
-menuitems.keyconfig = addtomenu(mainmenu, "k", writechoice("configure keyboard input"),
+menuitems.keyconfig = addtomenu(mainmenu, "k", writechoice("configure input"),
   function()
     keymapidx = nil
     menuexecute(keysmenu, dfthdr(
