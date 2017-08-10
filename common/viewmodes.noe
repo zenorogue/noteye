@@ -1190,6 +1190,8 @@ function pickmode(m)
     file:write("pickmode("..m..")\n")
     end
   mode = m modepower = 10
+  resetsleep()
+  maptocopy = true
   prepareconsole()
   copymap()
   end
@@ -1464,7 +1466,7 @@ function scrollmap()
   scrollTick = getticks()
   local scrolldelta = scrollLastTick and (scrollTick - scrollLastTick) or 0
   
-  local rotateval = scrolldelta * spdRotateanim * speedup / 40000
+  local rotateval = scrolldelta * (economymode and 10000 or spdRotateanim) * speedup / 40000
 
   local fof = fppFacing or -666
   fppFacing = scrollfr(fppFacing, facedir * 45, rotateval)
@@ -1485,7 +1487,7 @@ function scrollmap()
   local centpos = centerwhere()
   calcAutocenter(centpos)
     
-  local ascrollval = scrolldelta * spdAutocenter * speedup / 40000
+  local ascrollval = scrolldelta * (economymode and 10000 or spdAutocenter) * speedup / 40000
   local mscrollval = scrolldelta * spdScrolling / 10000
   local lastmapcenter = mapcenter
 
@@ -1515,15 +1517,19 @@ function scrollmap()
       local bot = scrollarea.bot - sw
       if mx < top.x then
         scrollmaphorizontal(mscrollval * (top.x - mx) / sw.x)
+        resetsleepmax(100)
         end
       if mx > bot.x then
         scrollmaphorizontal(mscrollval * (bot.x - mx) / sw.x)
+        resetsleepmax(100)
         end
       if my < top.y then
         scrollmapvertical(mscrollval * (top.y - my) / sw.y)
+        resetsleepmax(100)
         end
       if my > bot.y then
         scrollmapvertical(mscrollval * (bot.y - my) / sw.y)
+        resetsleepmax(100)
         end
       end
     end
@@ -1536,6 +1542,7 @@ function scrollmap()
     local jscrollval = scrolldelta * spdJoyScrolling / -big
     scrollmapvertical(jscrollval * joyscroll.y)
     scrollmaphorizontal(jscrollval * joyscroll.x)
+    resetsleepmax(100)
     end
   
   if mode ~= modeFPP and mode ~= modeTPP then

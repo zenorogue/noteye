@@ -12,7 +12,8 @@ function menudelay()
   -- do not count frames while the viewer/recorder is in menu
   lastviewframe = nil
   -- sleep for a longer time, to conserve CPU
-  sleep(10)
+  -- (there are no animations anyway)
+  resetsleep(60000)
   end
 
 menuitems = {}
@@ -203,10 +204,11 @@ function menuexecute(M, hdr, tail)
 
   local redraw = true  
 
+  resetsleep()
   while true do
     inmenu = M
 
-    lev = getevent()
+    lev = geteventt()
 
     if lev.type == evMouseDown then
       local y = math.floor(lev.y / fontsize.y)
@@ -505,6 +507,7 @@ function noteyemenu()
   menuexecute(mainmenu, mainhdr)
   fps_init()
   maptocopy = true
+  resetsleep()
   end
 
 -- these menus should be added to the bottom of the main menu,

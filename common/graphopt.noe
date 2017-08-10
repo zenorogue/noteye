@@ -152,7 +152,7 @@ function checkmonstershift2(Data, gxy, targetxy)
       end
     local newtick = scrollTick
     local oldtick = Data.lasttick
-    local sval = (newtick - oldtick) * spdMoveanim * speedup / 40000
+    local sval = (newtick - oldtick) * (economymode and 10000 or spdMoveanim) * speedup / 40000
     Data.lasttick = newtick
     -- local shift = Data.animxy - gxy
     local s1 = Data.animxy

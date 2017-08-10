@@ -15,7 +15,7 @@ ignorefocus = false
 function noteyesleep(t)
   handleviewspeed()
   fps.sleeptime = fps.sleeptime + math.floor(t)
-  sleep(t)
+  resetsleep(t)
   uisleep2()
   end
 
@@ -33,6 +33,7 @@ function fps_init()
 
 noteye_config_variable("maxframe", 999999, "framerate limit")
 noteye_config_variable("maxcpu", 80, "CPU usage limit")
+noteye_config_variable("economymode", false, "economy mode: draw the screen only if changed")
 
 function frameheader()
   menuy = 12
@@ -127,6 +128,15 @@ addtomenu(framemenu, "p", writechoicef(function()
     end
   )
 
+addtomenu(framemenu, "e", writechoicef(function()
+    return "economy mode -- draw the screen only if changed: \ve"..boolonoff(economymode)
+    end),
+  function()
+    pickbool("economymode", not economymode)
+    end
+  )
+
+
 if renderermenu then
   addtomenu(framemenu, "r", writechoice("select the renderer and flags used by NotEye"),
     function()
@@ -155,9 +165,13 @@ evhandlers = {}
 
 function callscheduledtasks()
   for k,v in pairs(scheduledTasks) do
-    if k < fps.laststart then
+    local t = getticks()
+    if k <= t then
       scheduledTasks[k] = nil
+      print("scheduled")
       v()
+    else
+      force_awaken(k - t)
       end
     end
   end
@@ -178,11 +192,16 @@ function calcfps()
 
 function savecpu()
   local st = 0
-   
+  
   if donotsavecpu then
     donotsavecpu = false
     return
     end
+
+  if economymode then
+    noteyesleep(60000)
+    return
+    end  
   
   if maxcpu < 100 then
     
@@ -192,7 +211,7 @@ function savecpu()
     else
       st = fps.lastframe * (100-maxcpu) / maxcpu
       end
-
+    
     -- do not go below 1 fps
     if st > 1000 then st = 1000 end
     end
@@ -225,7 +244,7 @@ function handleanimstop()
     function getticks() return t end
     end  
   end
-    
+
 evhandlers[0] = function(ev)
   cleanupRepeatedKeys = false
   if delayedKeyEvent and not speedupState then 
@@ -245,13 +264,13 @@ evhandlers[0] = function(ev)
   else
     -- print(addindent().."getticks")
     fps.laststart = getticks()
+    -- print(addindent().."uisleep2")
     noteye_pcall("callscheduledtasks", 1, nil, callscheduledtasks)
     noteye_pcall("copymap", 2, nil, copymapall)
     noteye_pcall("drawandrefresh", 2, nil, drawandrefresh)
     noteye_pcall("checkmusic", 1, nil, checkmusic)
     noteye_pcall("handleanimstop", 1, nil, handleanimstop)
     noteye_pcall("calcfps", 1, nil, calcfps)
-    -- print(addindent().."uisleep2")
     uisleep2()
     -- print(addindent().."savecpu")
     savecpu()
@@ -302,15 +321,13 @@ evhandlers[evQuit] = function(ev)
   sendquit()
   end
 
+function windoweventtostring(ev)
+  return deenum(ev.subtype, SDL_WINDOWEVENT)..printtableline(ev)
+  end
+
 evhandlers[evWindowEvent] = function(ev)
 
   local w = SDL_WINDOWEVENT
-  
-  if false then 
-    local evname = ev.subtype
-    for k,v in pairs(w) do if ev.subtype == v then evname = k end end
-    print("subtype = "..evname)
-    end
   
   if ev.subtype == w.RESIZED then
     if ev.data1 >= 80 and ev.data2 >= 24 then
@@ -378,6 +395,7 @@ lastbackup = 0
 
 evhandlers[evProcScreen] = function(ev)
   maptocopy = true
+  resetsleep()
   end
 
 function copygamedata()
@@ -413,11 +431,44 @@ evhandlers[evJoyHat] = joywrapper
 
 protectevents = false
 
+timetowait = 0
+
+function addsleep(t)
+  timetowait = timetowait + t
+  end
+
+function resetsleep(t)
+  timetowait = t or 0
+  end
+
+function resetsleepmax(t)
+  timetowait = math.max(timetowait, t)
+  end
+
+function force_awaken(t)
+  timeawaken = t
+  end
+
+function geteventt()
+  if timeawaken then
+    local t = timeawaken - getticks()
+    if t <= 0 then t = 0 timeawaken = nil end
+    timetowait = math.min(timetowait, t)    
+    end
+  if debugevents then print("timetowait = "..timetowait) end
+  local t1 = getticks()
+  local ev = getevent_timeout(timetowait)
+  local t2 = getticks()
+  timetowait = math.max(timetowait - t2 + t1, 0)
+  if debugevents then print("got event: "..printtableline(ev)) end
+  return ev
+  end
+
 function mainloopcyc_small()
   inmenu = nil
   
-  local ev = getevent()
-  
+  local ev = geteventt()
+
   local handler = evhandlers[ev.type]
   
   if not handler then return 1 end
@@ -594,6 +645,7 @@ function moveminimap(ev)
 
 function handlemouse(ev)
   lastmouseeventtime = getticks()
+  resetsleep()
   
   if ev.type == evMouseWheel then
     if mousepos then

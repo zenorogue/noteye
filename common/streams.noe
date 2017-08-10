@@ -68,6 +68,7 @@ function setmode(nmode)
   videomode_changed = true
   broadcast(sendmode)
   broadcast(nflush)
+  resetsleep()
   end
 
 function sendmessage(X)
@@ -138,6 +139,7 @@ function nhandlenep(X, rscr, rtime, nep)
       setfont(S, Font)
       end
     maptocopy = true
+    resetsleep()
     copymap()
     broadcast(sendscreen)
     broadcast(nflush)

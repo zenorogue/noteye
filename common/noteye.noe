@@ -14,7 +14,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-scriptpatch = "S1"
+scriptpatch = "S3"
 
 noteye_support_address = 
   noteye_support_address or 
@@ -248,7 +248,7 @@ function starttest()
     drawtile(D.output, bordtile, 100, 100, 400, 300)
     
     updscr()
-    lev = getevent()
+    lev = geteventt()
     if lev.type == evKeyDown then break end
     end
   
@@ -289,7 +289,7 @@ function noteyemain()
       autoconnectserver = false
       end
     inmenu="noteyemain"
-    lev = getevent()
+    lev = geteventt()
     
     if lev.type == evQuit then break
     elseif lev.type == evMouseDown then
