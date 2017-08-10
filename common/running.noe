@@ -290,6 +290,8 @@ function uisleep2()
     -- print(addindent().."UI coroutine yields.")
     uisleep()
     -- print(addindent().."UI coroutine is resumed.")
+  else
+    uireturn = true
     end
   end
 
@@ -492,10 +494,11 @@ function mainloopcyc_small()
 
 function mainloopcyc()
   local l
-  while not stoploop do
+  while not stoploop and not uireturn do
     l = mainloopcyc_small()
     if l ~= 1 then return l end
     end
+  if uireturn then uireturn = false end
   return 0
   end
 
