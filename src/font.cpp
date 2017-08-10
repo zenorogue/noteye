@@ -167,7 +167,7 @@ void appendImage(SDL_Surface*& target, SDL_Surface *s2, bool freeit, AppendAlign
       qpixel(target, x, y) = 0;
     for(int y=0; y<t->h; y++) for(int x=0; x<t->w; x++)
       qpixel(target, x, y) = qpixel(t, x, y);
-    for(int y=0; y<t->h; y++) for(int x=0; x<t2->w; x++)
+    for(int y=0; y<t2->h; y++) for(int x=0; x<t2->w; x++)
       qpixel(target, x+t->w, y) = qpixel(t2, x, y);
     SDL_FreeSurface(t);
     SDL_FreeSurface(t2);
