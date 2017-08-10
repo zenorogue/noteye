@@ -69,7 +69,7 @@ function renderlongtext(font, size, text, color, img, box, align, effects)
       elseif s == "ar" then align = -1
         end
       end
-      
+    
     i = i + 1
     
     local printtext
@@ -97,7 +97,7 @@ function renderlongtext(font, size, text, color, img, box, align, effects)
     
     local lasttextline
 
-    if printtext then
+    if printtext then          
       if i>1 then
         bt = V(box.top.x - box.size.x * align, bt.y)
         lasttextline = rendertext(font, size, text:sub(1, i-1), color, img, bt, V(align, 0), effects)
@@ -146,3 +146,8 @@ function apply_prerenderer(a, str)
   return rn
   end
 
+function textsize(font, size, text)
+  local t = 
+    rendertext(font, size, text, 0xFF000000, nil, V(0,0), V(0,0))
+  return t and t.size
+  end
