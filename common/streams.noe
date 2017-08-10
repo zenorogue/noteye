@@ -283,6 +283,7 @@ function nchecktext(ev)
   end
 
 function nsendkey(ev)
+  if bAND(ev.mod, KMOD.LALT + KMOD.RALT) > 0 then textconsumed = true end
   if ev.type == evKeyIgnore then
     return
     end
