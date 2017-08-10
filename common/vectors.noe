@@ -131,6 +131,15 @@ function V.min(a, b)
   return V(math.min(a.x,b.x), math.min(a.y, b.y))
   end
 
+function V.abs(a)
+  if not V.isvec(a) then vecerror() end
+  return V(math.abs(a.x), math.abs(a.y))
+  end
+
+function maxcoord(v)
+  return math.max(v.x, v.y)
+  end
+
 function V.norm(v)
   return v.x*v.x+v.y*v.y
   end
