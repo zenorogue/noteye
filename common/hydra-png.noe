@@ -53,6 +53,8 @@ if HydraPNG == nil then
   SlayerCentaur = atmon(1,11)
   SlayerDead = atmon(2,11)
   SlayerTitan = atmon(3,11)
+  SlayerAtlantean = atmon(5,13)
+  Scythe = atmon(6,13)
   Twin = atmon(3,8)
   Twinbody = tilerecolor(SlayerDead, vgaget(12))
   Corpse = atmon(1,7)
@@ -77,6 +79,13 @@ if HydraPNG == nil then
   Ettin[2] = atmon(5, 7)
   Ettin[1] = atmon(6, 7)
   Ettin[3] = atmon(7, 7)
+  Ettin[4] = atmon(7, 13)
+
+  Monkey = {}
+  Monkey[3] = atmon(0, 14)
+  Monkey[2] = atmon(1, 14)
+  Monkey[1] = atmon(2, 14)
+  MonkeyWpn = atmon(3, 14)
   
   Sword = atitem(3,0)
   Divisor = atitem(4,0)
