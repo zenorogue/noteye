@@ -233,7 +233,7 @@ function centerwhere()
   end
 
 function recenterOnPlayer()
-  oplayerpos = V.copy(playerpos)
+  oplayerpos = V.copy(centerwhere())
   mapcenter = centerwhere()
   scrollmanual = false
   end
