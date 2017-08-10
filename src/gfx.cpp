@@ -405,12 +405,16 @@ int lh_SDL_ShowCursor(lua_State *L) {
   }
 #endif
 
+int nextdelay = 0;
+
 #ifndef LIBTCOD
 bool checkEventSDL(lua_State *L, int timeout) {
   initMode();
   if(sdlerror) return false;
   fflush(logfile);
   SDL_Event ev;
+  if(nextdelay) timeout = min(timeout, nextdelay - (int) SDL_GetTicks());
+  if(timeout < 0) timeout = 0;
   while(timeout ? SDL_WaitEventTimeout(&ev, timeout) : SDL_PollEvent(&ev)) {
 
     if(ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP) {

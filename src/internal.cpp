@@ -92,8 +92,6 @@ void noteye_cbreak() { halfdelaymode = -1; }
 void noteye_curs_set(int i) { if(i==2) i=100; cursorsize = i; }
 void noteye_curs_setx(int i) { cursorsize = i; }
 
-int nextdelay = 0;
-
 SDL_Event *noteye_getevent() {
   if(P->lastevent) delete P->lastevent;
   P->lastevent = P->evbuf[P->evs];
@@ -188,7 +186,6 @@ int noteye_eventtokey(SDL_Event *ev) {
   }
 
 int noteye_getchfull(bool total = false) {
-  long long nextdelay;
   if(halfdelaymode >= 0) nextdelay = SDL_GetTicks() + halfdelaymode;
   else nextdelay = 0;
   
@@ -201,7 +198,7 @@ int noteye_getchfull(bool total = false) {
       int key = noteye_eventtokey(P->lastevent);
       if(key || total) return key;
       }
-    if(nextdelay && SDL_GetTicks() >= nextdelay)
+    if(nextdelay && int(SDL_GetTicks()) >= nextdelay)
       return -1;
     noteye_refresh();
     }
