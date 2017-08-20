@@ -79,7 +79,11 @@ Image::Image(const char *fname) : locked(false) {
   }
 
 void Image::setLock(bool lock) {
-  if(lock && !locked) SDL_LockSurface(s); if(locked && !lock) SDL_UnlockSurface(s); locked = lock;
+  if(lock && !locked)
+    SDL_LockSurface(s); 
+  if(locked && !lock)
+    SDL_UnlockSurface(s);
+  locked = lock;
   }
 
 Image::Image() : locked(false) { changes = 0; }
