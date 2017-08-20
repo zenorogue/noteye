@@ -37,10 +37,10 @@ noteye-jni.o: noteye-jni.cpp noteye.h
 	ar rcs ../libnoteye.a libnoteye.o noteye-jni.o
 
 hydra.o: noteye-curses.h ../hydra/classes.cpp ../hydra/hydra.cpp ../hydra/mainmenu.cpp ../hydra/ui.cpp ../hydra/tutorial.cpp ../hydra/weapons.cpp ../hydra/data.cpp ../hydra/save.cpp ../hydra/achieve.cpp ../hydra/utils.cpp ../hydra/level.cpp ../hydra/monster.cpp ../hydra/drawhydras.cpp
-	$(CC) ../hydra/hydra.cpp -c -o hydra.o -DNOTEYE $(CFLAGS) $(TGT) $(DEF)
+	$(CC) ../hydra/hydra.cpp -c -o hydra.o -DNOTEYE $(CFLAGS) $(TGT) $(DEF) -fPIC
 
 ../noteye: ../libnoteye.so hydra.o noteye-main.cpp ../hydra/hydra-noteye.cpp
-	$(CC) $(DEF) -Wl,-rpath,. -Wl,-rpath,/usr/share/noteye hydra.o noteye-main.cpp -o ../noteye ../libnoteye.so -lGL -lGLU $(TGT)
+	$(CC) $(DEF) -Wl,-rpath,. -Wl,-rpath,/usr/share/noteye hydra.o noteye-main.cpp -o ../noteye ../libnoteye.so -lGL -lGLU -lSDL2 $(TGT)
 
 #../noteye: ../libnoteye.so noteye-main.cpp noteye.h
 #	$(CC) -Wl,-rpath,. noteye-main.cpp -o ../noteye ../libnoteye.so
