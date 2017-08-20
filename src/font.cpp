@@ -238,7 +238,7 @@ int lh_ttfrender(lua_State *L) {
         bufpos = 0;
         }
       if(str[ii] == '\n') {
-        appendImage(plines, cline, true, aaVertical);
+        if(cline) appendImage(plines, cline, true, aaVertical);
         cline = NULL;
         continue;
         }
