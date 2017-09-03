@@ -192,8 +192,12 @@ function stopmusic()
   fadeoutmusic(1000)
   end
 
+function startmusic_lostfocus()
+  resumemusic()
+  end
+
 function stopmusic_lostfocus()
-  stopmusic()
+  pausemusic()
   end
 
 Sounds = {}
