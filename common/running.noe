@@ -357,6 +357,7 @@ evhandlers[evWindowEvent] = function(ev)
   if ev.subtype == w.FOCUS_GAINED then
     ignorefocus = true
     appactive = true
+    startmusic_lostfocus()
     end
     
   if ev.subtype == w.FOCUS_LOST then
