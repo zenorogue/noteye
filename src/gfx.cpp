@@ -216,6 +216,10 @@ bool Window::open(int x, int y, int newflags, int newrenflags, int px, int py) {
   if(!ren && !(flags & SDL_WINDOW_OPENGL)) {
     ren = SDL_CreateRenderer(win, -1, renflags = newrenflags);
     if(!ren) return false;
+    /* Draw a black screen */
+    SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+    SDL_RenderClear(ren);
+    SDL_RenderPresent(ren);
     }
   
   #ifdef OPENGL
