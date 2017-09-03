@@ -128,11 +128,12 @@ function create_prerenderer(a)
   a.flags = a.flags or 0
   a.color = a.color or 0xFFFFFFFF
   a.apply = apply_prerenderer
+  a.table = {}
   return a
   end
 
 function apply_prerenderer(a, str)
-  local rn = a[str]
+  local rn = a.table[str]
   if rn then
     return rn
     end
@@ -140,9 +141,16 @@ function apply_prerenderer(a, str)
   ttfrender(a.font, a.size, str, a.color, im, a.flags)
   local si = V.be(imggetsize(im))
   local t = addtile(im, 0, 0, si.x, si.y, transAlpha)
-  rn = {t = t, pic = im, size = si}
+  rn = {t = t, pic = im, size = si, timestamp = getticks()}
+  for k,v in pairs(a.table) do if 
+    v.timestamp < getticks() - 60000 then 
+      print("deleting prerendered '"..k.."'")
+      delete(a.table[k].pic)
+      a.table[k] = nil
+      end
+    end
   if a.process then a.process(rn, str, a) end
-  a[str] = rn
+  a.table[str] = rn
   return rn
   end
 
