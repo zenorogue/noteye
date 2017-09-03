@@ -392,7 +392,8 @@ mode = mode or modeASCII
 
 -- noteyemain()
 
-createmain()
+dofile(commondir.."generic.noe")
+prepareconsole()
 gamename = "auto"
 loadgameconfig()
 
