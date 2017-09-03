@@ -1131,6 +1131,21 @@ function pixeltoprocess(ev)
   -- note: does not return anything in modeFPP!
   end
 
+-- convert a pixel to process coordinates
+function processtorect(coords)
+
+  if mode == modeASCII or mode == modeMini then
+    return rectTS(D.screen.top + coords * D.fontsize, D.fontsize)
+  elseif mode == modeMed and D.playerat then
+    return nil
+  elseif mode == modeTiles and D.mapcenter and D.tilectr then
+    return rectTS((coords - D.map.top - D.mapcenter + V(-0.5, 0.5)) * D.tilesize + D.tilectr, D.tilesize)
+  elseif mode == modeISO then
+    return nil
+    end
+  -- note: does not return anything in modeFPP!
+  end
+
 -- convert a pixel to a direction (return integer)
 
 function playerpos_center()
