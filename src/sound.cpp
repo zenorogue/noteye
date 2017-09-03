@@ -122,8 +122,25 @@ int lh_playmusicloop(lua_State *L) {
   }
 
 int lh_fadeoutmusic(lua_State *L) {
-  checkArg(L, 1, "playmusic");
-  if(audio == 2) Mix_FadeOutMusic(luaInt(1));
+  checkArg(L, 1, "fadeoutmusic");
+  if(audio == 1 || luaInt(1) == 0) return 0;
+  Mix_FadeOutMusic(luaInt(1));
+  return 0;
+  }
+
+int lh_pausemusic(lua_State *L) {
+  checkArg(L, 0, "pausemusic");
+  if(audio == 1) return 0;
+  if(!mplaying) return 0;
+  Mix_PauseMusic();
+  return 0;
+  }
+
+int lh_resumemusic(lua_State *L) {
+  checkArg(L, 0, "resumemusic");
+  if(audio == 1) return 0;
+  if(!mplaying) return 0;
+  Mix_ResumeMusic();
   return 0;
   }
 
