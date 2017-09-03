@@ -1,3 +1,4 @@
+
 // Necklace of the Eye v6.2
 // roguelike frontend
 // Copyright (C) 2010-2012 Zeno Rogue, see 'noteye.h' for details
@@ -380,6 +381,8 @@ void initLua() {
   noteye_globalfun("musicvolume", lh_musicvolume);
   noteye_globalfun("musichalt", lh_musichalt);
   noteye_globalfun("fadeoutmusic", lh_fadeoutmusic);
+  noteye_globalfun("pausemusic", lh_pausemusic);
+  noteye_globalfun("resumemusic", lh_resumemusic);
 
 #endif
 
