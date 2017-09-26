@@ -486,10 +486,10 @@ bool checkEventSDL(lua_State *L, int timeout) {
       noteye_table_setInt(L, "type", evMouseWheel);
       noteye_table_setInt(L, "dx", wev.x);
       noteye_table_setInt(L, "dy", wev.y);
-#ifdef WINDOWS
-      noteye_table_setInt(L, "direction", 1); // I have outdated SDL on Windows :(
-#else
+#if (SDL_MAJOR_VERSION<<16 | SDL_MINOR_VERSION<<8 | SDL_PATCHLEVEL) >= 0x020004
       noteye_table_setInt(L, "direction", wev.direction == SDL_MOUSEWHEEL_NORMAL ? 1 : -1);
+#else
+      noteye_table_setInt(L, "direction", 1); // older versions of SDL don't have this property
 #endif
       return true;
       }
