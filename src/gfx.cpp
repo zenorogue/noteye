@@ -330,6 +330,22 @@ int lh_setwindowtitle(lua_State *L) {
   return 0;
   }
 
+int lh_setwindowminsize(lua_State *L) {
+  checkArg(L, 2, "setwindowminsize");
+  Window *w = luaO(1, Window);
+  if(w->win)
+    SDL_SetWindowMinimumSize(w->win, luaInt(2), luaInt(3));
+  return 0;
+  }
+
+int lh_setwindowmaxsize(lua_State *L) {
+  checkArg(L, 2, "setwindowmaxsize");
+  Window *w = luaO(1, Window);
+  if(w->win)
+    SDL_SetWindowMaximumSize(w->win, luaInt(2), luaInt(3));
+  return 0;
+  }
+
 int lh_setwindowicon(lua_State *L) {
   checkArg(L, 2, "setwindowicon");
   Window *w = luaO(1, Window);

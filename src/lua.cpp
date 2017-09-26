@@ -285,6 +285,8 @@ void initLua() {
   noteye_globalfun("windowusetex", lh_windowusetex);
   noteye_globalfun("SDL_GetRendererInfoName", lh_SDL_GetRendererInfoName);
   noteye_globalfun("setwindowtitle", lh_setwindowtitle);  
+  noteye_globalfun("setwindowminsize", lh_setwindowminsize);
+  noteye_globalfun("setwindowmaxsize", lh_setwindowmaxsize);
   noteye_globalfun("setwindowicon", lh_setwindowicon);
   noteye_globalfun("renderwindow", lh_renderwindow);
   noteye_globalfun("findvideomode", lh_findvideomode);
