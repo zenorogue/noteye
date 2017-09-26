@@ -15,7 +15,11 @@ static SDL_Surface *exsurface;
 static bool sdlerror = false;
 #endif
 
-int origsx, origsy;
+struct point {
+  int x, y;
+  };
+
+vector<point> origs;
 
 SDL_Joystick *joysticks[8];
 
@@ -57,16 +61,21 @@ void initMode() {
   
   // IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 
+  origs.clear();
+  
 #ifdef SDL2
-  SDL_DisplayMode curr;
-  SDL_GetCurrentDisplayMode(0, &curr);
-  origsx = curr.w;
-  origsy = curr.h;
+  int displays = SDL_GetNumVideoDisplays();
+  for(int i=0; i<displays; i++) {
+    SDL_DisplayMode curr;
+    SDL_GetCurrentDisplayMode(i, &curr);
+    point p = {curr.w, curr.h};
+    origs.push_back(p);
+    }
 
 #else
   const SDL_VideoInfo *inf = SDL_GetVideoInfo();
-  origsx = inf->current_w;
-  origsy = inf->current_h;
+  point p = {inf->current_w, inf->current_h};
+  origs.push_back(p);
 
 #endif
 
@@ -116,9 +125,18 @@ int lh_findvideomode(lua_State *L) {
   }
 
 int lh_origvideomode(lua_State *L) {
+  
+  int displayid = 0;
+  
+  if(noteye_argcount(L) == 1) {
+
+    Window *w = dluaO(1, Window);
+    displayid = w ? SDL_GetWindowDisplayIndex(w->win) : SDL_GetWindowDisplayIndex(NULL);
+    }
+  
   lua_newtable(L);
-  noteye_table_setInt(L, "x", origsx);
-  noteye_table_setInt(L, "y", origsy);
+  noteye_table_setInt(L, "x", origs[displayid].x);
+  noteye_table_setInt(L, "y", origs[displayid].y);
   return 1;
   }
 
@@ -468,6 +486,11 @@ bool checkEventSDL(lua_State *L, int timeout) {
       noteye_table_setInt(L, "type", evMouseWheel);
       noteye_table_setInt(L, "dx", wev.x);
       noteye_table_setInt(L, "dy", wev.y);
+#ifdef WINDOWS
+      noteye_table_setInt(L, "direction", 1); // I have outdated SDL on Windows :(
+#else
+      noteye_table_setInt(L, "direction", wev.direction == SDL_MOUSEWHEEL_NORMAL ? 1 : -1);
+#endif
       return true;
       }
 
