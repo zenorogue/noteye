@@ -290,6 +290,8 @@ function uisleep2()
     -- print(addindent().."UI coroutine yields.")
     uisleep()
     -- print(addindent().."UI coroutine is resumed.")
+  elseif threaded then
+    -- do nothing
   else
     uireturn = true
     end
