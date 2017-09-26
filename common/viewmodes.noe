@@ -230,6 +230,7 @@ function setvideomodex()
     local s = (fscr and D.reqres.sfull) or D.reqres.s
     if s and s.x > D.xscrsize.x then D.xscrsize.x = s.x end
     if s and s.y > D.xscrsize.y then D.xscrsize.y = s.y end
+
     setscreensize(D.xscrsize)
     if fscr and not fscrmode then
       D.xscrsize = V.be(findvideomode(D.xscrsize.x, D.xscrsize.y))
@@ -355,7 +356,16 @@ function prepareconsole()
   -- print(debug.traceback())
   
   if fscr and fscrmode then
-    D.reqres.sfull = V.be(origvideomode())
+    if not Gfx then
+      Gfx = newwindow(mainwindowtitle)
+      D.output = Gfx
+      if D.windowpos then
+        openwindow(Gfx, 320, 200, 0, 0, D.windowpos.x, D.windowpos.y)
+      else
+        openwindow(Gfx, 320, 200, 0, 0, 0, 0)
+        end
+      end
+    D.reqres.sfull = V.be(origvideomode(Gfx or 0))
   else
     D.reqres.sfull = nil
     end
