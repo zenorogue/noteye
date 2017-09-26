@@ -376,7 +376,7 @@ function resizewindow(x, y)
 addtomenu(fontsmenu, "m", writechoicef(
   function() 
     if fscrmode then 
-      D.reqres.sfull = V.be(origvideomode())
+      D.reqres.sfull = V.be(origvideomode(Gfx or 0))
       return "current fullscreen mode: \vekeep the original resolution ("..xxy(reqres.sfull)..")"
     else return "current fullscreen mode: \vechange to the window size"
     end
