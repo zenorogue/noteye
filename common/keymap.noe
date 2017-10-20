@@ -550,6 +550,18 @@ menuitems.mouseoutfocus = addtomenu(keysmenu, "m",
     return true
     end
   )
+
+noteye_config_variable("moveonwheel", false, "mousewheel for movement")
+
+menuitems.mouseoutfocus = addtomenu(keysmenu, "w", 
+  writechoicef(function() return "mousewheel on map to move towards: \ve"..boolonoff(moveonwheel) end),
+  function ()
+    pickbool("moveonwheel", not moveonwheel)
+    return true
+    end
+  )
+
+
 -- joystick handling
 
 joypos = V(0,0)

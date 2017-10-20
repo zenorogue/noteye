@@ -745,8 +745,12 @@ function handlemouse2(ev)
       return true
       end
     
-    movetowards(ev, pixeltoprocess(ev), pixeltodir(ev))
-    return true
+    if moveonwheel then 
+      movetowards(ev, pixeltoprocess(ev), pixeltodir(ev))
+      return true
+      end
+
+    return false
 
   elseif ev.type == evMouseDown and mapon then
     movetowards(ev, pixeltoprocess(ev), pixeltodir(ev))

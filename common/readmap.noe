@@ -203,7 +203,6 @@ function copymap()
   cursor = pcursor
 
   findpc()
-  moveonwheel = true
 
   if mapon then
     -- yeah, there he is!
