@@ -24,8 +24,8 @@
 
 #define NOTEYEVERSION "8.4"
 #define NOTEYEVER 0x840
-#define NOTEYEPATCH 2
-#define NOTEYEPATCHSTR "P2"
+#define NOTEYEPATCH 3
+#define NOTEYEPATCHSTR "P3"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -480,7 +480,7 @@ struct NStream : Object {
   double readDouble();
 
   void writeStr(const std::string& s) {
-    int sz = s.size();
+    int sz = (int) s.size();
     writeInt(sz);
     for(int i=0; i<sz; i++) writeChar(s[i]);
     }
