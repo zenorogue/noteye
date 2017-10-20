@@ -222,8 +222,12 @@ function inrect(vect, rec)
   return b0 and b1
   end
 
+function unionrect(R1, R2)
+  return rectTB(V.min(R1.top, R2.top), V.max(R1.bot, R2.bot))
+  end
+  
 function intersect(R1, R2)
-  return rectB(V.max(R1.top, R2.top), V.min(R1.bot, R2.bot))
+  return rectTB(V.max(R1.top, R2.top), V.min(R1.bot, R2.bot))
   end
   
 -- vector/rectangle-based versions of NotEye functions
@@ -342,6 +346,7 @@ end
 
 V.xy = {x="x", y="y"}
 
+-- iterate over a rectangle
 function irect(R, step)
   local x = R.top.x
   local y = R.top.y
