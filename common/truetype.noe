@@ -135,6 +135,7 @@ function create_prerenderer(a)
 function apply_prerenderer(a, str)
   local rn = a.table[str]
   if rn then
+    rn.timestamp = getticks()
     return rn
     end
   local im = newimage(8,8)
