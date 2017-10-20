@@ -230,6 +230,14 @@ function setvideomodex()
     local s = (fscr and D.reqres.sfull) or D.reqres.s
     if s and s.x > D.xscrsize.x then D.xscrsize.x = s.x end
     if s and s.y > D.xscrsize.y then D.xscrsize.y = s.y end
+    
+   local minsize = winminsize()
+   if minsize.x > D.xscrsize.x then D.xscrsize.x = minsize.x end
+   if minsize.y > D.xscrsize.y then D.xscrsize.y = minsize.y end
+
+   local maxsize = winmaxsize()
+   if maxsize.x < D.xscrsize.x then D.xscrsize.x = maxsize.x end
+   if maxsize.y < D.xscrsize.y then D.xscrsize.y = maxsize.y end
 
     setscreensize(D.xscrsize)
     if fscr and not fscrmode then
@@ -286,6 +294,10 @@ function setvideomodex()
       fallback = true
       selectfontfull(loadfont("cp437-8", 32, 8, fontadj.simple))
       fallback = false
+      end
+    
+    if res then
+      applysizelimits()
       end
 
     D.xscreen = rectS(D.xscrsize)
@@ -351,6 +363,28 @@ function calc_realmap()
   D.realmapshift = V(0,0)
   end
 
+function winminsize()
+  return V(0,0)
+  end
+  
+function winmaxsize()
+  return V(9999,9999)
+  end
+
+function applysizelimits()
+  if Gfx and Gfx ~= 0 then 
+    local minsize = winminsize()
+    local maxsize = winmaxsize()
+    print("set minsize to = "..tostring(minsize))
+    setwindowminsize(Gfx, minsize.x, minsize.y)
+    setwindowmaxsize(Gfx, maxsize.x, maxsize.y)
+    end
+  end
+
+function minimap_haveborder()
+  return true
+  end
+    
 function prepareconsole()
 
   -- print(debug.traceback())
@@ -393,7 +427,8 @@ function prepareconsole()
   Tiles = V.renewscreen(Tiles, D.realmapsize)
   scrset(Tiles, 999, 999, OutOfMap)
   
-  D.mmapsize = D.map.size + V(2,2)
+  D.mmapsize = D.map.size
+  if minimap_haveborder() then D.mmapsize = D.mmapsize + V(2,2) end
   
   Minimap = V.renewscreen(Minimap, D.mmapsize)
   V.scrfill(Minimap, rectTB(V(0,0), D.mmapsize), tilefill(vgaget(0)))
@@ -401,6 +436,8 @@ function prepareconsole()
   oplayerpos = nil
   mapcenter = playerpos or V(1,1)
   lastcmp = nil -- forget the calculated minimap position
+  
+  applysizelimits()
   end
 
 -- == extra stuff ==
@@ -434,7 +471,8 @@ function drawmessage()
 
 -- draw the MiniMap
 
-noteye_config_variable("minimapsize", V(3,3), "size of the mini-map", {type = "vector"})
+noteye_config_variable("usedminimapsize", V(0,0), "size of the mini-map", {type = "vector"})
+minimapsize = V(1,1)
 
 function getpopuplocation(margin, size, last)
 
@@ -465,6 +503,10 @@ function getminimapwindowsize()
   return D.minimapsize * D.mmapsize
   end
 
+function defaultminimapsize()
+  return V(3,3)
+  end
+
 function setupMiniMap()
 
   -- do not move the minimap during ctrl+zooming, look-at-location, or move-to-location
@@ -473,6 +515,11 @@ function setupMiniMap()
   if D.cmini and minimovable == 4 then return end
 
   local ms = D.minimapsize
+  
+  D.minimapsize = V.copy(D.usedminimapsize)
+  if D.minimapsize.x == 0 then D.minimapsize.x = defaultminimapsize().x end
+  if D.minimapsize.y == 0 then D.minimapsize.y = defaultminimapsize().y end
+  
   local size = getminimapwindowsize()
 
   local cmp
@@ -622,7 +669,7 @@ function miniFPP()
 
 function miniReal()
   V.scrfill(Minimap, rectS(D.mmapsize), tilefill(minimapborder))
-  V.scrcopy(MAP, 0, Minimap, V(1,1), D.map.size, minimode == modeASCII and tm_minifont_pick() or tm_minimap)
+  V.scrcopy(MAP, 0, Minimap, (minimap_haveborder() and V(1,1) or V(0,0)), D.map.size, minimode == modeASCII and tm_minifont_pick() or tm_minimap)
   
   if actualRenderer == rendererSurface then
     V.drawscreen(D.output, Minimap, D.cmini.top, D.minimapsize)
@@ -1218,6 +1265,7 @@ function pickmode(m)
   resetsleep()
   maptocopy = true
   prepareconsole()
+  applysizelimits()
   copymap()
   end
 
@@ -1288,8 +1336,7 @@ function pickminimapsize(x, y)
   cfgscripts.minimapsize = function(file)
     file:write("pickminimapsize("..x..","..y..")\n")
     end
-  minimapsize.x = x
-  minimapsize.y = y
+  usedminimapsize = V(x,y)
   D.cmini = nil
   if minimovable > 1 then minimovable = 1 end
   end
@@ -1304,17 +1351,22 @@ asciirecom = {"for the ASCII minimap, the recommended size is 3x5",
   "\vemousewheel down/up\vp: move to/from this location",
   "\veShift+mousewheel down/up\vp: change the minimap height",
   "\veCtrl+mousewheel down/up\vp: change the minimap width",
-  "\veShift+Ctrl+mousewheel down/up\vp: change both the minimap width and height"
+  "\veShift+Ctrl+mousewheel down/up\vp: change both the minimap width and height",
+  "\n\nenter 0 or press ESC to set the minimap size automatically"
   }
 
+function xxya(xy)
+  return (xy.x == 0 and "(auto)" or xy.x).."x"..(xy.y == 0 and "(auto)" or xy.y)
+  end
+  
 addtomenu(modesmenu, "s", writechoicef(
-  function() 
-    return "mini-map size: \ve"..xxy(minimapsize).."\vp (also help about the minimap)"
+  function()  
+    return "mini-map size: \ve"..xxya(usedminimapsize).."\vp (also help about the minimap)"
     end ),
   function()
-    minimapsize.x = asknum(minimapsize.x, "minimap width", minimapsize.x, asciirecom)
-    minimapsize.y = asknum(minimapsize.y, "minimap height", minimapsize.y, asciirecom)
-    pickminimapsize(minimapsize.x, minimapsize.y)
+    local mx = asknum(minimapsize.x, "minimap width", 0, asciirecom)
+    local my = asknum(minimapsize.y, "minimap height", 0, asciirecom)
+    pickminimapsize(mx, my)
     end
   )
 

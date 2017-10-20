@@ -331,7 +331,7 @@ int lh_setwindowtitle(lua_State *L) {
   }
 
 int lh_setwindowminsize(lua_State *L) {
-  checkArg(L, 2, "setwindowminsize");
+  checkArg(L, 3, "setwindowminsize");
   Window *w = luaO(1, Window);
   if(w->win)
     SDL_SetWindowMinimumSize(w->win, luaInt(2), luaInt(3));
@@ -339,7 +339,7 @@ int lh_setwindowminsize(lua_State *L) {
   }
 
 int lh_setwindowmaxsize(lua_State *L) {
-  checkArg(L, 2, "setwindowmaxsize");
+  checkArg(L, 3, "setwindowmaxsize");
   Window *w = luaO(1, Window);
   if(w->win)
     SDL_SetWindowMaximumSize(w->win, luaInt(2), luaInt(3));

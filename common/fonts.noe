@@ -366,7 +366,7 @@ addscreenres("6", "1600x1200", V(1600, 1200))
 addscreenres("7", "1920x1080", V(1920, 1080))
 
 function resizewindow(x, y)
-  if x == xscreen.size.x and y == xscreen.size.y then return end
+  if xscreen and xscreen.size and x == xscreen.size.x and y == xscreen.size.y then return end
   local newsize = {s = V(x, y)}
   pickresolution(newsize)
   end
