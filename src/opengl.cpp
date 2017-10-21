@@ -59,7 +59,8 @@ void initOrthoGL(Window *w) {
   glOrtho(0, w->sx, w->sy, 0, 1, -1); 
   glMatrixMode(GL_MODELVIEW); 
   glLoadIdentity();
-  glEnable(GL_TEXTURE_2D); 
+  glEnable(GL_TEXTURE_2D);
+  glEnableClientState(GL_VERTEX_ARRAY);
   }
 
 struct GLtexture {
@@ -146,35 +147,55 @@ void disableGL(Window *w) {
   w->gl = NULL;
   }
 
+struct coord_t {
+  float x, y;
+};
+
 void drawTileImageGL(Window *dest, drawmatrix &M, TileImage *TI) {
   if(!setContext(dest)) return;
   genTextureGL(TI);
   glEnable(GL_BLEND);
   glEnable(GL_TEXTURE_2D);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glBegin(GL_QUADS);
   glColor4f(1,1,1,1);
 
 #ifdef POWEROFTWO_NOFIX
   float dx = (1.0*TI->gltexture->maxxn) / TI->gltexture->maxxd;
   float dy = (1.0*TI->gltexture->maxyn) / TI->gltexture->maxyd;
-  glTexCoord2f(0, 0); glVertex3f(M.x, M.y, 0);
-  glTexCoord2f(dx, 0); glVertex3f(M.x+M.tx, M.y+M.txy, 0);
-  glTexCoord2f(dx, dy); glVertex3f(M.x+M.tx+M.tyx, M.y+M.ty+M.txy, 0);
-  glTexCoord2f(0, dy); glVertex3f(M.x+M.tyx, M.y+M.ty, 0);
 
+  coord_t TexCoords[6] = {{0,0}, {dx,0}, {dx,dy},
+                          {dx,dy}, {0, dy}, {0,0}};
+
+  coord_t VertCoords[6] = {{M.x, M.y},
+                           {M.x+M.tx, M.y+M.txy},
+                           {M.x+M.tx+M.tyx, M.y+M.ty+M.txy},
+                           {M.x+M.tx+M.tyx, M.y+M.ty+M.txy},
+                           {M.x+M.tyx, M.y+M.ty},
+                           {M.x, M.y}};
 #else
   int txx = M.tx*TI->gltexture->maxxd/TI->gltexture->maxxn;
   int txy = M.txy*TI->gltexture->maxxd/TI->gltexture->maxxn;
   int tyy = M.ty*TI->gltexture->maxyd/TI->gltexture->maxyn;
   int tyx = M.tyx*TI->gltexture->maxyd/TI->gltexture->maxyn;
-  glTexCoord2f(0, 0); glVertex3f(M.x, M.y, 0);
-  glTexCoord2f(1, 0); glVertex3f(M.x+txx, M.y+txy, 0);
-  glTexCoord2f(1, 1); glVertex3f(M.x+txx+tyx, M.y+tyy+txy, 0);
-  glTexCoord2f(0, 1); glVertex3f(M.x+tyx, M.y+tyy, 0);
+
+  coord_t TexCoords[6] = {{0,0}, {1,0}, {1,1},
+                          {1,1}, {0, 1}, {0,0}};
+
+  coord_t VertCoords[6] = {{M.x, M.y},
+                           {M.x+txx, M.y+txy},
+                           {M.x+txx+tyx, M.y+tyy+txy},
+                           {M.x+txx+tyx, M.y+tyy+txy},
+                           {M.x+tyx, M.y+tyy},
+                           {M.x, M.y}};
   
   #endif
-  glEnd(); glGetError();
+
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  glTexCoordPointer(2, GL_FLOAT, 0, &TexCoords);
+  glVertexPointer(2, GL_FLOAT, 0, &VertCoords);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+  glGetError();
   }
 
 void drawFillGL(Window *dest, drawmatrix &M, TileFill *TF) {
@@ -182,7 +203,6 @@ void drawFillGL(Window *dest, drawmatrix &M, TileFill *TF) {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDisable(GL_TEXTURE_2D);
-  glBegin(GL_QUADS);
   noteyecolor col = TF->color;
   glColor4f(
     part(col,2)/255.0,
@@ -190,61 +210,81 @@ void drawFillGL(Window *dest, drawmatrix &M, TileFill *TF) {
     part(col,0)/255.0,
     (part(TF->alpha,0)+part(TF->alpha,1)+part(TF->alpha,2))/765.0
     );
-  glVertex3f(M.x, M.y, 0);
-  glVertex3f(M.x+M.tx, M.y+M.txy, 0);
-  glVertex3f(M.x+M.tx+M.tyx, M.y+M.ty+M.txy, 0);
-  glVertex3f(M.x+M.tyx, M.y+M.ty, 0);
-  glEnd(); glGetError();
+
+  coord_t VertCoords[6] = {{M.x, M.y},
+                           {M.x+M.tx, M.y+M.txy},
+                           {M.x+M.tx+M.tyx, M.y+M.ty+M.txy},
+                           {M.x+M.tx+M.tyx, M.y+M.ty+M.txy},
+                           {M.x+M.tyx, M.y+M.ty},
+                           {M.x, M.y}};
+
+  glVertexPointer(2, GL_FLOAT, 0, &VertCoords);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glGetError();
   }
 
 void fillRectGL(Window *dest, int x, int y, int w, int h, noteyecolor col) {
   if(!setContext(dest)) return;
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_BLEND);
-  glBegin(GL_QUADS);
-  glColor3f(part(col,2)/255.0, part(col,1)/255.0, part(col,0)/255.0);
-  glVertex3f(x, y, 0);
-  glVertex3f(x+w, y, 0);
-  glVertex3f(x+w, y+h, 0);
-  glVertex3f(x, y+h, 0);
-  glEnd();
+  glColor4f(part(col,2)/255.0, part(col,1)/255.0, part(col,0)/255.0, 1.0f);
+
+  coord_t VertCoords[6] = {{x,y},{x+w,y},{x+w,y+h},
+                           {x+w,y+h},{x,y+h},{x,y}};
+
+  glVertexPointer(2, GL_FLOAT, 0, &VertCoords);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
   }
 
 extern viewpar V;
 
 static fpoint4 addShift(fpoint4 o, fpoint4 y, TileImage *w);
 
+struct coord3d_t {
+  float x,y,z;
+};
+
 void renderAffineImageGL(Window *dest, TileImage *w, fpoint4 orig, fpoint4 ox, fpoint4 oy) {
   if(!setContext(dest)) return;
   genTextureGL(w);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  coord3d_t VertCoords[6] = {
+    {orig.x, orig.y, orig.z},
+    {orig.x+ox.x, orig.y+ox.y, orig.z+ox.z},
+    {orig.x+ox.x+oy.x, orig.y+ox.y+oy.y, orig.z+ox.z+oy.z},
+    {orig.x+ox.x+oy.x, orig.y+ox.y+oy.y, orig.z+ox.z+oy.z},
+    {orig.x+oy.x, orig.y+oy.y, orig.z+oy.z},
+    {orig.x, orig.y, orig.z}};
+
+  glVertexPointer(3, GL_FLOAT, 0, &VertCoords);
+
   if(w->sx == 1 && w->sy == 1) {
     glDisable(GL_TEXTURE_2D);
-    glBegin(GL_QUADS);
     // for some reason OpenGL does not work as expected with 1x1 textures
     noteyecolor col = qpixel(w->i->s, w->ox, w->oy);
     if(w->trans == transNone) col |= 0xFF000000;
     glColor4f(part(col,2)/255.0, part(col,1)/255.0, part(col,0)/255.0, part(col,3)/255.0);
-    glVertex3f(orig.x, orig.y, orig.z);
-    glVertex3f(orig.x+ox.x, orig.y+ox.y, orig.z+ox.z);
-    glVertex3f(orig.x+ox.x+oy.x, orig.y+ox.y+oy.y, orig.z+ox.z+oy.z);
-    glVertex3f(orig.x+oy.x, orig.y+oy.y, orig.z+oy.z);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     }
   else {
     if(V.shiftdown) orig = addShift(orig, oy, w);
     glEnable(GL_TEXTURE_2D);
-    glBegin(GL_QUADS);
     glColor4f(1,1,1,1);
     float dx = (1.0*w->gltexture->maxxn) / w->gltexture->maxxd;
     float dy = (1.0*w->gltexture->maxyn) / w->gltexture->maxyd;
-    glTexCoord2f(0,   0); glVertex3f(orig.x, orig.y, orig.z);
-    glTexCoord2f(dx,  0); glVertex3f(orig.x+ox.x, orig.y+ox.y, orig.z+ox.z);
-    glTexCoord2f(dx, dy); glVertex3f(orig.x+ox.x+oy.x, orig.y+ox.y+oy.y, orig.z+ox.z+oy.z);
-    glTexCoord2f(0,  dy); glVertex3f(orig.x+oy.x, orig.y+oy.y, orig.z+oy.z);
+
+    coord_t TexCoords[6] = {{0,0}, {dx,0}, {dx,dy},
+                            {dx,dy}, {0, dy}, {0,0}};
+
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glTexCoordPointer(2, GL_FLOAT, 0, &TexCoords);
     }
-  glEnd(); glGetError();
-  return;
+
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+  glGetError();
   }
 
 void initFPPGL(Window *w) {
