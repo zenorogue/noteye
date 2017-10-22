@@ -30,7 +30,9 @@ using namespace std;
 #include "font.cpp"
 #include "process.cpp"
 #include "stream.cpp"
+#ifndef NOCONSOUT
 #include "consout.cpp"
+#endif
 #include "sound.cpp"
 #include "lua.cpp"
 
