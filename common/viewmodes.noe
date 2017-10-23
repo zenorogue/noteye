@@ -1478,7 +1478,7 @@ scrollTick = getticks()
 
 function getscrollarea()
   -- no scrolling when a modal is active
-  if currentmodal then return nil end
+  if currentmodal and not currentmodal.allow_scrolling then return nil end
   return D.rmaparea
   end
 
