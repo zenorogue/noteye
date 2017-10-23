@@ -235,6 +235,8 @@ function savecpu()
     end
   end
 
+getticks_real = getticks
+
 function handleanimstop()
   if appactive and animstopped then
     getticks = animstopped
@@ -243,7 +245,7 @@ function handleanimstop()
     local t = getticks()
     animstopped = getticks
     function getticks() return t end
-    end  
+    end
   end
 
 evhandlers[0] = function(ev)
