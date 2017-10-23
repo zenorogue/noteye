@@ -608,7 +608,7 @@ function addusermod(x)
 
 -- console configuration shortcuts
 function consoleout_gfx()
-  haveascii = fals
+  haveascii = false
   havegfx = true
   end
 

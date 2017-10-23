@@ -37,8 +37,6 @@ ffi.cdef[[
   void saveimage(int id, const char *fname);
   int scrget(int scr, int x, int y);
   void scrset(int scr, int x, int y, int val);
-  void setdirectansi(int val);
-  void setconsolewindowtitle(const char *s);
 
   int utf8_numbytes(const char *s, int pos);
   int utf8_decode(const char *s, int pos);
@@ -49,6 +47,13 @@ ffi.cdef[[
   int img_getpixel(int src, int srcX, int srcY);
   void img_setpixel(int src, int srcX, int srcY, unsigned int pix);
   ]]
+
+if not NOCONSOUT then
+  ffi.cdef[[
+    void setdirectansi(int val);
+    void setconsolewindowtitle(const char *s);
+    ]]
+  end
 
 local noteyelib = ffi.os == "Windows" and ffi.load("noteye") or ffi.C
 
@@ -73,7 +78,14 @@ tilexf = noteyelib.addTransform
 tilealpha = noteyelib.addFill
 
 addtile = noteyelib.addTileID
-setconsolewindowtitle = noteyelib.setconsolewindowtitle
+
+if NOCONSOUT then
+  setconsolewindowtitle = function(s) end
+  setdirectansi = function(x) end
+else
+  setconsolewindowtitle = noteyelib.setconsolewindowtitle
+  setdirectansi = noteyelib.setdirectansi
+  end
 
 gchv = noteyelib.getChar
 gba = noteyelib.getBak
@@ -84,7 +96,6 @@ gimg = noteyelib.getImage
 scrget = noteyelib.scrget
 scrset = noteyelib.scrset
 saveimage = noteyelib.saveimage
-setdirectansi = noteyelib.setdirectansi
 
 local fff = tonumber("FFFFFFFF", 16)
 

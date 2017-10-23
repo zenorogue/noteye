@@ -30,7 +30,7 @@ noteye-jni.o: noteye-jni.cpp noteye.h
 
 # dynamic library (used for development)
 ../libnoteye.so: libnoteye.o noteye-jni.o
-	$(CC) -shared -Wl,-soname,libnoteye.so -o ../libnoteye.so libnoteye.o noteye-jni.o -lSDL2 -lSDL2_image $(LUAVER) -lutil -lSDL2_mixer -lSDL2_net -lGL -lGLU $(TGT) -lz -lcurses -lSDL2_ttf
+	$(CC) -shared -Wl,-soname,libnoteye.so -o ../libnoteye.so libnoteye.o noteye-jni.o -lSDL2 -lSDL2_image $(LUAVER) -lutil -lSDL2_mixer -lSDL2_net -lGL $(TGT) -lz -lcurses -lSDL2_ttf
 
 # static library (used for Steam version)
 ../libnoteye.a: libnoteye.o noteye-jni.o
@@ -40,7 +40,7 @@ hydra.o: noteye-curses.h ../hydra/classes.cpp ../hydra/hydra.cpp ../hydra/mainme
 	$(CC) ../hydra/hydra.cpp -c -o hydra.o -DNOTEYE $(CFLAGS) $(TGT) $(DEF) -fPIC
 
 ../noteye: ../libnoteye.so hydra.o noteye-main.cpp ../hydra/hydra-noteye.cpp
-	$(CC) $(DEF) -Wl,-rpath,. -Wl,-rpath,/usr/share/noteye hydra.o noteye-main.cpp -o ../noteye ../libnoteye.so -lGL -lGLU -lSDL2 $(TGT)
+	$(CC) $(DEF) -Wl,-rpath,. -Wl,-rpath,/usr/share/noteye hydra.o noteye-main.cpp -o ../noteye ../libnoteye.so -lGL -lSDL2 $(TGT)
 
 #../noteye: ../libnoteye.so noteye-main.cpp noteye.h
 #	$(CC) -Wl,-rpath,. noteye-main.cpp -o ../noteye ../libnoteye.so
