@@ -72,8 +72,10 @@ typedef int bool;
 #endif
 
 #ifdef OPENGL
-#ifdef MAC
+#if defined(MAC)
 #include <OpenGL/gl.h>
+#elif defined(ANDROID)
+#include <GLES/gl.h>
 #else
 #include <GL/gl.h>
 #endif
