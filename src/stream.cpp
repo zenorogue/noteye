@@ -509,7 +509,9 @@ int lh_server(lua_State *L) {
 
 #define NETWORK 1
 #ifndef LIBTCOD
-#ifdef MAC
+#ifdef SDLFLAT
+#include <SDL_net.h>
+#elif defined(MAC)
 #include <SDL2_net/SDL_net.h>
 #else
 #include <SDL2/SDL_net.h>
