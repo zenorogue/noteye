@@ -678,9 +678,6 @@ function handlejoy(ev)
 
 -- == key event handling ==
 
--- ignore the key event (i.e., do not send it further)
-dosendkey = false
-
 -- ignore the following TextInput event
 -- (true by default, because we want to ignore textinput when reloading the scripts)
 textconsumed = true
@@ -749,7 +746,6 @@ function handlekeyevent(ev)
     end
     
   if ev.type == evKeyUp or ev.type == evKeyDown or ev.type == evKeyConsole then
-    dosendkey = true
     textconsumed = false
     userremap(ev)
     
