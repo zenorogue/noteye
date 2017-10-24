@@ -682,6 +682,11 @@ function handlejoy(ev)
 -- (true by default, because we want to ignore textinput when reloading the scripts)
 textconsumed = true
 
+-- Prefer using sendkey instead of sendtext for "printable" keys.
+-- It's needed on Android, where there isn't always KEYDOWN or KEYUP
+-- before TEXTINPUT event
+rawkeys = true
+
 function consumetext(ev)
   if ev.type == evKeyDown then
     ev.type = evKeyDownText
@@ -747,6 +752,12 @@ function handlekeyevent(ev)
     
   if ev.type == evKeyUp or ev.type == evKeyDown or ev.type == evKeyConsole then
     textconsumed = false
+
+    -- we will handle "printable" keys during evTextInput
+    if not rawkeys and ev.keycode >= SDLK.SPACE and ev.keycode <= SDLK.z then
+      return
+      end
+
     userremap(ev)
     
     if handlespecialkeys(ev) then
