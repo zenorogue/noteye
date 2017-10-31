@@ -324,6 +324,7 @@ void initLua() {
   noteye_globalfun("processactive", lh_processActive);
   noteye_globalfun("sendkey", lh_sendkey);
   noteye_globalfun("sendtext", lh_sendtext);
+  noteye_globalfun("sendclick", lh_sendclick);
   noteye_globalfun("proccur", lh_proccur);
   noteye_globalfun("setfont", lh_setfont);
 

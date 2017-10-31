@@ -421,11 +421,17 @@ struct Process : Object {
   bool active() { return isActive; }
   Process(Screen *scr, Font *f, const char *cmdline) : s(scr), f(f), cmdline(cmdline) {}
   int curx, cury;
+
+  struct {
+    int x, y;
+    int button;
+    } mouse;
   
   virtual int getCursorSize() = 0;
 
   virtual void sendKey(int scancode, int keycode, int mod, bool down) = 0;
   virtual void sendText(const std::string& s) = 0;
+  virtual void sendClick(int x, int y, int button) = 0;
   };
 
 // internal process
@@ -453,6 +459,7 @@ struct InternalProcess : Process {
   bool checkEvent(lua_State *L);
   void sendKey(int scancode, int keycode, int mod, bool down);
   void sendText(const std::string& s);
+  void sendClick(int x, int y, int button);
   
   bool changed;
   int  exitcode;
