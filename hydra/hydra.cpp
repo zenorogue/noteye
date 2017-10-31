@@ -1124,7 +1124,7 @@ bool useup(int ii, weapon *orb) {
         }
 
       if(ii == IT_PAMBI && P.race == R_ELF && !orb) {
-        addMessage("Elves' superior fighting style does not work with this potion, but...");
+        addMessage("Elvish superior fighting style does not work with this potion, but...");
         }
       
       if(ii == IT_PAMBI && P.arms == 2) {
@@ -1145,7 +1145,7 @@ bool useup(int ii, weapon *orb) {
         }
       
       if(ii == IT_PSWIP && P.race == R_ELF) {
-        addMessage("Your Elven skill of attacking multiple targets feels more precise.");
+        addMessage("Your elvish skill of attacking multiple targets feels more precise.");
         }
       
       if(ii == IT_PSWIP && P.race == R_CENTAUR) {
@@ -1154,14 +1154,14 @@ bool useup(int ii, weapon *orb) {
       
       if(ii == IT_PKNOW) {
         #ifdef NOTEYE
-        addMessage("Right click a hydra, or select it from 'f', to analyze it.");
+        addMessage("Right click a hydra, or select it from 'f', to analyze.");
         #else
-        addMessage("Press 'f' and select a hydra to analyze it.");
+        addMessage("Press 'f' and select a hydra to analyze.");
         #endif
         }
       
       if(ii == IT_PAMBI && P.race == R_ELF) {
-        addMessage("Elves' superior fighting style does not work with this potion, but...");
+        addMessage("Elvish superior fighting style does not work with this potion, but...");
         }
       
       if(ii == IT_PAMBI && P.race == R_TWIN) {
