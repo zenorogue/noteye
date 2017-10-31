@@ -76,7 +76,9 @@ void initMode() {
   SDL_EnableUNICODE(1);
 #endif
 
+#ifndef ANDROID
   SDL_StartTextInput();
+#endif
 
   exsurface=SDL_CreateRGBSurface(SDL_SWSURFACE,16,16,32,0,0,0,0);
   if(exsurface == NULL) {
