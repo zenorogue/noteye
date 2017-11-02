@@ -303,6 +303,7 @@ evhandlers[evMouseUp] = function(ev) handlemouse(ev) end
 evhandlers[evMouseDown] = function(ev) handlemouse(ev) end
 evhandlers[evMouseMotion] = function(ev) handlemouse(ev) end
 evhandlers[evMouseWheel] = function(ev) handlemouse(ev) end
+evhandlers[evMultiGesture] = function(ev) handlemultigesture(ev) end
 
 evhandlers[evBell] = function(ev)
   if not SndBell then
@@ -749,6 +750,26 @@ function handlemouse2(ev)
     movetowards(ev, pixeltoprocess(ev), pixeltodir(ev))
     return true
     end
+  end
+
+pinchdist = 0
+
+function handlemultigesture(ev)
+  if ev.dDist == 0 then return false end
+  if pinchdist * ev.dDist > 0 then
+    pinchdist = pinchdist + ev.dDist
+  else
+    pinchdist = ev.dDist
+    end
+  ev = D.xscrsize * ev
+  if pinchdist > 0.25 then
+    pinchdist = 0
+    if tilesize.x < maparea.size.y/3 then zoomin(ev) end
+  elseif pinchdist < -0.25 then
+    pinchdist = 0
+    if not (tilesize * map.size < maparea.size) then zoomout(ev) end
+    end
+  return true
   end
 
 -- == start the game process ==

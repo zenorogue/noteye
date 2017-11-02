@@ -149,6 +149,7 @@ typedef struct lua_State lua_State;
 #define evMouseWheel  18
 #define evWindowEvent 19
 #define evKeyConsole  20
+#define evMultiGesture 21
 
 // NotEye protocol
 

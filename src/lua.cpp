@@ -472,6 +472,7 @@ void initLua() {
   noteye_globalint("evMouseWheel", evMouseWheel);
   noteye_globalint("evWindowEvent", evWindowEvent);
   noteye_globalint("evKeyConsole", evKeyConsole);
+  noteye_globalint("evMultiGesture", evMultiGesture);
 
   noteye_globalfun("gp2", lh_gp2);
   
