@@ -19,10 +19,7 @@ function vecerror(x)
   -- for debugging: crash NotEye
   -- error(x)
   -- for release: just print the error (sometimes we may survive)
-  local f = io.open("veclog.txt", "wt")
-  if x then io.write(x) end
-  f:write(debug.traceback())
-  io.close(f)
+  logprint2(debug.traceback())
   if x then logprint2(x) end
   end
 
@@ -204,14 +201,12 @@ function rectCS(ctr, size)
   return rectTB(ctr-size/2, ctr+size/2)
   end
 
-function inrect(vect, rec)
-  if (not vect) or not vect.isvec then
-    logprint2("SUSPICIOUS INRECT VEC")
-    logprint2(debug.traceback())
-    end
-  if (not rec) or not rec.isrect then
-    logprint2("SUSPICIOUS INRECT REC")
-    logprint2(debug.traceback())
+function inrect(vect, rec, verbose)
+  if not vect or not rec or not vect.isvec or not rec.isrect then
+    if verbose then
+      logprint2("SUSPICIOUS INRECT:\n" .. debug.traceback())
+      end
+    return false
     end
   local r = rectTB(V(rec.top.x, rec.top.y), V(rec.bot.x, rec.bot.y))
   local lef = getmetatable(r.top).__le
