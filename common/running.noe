@@ -237,11 +237,16 @@ function savecpu()
 
 getticks_real = getticks
 
+-- stop the idle animations
+-- (but not auto-explore, movement, etc.)
 function handleanimstop()
-  if appactive and animstopped then
+  active_or_animating = appactive or inAnimation
+  if active_or_animating and animstopped then
+    print("real time")
     getticks = animstopped
     animstopped = nil
-  elseif not appactive and not animstopped then
+  elseif not active_or_animating and not animstopped then
+    print("stopping the clock")
     local t = getticks()
     animstopped = getticks
     function getticks() return t end
@@ -283,9 +288,9 @@ evhandlers[0] = function(ev)
   end
 
 function animateAutoexplore()
-  inAnimation = true
+  inAnimation = getticks_real()
   handlePendingAnimations(speedupAutoexplore, 2)
-  inAnimation = false
+  inAnimation = nil
   end
 
 function uisleep2()

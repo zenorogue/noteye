@@ -1536,11 +1536,11 @@ function calcAutocenter(centpos)
   end
 
 function scrollmap()
-  if ctrlzoomingactive or not mapon or not appactive then 
+  scrollTick = getticks()
+  if ctrlzoomingactive or not mapon or not active_or_animating then 
     scrollLastTick = nil
     return
     end
-  scrollTick = getticks()
   local scrolldelta = scrollLastTick and (scrollTick - scrollLastTick) or 0
   
   local rotateval = scrolldelta * (economymode and 10000 or spdRotateanim) * speedup / 40000
