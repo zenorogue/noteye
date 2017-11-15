@@ -459,6 +459,7 @@ bool checkEventSDL(lua_State *L, int timeout) {
       SDL_KeyboardEvent& kev(ev.key);
       lua_newtable(L);
       noteye_table_setInt(L, "type", ev.type == SDL_KEYDOWN ? evKeyDown : evKeyUp);
+      noteye_table_setInt(L, "timestamp", kev.timestamp);
       noteye_table_setInt(L, "scancode", kev.keysym.scancode);
       noteye_table_setInt(L, "keycode", kev.keysym.sym);
       // had to change name because "repeat" is reserved in Lua
@@ -479,6 +480,7 @@ bool checkEventSDL(lua_State *L, int timeout) {
     if(ev.type == SDL_WINDOWEVENT) {
       lua_newtable(L);
       noteye_table_setInt(L, "type", evWindowEvent);
+      noteye_table_setInt(L, "timestamp", ev.window.timestamp);
       noteye_table_setInt(L, "subtype", ev.window.event);
       noteye_table_setInt(L, "data1", ev.window.data1);
       noteye_table_setInt(L, "data2", ev.window.data2);
