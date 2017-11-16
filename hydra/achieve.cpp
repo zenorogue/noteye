@@ -59,7 +59,7 @@ struct achievementdata ach[NUMACH] = {
   {"MIRRORIMAGES", "Mirror Images", "Had one of the Twins return as a mirror image", 5}, 
   {"COLLAPSE", "Alternative Fighter", "Collapsed a Hydra under its own weight", 10}, 
   {"AMBIKILLER", "Master of Ambidexterity", "Killed a 2000+ Hydra with an ambidextrous attack", 5}, 
-  {"SUICIDE", "Suicide", "Commited a suicide", 12}, 
+  {"SUICIDE", "Suicide", "Committed a suicide", 12}, 
   {"BOOMERANG", "Boomerang", "Had a missile dropped under their feet", 5}, 
   {"LONGTHROW", "Long Throw", "Killed 11+ hydras with a single missile throw", 10}, 
   {"RESURRECTIONX", "Resurrection", "Was killed and came back to life (not as Twin)", 10},
