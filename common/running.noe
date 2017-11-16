@@ -9,6 +9,7 @@ appactive = true
 mouse_inside = true
 mousepressed = false
 ignorefocus = false
+focus_timestamp = 0
 
 -- FPS calculation and control
 
@@ -359,6 +360,7 @@ evhandlers[evWindowEvent] = function(ev)
   if ev.subtype == w.FOCUS_GAINED then
     ignorefocus = true
     appactive = true
+    focus_timestamp = ev.timestamp
     startmusic_lostfocus()
     end
     

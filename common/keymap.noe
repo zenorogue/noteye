@@ -745,6 +745,12 @@ function handlekeyevent(ev)
   if currentmodal and currentmodal.handlekey and currentmodal.handlekey(ev) then
     return
     end
+
+  -- ignore key events received less than
+  -- 10 ms of the window gaining focus
+  if ev.timestamp and ev.timestamp - focus_timestamp < 10 then
+    return
+    end
   
   if ev.repeated and cleanupRepeatedKeys then
     delayedKeyEvent = ev
