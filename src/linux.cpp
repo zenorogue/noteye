@@ -49,6 +49,7 @@ struct LinuxProcess : Process {
   void sendRawKeys(const char *buf, int q);
   void sendKey(int scancode, int keycode, int mod, bool down);
   void sendText(const string& s);
+  void sendClick(int x, int y, int button) { };  // TODO implement
   void resetConsole();
 
   int getCursorSize() {

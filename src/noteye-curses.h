@@ -19,6 +19,8 @@
 #define D_END   (DBASE+5)
 #define D_CTR   (DBASE+8)
 
+#define KEY_MOUSE       0631            /* Mouse event has occurred */
+
 // note: Ctrl/Shift modifiers 
 
 #ifdef CURSES_CONSTONLY
@@ -62,6 +64,7 @@ extern "C" { namespace noteye {
   void noteye_refresh();
   void noteye_curs_set(int i);  // 0-hide, 1-normal, 2-big cursor (like in Curses)
   void noteye_curs_setx(int i); // cursor size 0 to 100 (like in Windows)
+  void noteye_getclick(int &x, int &y, int &button);  // get last click position and button
 
   // use these instead of Curses functions
   void initScreen();

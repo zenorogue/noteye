@@ -59,6 +59,16 @@ int lh_sendtext(lua_State *L) {
   return 0;
   }
 
+int lh_sendclick(lua_State *L) {
+  checkArg(L, 4, "sendclick");
+  Process *P = luaO(1, Process);
+  int x = luaInt(2);
+  int y = luaInt(3);
+  int button = luaInt(4);
+  P->sendClick(x, y, button);
+  return 0;
+  }
+
 int lh_processActive(lua_State *L) {
   checkArg(L, 1, "processactive");
   return noteye_retInt(L, luaO(1, Process)->active());

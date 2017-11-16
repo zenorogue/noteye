@@ -34,6 +34,7 @@ using namespace std;
 #include "consout.cpp"
 #endif
 #include "sound.cpp"
+#include "textinput.cpp"
 #include "lua.cpp"
 
 using namespace noteye;

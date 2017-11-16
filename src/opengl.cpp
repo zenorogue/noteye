@@ -3,10 +3,19 @@
 // Copyright (C) 2010-2011 Zeno Rogue, see 'noteye.h' for details
 
 #ifdef OPENGL
-#ifdef MAC
+#if defined(MAC)
 #include <OpenGL/glext.h>
+#elif defined(ANDROID)
+#include <GLES/glext.h>
 #else
 #include <GL/glext.h>
+#endif
+
+#ifdef ANDROID
+#define glClearDepth glClearDepthf
+#define glOrtho glOrthof
+#define glFrustum glFrustumf
+#define GL_BGRA GL_RGBA
 #endif
 
 namespace noteye {
@@ -125,8 +134,10 @@ void genTextureGL(TileImage *T) {
   glBindTexture(GL_TEXTURE_2D, T->gltexture->name);
   GLERR("bitmap");
 
+#ifndef ANDROID
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+#endif
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tsx, tsy, 0, GL_BGRA, GL_UNSIGNED_BYTE, bitmap);
   GLERR("bitmap");
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);

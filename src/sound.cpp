@@ -3,7 +3,9 @@
 // Copyright (C) 2010-2011 Zeno Rogue, see 'noteye.h' for details
 
 #ifndef NOAUDIO
-#ifdef MAC
+#ifdef SDLFLAT
+#include <SDL_mixer.h>
+#elif defined(MAC)
 #include <SDL2_mixer/SDL_mixer.h>
 #else
 #include <SDL2/SDL_mixer.h>

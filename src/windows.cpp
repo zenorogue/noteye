@@ -246,6 +246,8 @@ struct WinProcess : Process {
     
     addKeyEvent(krec);
     }
+
+  void sendClick(int x, int y, int button) { };  // TODO implement
   
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
