@@ -24,8 +24,8 @@
 
 #define NOTEYEVERSION "8.4"
 #define NOTEYEVER 0x840
-#define NOTEYEPATCH 3
-#define NOTEYEPATCHSTR "P3"
+#define NOTEYEPATCH 4
+#define NOTEYEPATCHSTR "P4"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -208,6 +208,7 @@ struct Image : Object {
   bool locked;
   int changes;
   void setLock(bool lock);
+  void upchange();
   Image(const char *fname);
   Image(int sx, int sy, noteyecolor color = 0);
   Image();

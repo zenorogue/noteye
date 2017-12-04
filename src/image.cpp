@@ -63,6 +63,12 @@ void Image::convert() {
   s = s2;
   }
  
+int changecount = 0;
+
+void Image::upchange() {
+  changes = ++changecount;
+  }
+
 Image::Image(const char *fname) : locked(false) {
   title = fname;
   #ifndef LIBTCOD
@@ -75,7 +81,7 @@ Image::Image(const char *fname) : locked(false) {
   totalimagesize += s->w * s->h;
 
   convert();
-  changes = 0;
+  upchange();
   }
 
 void Image::setLock(bool lock) {
@@ -86,7 +92,7 @@ void Image::setLock(bool lock) {
   locked = lock;
   }
 
-Image::Image() : locked(false) { changes = 0; }
+Image::Image() : locked(false) { upchange(); }
 
 Image::Image(int sx, int sy, noteyecolor color) : locked(false) {
   s = SDL_CreateRGBSurface(SURFACETYPE, sx, sy, 32, 0xFF<<16,0xFF<<8,0xFF,0xFF<<24);
@@ -94,7 +100,7 @@ Image::Image(int sx, int sy, noteyecolor color) : locked(false) {
   SDL_LockSurface(s);
   SDL_UnlockSurface(s);
   SDL_FillRect(s, NULL, color);
-  changes = 0;
+  upchange();
   }
 
 #ifdef USELUA
@@ -147,7 +153,7 @@ int lh_fillimage(lua_State *L) {
 #endif
   if(useSDL(img)) fillRectSDL(useSDL(img), rect.x, rect.y, rect.w, rect.h, col); else
   SDL_FillRect(img->s, &rect, col);
-  img->changes++;
+  img->upchange();
   return 0;
   }
 
@@ -172,7 +178,7 @@ int lh_imgcopy(lua_State *L) {
   SDL_Rect tgtR; tgtR.x = tgtX; tgtR.y = tgtY; 
   
   SDL_BlitSurface(srcI->s, &srcR, tgtI->s, &tgtR);
-  tgtI->changes++;
+  tgtI->upchange();
   return 0;
   }
 
@@ -203,7 +209,7 @@ int img_setpixel2(Image *srcI, int srcX, int srcY, int pix) {
 
   srcI->setLock(true);
   qpixel(srcI->s, srcX, srcY) = pix;
-  srcI->changes++;
+  srcI->upchange();
   return 0;
   }
 
