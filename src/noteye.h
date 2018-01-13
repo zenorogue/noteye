@@ -24,8 +24,8 @@
 
 #define NOTEYEVERSION "8.4"
 #define NOTEYEVER 0x840
-#define NOTEYEPATCH 4
-#define NOTEYEPATCHSTR "P4"
+#define NOTEYEPATCH 5
+#define NOTEYEPATCHSTR "P5"
 
 #include <stdio.h>
 #include <unistd.h>

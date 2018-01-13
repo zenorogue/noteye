@@ -104,7 +104,7 @@ SDL_Event *noteye_getevent() {
 
 int noteye_eventtokey(SDL_Event *ev) {
   SDL_KeyboardEvent& kev(ev->key);
-  // int mod = kev.keysym.mod;
+  int mod = kev.keysym.mod;
 
   if(ev->type == SDL_TEXTINPUT)
     return kev.keysym.sym;
@@ -115,10 +115,14 @@ int noteye_eventtokey(SDL_Event *ev) {
 
   if(!down) return 0;
 
+  bool numl = mod & KMOD_NUM;
+  
+  // printf("mod = %x sym = %x\n", mod, sym);
+
   int sym = kev.keysym.sym;
   
-  #define Snd(key, x) else if(sym == SDLK_ ## key) retkey = x;
-  #define SndKP(key, x) else if(sym == SDLK_KP_ ## key) retkey = x;
+  #define Snd(key, x) else if(sym == SDLK_ ## key) retkey = (x);
+  #define SndKP(key, x) else if(sym == SDLK_KP_ ## key) retkey = (x);
   
   if(sym == SDLK_LSHIFT) return 0;
   else if(sym == SDLK_RSHIFT) return 0;
@@ -155,16 +159,16 @@ int noteye_eventtokey(SDL_Event *ev) {
   Snd(END, D_END)
   Snd(PAGEUP, D_PGUP)
   Snd(PAGEDOWN, D_PGDN)
-
-  SndKP(8, D_UP)
-  SndKP(2, D_DOWN)
-  SndKP(6, D_RIGHT)
-  SndKP(4, D_LEFT)
-  SndKP(7, D_HOME)
-  SndKP(1, D_END)
-  SndKP(9, D_PGUP)
-  SndKP(3, D_PGDN)
-  SndKP(5, D_CTR)
+  
+  SndKP(8, numl ? 0 : D_UP)
+  SndKP(2, numl ? 0 : D_DOWN)
+  SndKP(6, numl ? 0 : D_RIGHT)
+  SndKP(4, numl ? 0 : D_LEFT)
+  SndKP(7, numl ? 0 : D_HOME)
+  SndKP(1, numl ? 0 : D_END)
+  SndKP(9, numl ? 0 : D_PGUP)
+  SndKP(3, numl ? 0 : D_PGDN)
+  SndKP(5, numl ? 0 : D_CTR)
 
   #undef Snd
   #undef SndKP
