@@ -32,7 +32,7 @@ void noteye_globalfun(const char *name, int f(lua_State *L)) {
 int lh_getevent(lua_State *L) {
 
   if(checkEventSDL(L, 0)) return 1;
-  
+
   for(int i=0; i<size(eventobjs); i++) {
     if(objs[eventobjs[i]] && objs[eventobjs[i]]->checkEvent(L)) {
       return 1;
@@ -54,7 +54,7 @@ int lh_getevent_timeout(lua_State *L) {
     }
 
   if(checkEventSDL(L, luaInt(1))) return 1;
-  
+
   lua_newtable(L);
   noteye_table_setInt(L, "type", 0);
   return 1;
@@ -180,10 +180,10 @@ char *noteyeStats() {
     "Write compression: %d B -> %d B\n"
     "Read compression: %d B -> %d B\n"
     "Total size of images: %d %06d pixels (including %d %06d pixels in cache)\n",
-    size(objs), hashcol, hashok, writeUnc, writeCmp, 
-    readUnc, readCmp, 
-    int(totalimagesize/1000000), 
-    int(totalimagesize%1000000), 
+    size(objs), hashcol, hashok, writeUnc, writeCmp,
+    readUnc, readCmp,
+    int(totalimagesize/1000000),
+    int(totalimagesize%1000000),
     int(totalimagecache/1000000),
     int(totalimagecache%1000000)
     );
@@ -224,24 +224,24 @@ int lh_geterrormsg(lua_State *L) {
   return noteye_retStr(L, noteyeerrbuf);
   return 0;
   }
-   
+
 #include "obsolete.cpp"
 
 void initLua() {
-  LS = lua_open();
-  
+  LS = luaL_newstate();
+
   if (!LS) {
     fprintf(errfile, "Error Initializing lua\n");
     exit(-1);
     }
- 
+
   noteye_globalfun("loadimage", lh_loadimage);
   noteye_globalfun("newimage", lh_newimage);
   noteye_globalfun("imagetitle", lh_imagetitle);
   noteye_globalfun("fillimage", lh_fillimage);
   noteye_globalfun("imgcopy", lh_imgcopy);
   noteye_globalfun("imggetsize", lh_imggetsize);
-  
+
   noteye_globalfun("tilefreeform", lh_tileFreeform);
 
   noteye_globalfun("tiledebug", lh_tiledebug);
@@ -284,7 +284,7 @@ void initLua() {
   noteye_globalfun("closewindow", lh_closewindow);
   noteye_globalfun("windowusetex", lh_windowusetex);
   noteye_globalfun("SDL_GetRendererInfoName", lh_SDL_GetRendererInfoName);
-  noteye_globalfun("setwindowtitle", lh_setwindowtitle);  
+  noteye_globalfun("setwindowtitle", lh_setwindowtitle);
   noteye_globalfun("setwindowminsize", lh_setwindowminsize);
   noteye_globalfun("setwindowmaxsize", lh_setwindowmaxsize);
   noteye_globalfun("setwindowicon", lh_setwindowicon);
@@ -302,14 +302,14 @@ void initLua() {
   noteye_globalfun("SDL_GetKeyFromScancode", lh_SDL_GetKeyFromScancode);
   noteye_globalfun("SDL_GetScancodeFromKey", lh_SDL_GetScancodeFromKey);
   noteye_globalfun("SDL_ShowCursor", lh_SDL_ShowCursor);
-  
+
 #ifdef NOCONSOUT
   noteye_globalint("NOCONSOUT", 1);
 #else
   noteye_globalfun("openconsole", lh_openconsole);
   noteye_globalfun("refreshconsole", lh_refreshconsole);
 #endif
-  
+
 #ifndef INTERNALONLY
   noteye_globalfun("newprocess", lh_newProcess);
 #ifdef LINUX
@@ -346,7 +346,7 @@ void initLua() {
   noteye_globalfun("isoproject", lh_iso);
 
   noteye_globalfun("imagealias", lh_imagealias);
-  
+
   noteye_globalfun("nwritefile", lh_writefile);
   noteye_globalfun("nreadfile", lh_readfile);
   noteye_globalfun("nopenstringstream", lh_openstringstream);
@@ -372,7 +372,7 @@ void initLua() {
   noteye_globalfun("naccept", lh_accept);
   noteye_globalfun("nconnect", lh_connect);
 
-#ifndef NOAUDIO  
+#ifndef NOAUDIO
   noteye_globalfun("loadsound", lh_loadsound);
   noteye_globalfun("playsound", lh_playsound);
   noteye_globalfun("playsoundloop", lh_playsoundloop);
@@ -402,12 +402,12 @@ void initLua() {
   noteye_globalfun("setcrashstring", lh_setcrashstring);
   noteye_globalfun("getcrashstring", lh_getcrashstring);
   noteye_globalfun("geterrormsg", lh_geterrormsg);
-  
+
   obsolete();
 
 
   // constants:
-  
+
   #ifdef MAC
   noteye_globalint("osx", 1);
   #else
@@ -417,7 +417,7 @@ void initLua() {
   noteye_globalint("windows", 1);
   #endif
   #endif
-  
+
   #ifdef OPENGL
   noteye_globalint("opengl", 1);
   #endif
@@ -427,7 +427,7 @@ void initLua() {
 
   noteye_globalint("TMAP_COPY", 0);
   noteye_globalint("TMAP_LAYER", tmLayer[0]->id);
-  
+
   noteye_globalint("transAlpha", transAlpha);
   noteye_globalint("transNone", transNone);
 
@@ -448,7 +448,7 @@ void initLua() {
   noteye_globalint("spFree"  ,spFree);
   noteye_globalint("spWallTop",spWallTop);
   noteye_globalint("spWallBot",spWallBot);
-  
+
   noteye_globalint("evKeyDown", evKeyDown);
   noteye_globalint("evKeyUp", evKeyUp);
   noteye_globalint("evProcScreen", evProcScreen);
@@ -471,7 +471,7 @@ void initLua() {
   noteye_globalint("evKeyConsole", evKeyConsole);
 
   noteye_globalfun("gp2", lh_gp2);
-  
+
   noteye_globalstr("noteyeversion", NOTEYEVERSION);
   noteye_globalint("NOTEYEVER", NOTEYEVER);
   noteye_globalstr("noteyepatch", NOTEYEPATCHSTR);
@@ -495,8 +495,8 @@ void initLua() {
 
   noteye_globalint("argc", gargc);
   noteye_globalfun("argv", lh_argv);
-    
-  luaL_openlibs(LS);   
+
+  luaL_openlibs(LS);
   }
 
 void closeLua() {
@@ -512,23 +512,23 @@ void lua_stackdump (lua_State *L) {
       for (i = 1; i <= top; i++) {  /* repeat for each level */
         int t = lua_type(L, i);
         switch (t) {
-    
+
           case LUA_TSTRING:  /* strings */
             printf("`%s'", lua_tostring(L, i));
             break;
-    
+
           case LUA_TBOOLEAN:  /* booleans */
             printf(lua_toboolean(L, i) ? "true" : "false");
             break;
-    
+
           case LUA_TNUMBER:  /* numbers */
             printf("%g", lua_tonumber(L, i));
             break;
-    
+
           default:  /* other values */
             printf("%s", lua_typename(L, t));
             break;
-    
+
         }
         printf("  ");  /* put a separator */
       }

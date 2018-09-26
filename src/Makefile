@@ -5,16 +5,22 @@ all: ../noteye
 #CC=g++-4.6
 
 #for release:
-CFLAGS=-O9 -Wall 
+CFLAGS=-O9 -Wall
 CC=g++
 
 TGT=
 #TGT=-m32
 
-#link with lua or luajit?
-#add -DAVOID_FFI if using standard Lua
-#LUAVER=-llua5.1
-LUAVER=-lluajit-5.1
+# link with lua or luajit?
+LUAVER ?= luajit
+
+# add -DAVOID_FFI if using standard Lua
+ifeq (,$(findstring jit, $(LUAVER)))
+	CFLAGS += -DAVOID_FFI
+endif
+
+CFLAGS  += $(shell pkg-config --cflags $(LUAVER))
+LDFLAGS := $(shell pkg-config --libs $(LUAVER))
 
 # note: for Raspberry Pi (and possibly others) add -DRASPBERRY_FIX
 DEF=-DHYDRA -DLINUX -DOPENGL -DCURSESW
@@ -23,14 +29,14 @@ DEF=-DHYDRA -DLINUX -DOPENGL -DCURSESW
 #	$(CC) noteye.cpp -o noteye -lSDL -lSDL_image -llua5.1 -lutil -DLINUX -lSDL_net -lz
 
 libnoteye.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp noteye-curses.h opengl.cpp drawtile.cpp sdltex.cpp utf8.cpp obsolete.cpp
-	$(CC) -fpic -I/usr/include/lua5.1 libnoteye.cpp -c -o libnoteye.o $(CFLAGS) $(DEF) $(TGT)
+	$(CC) -fpic libnoteye.cpp -c -o libnoteye.o $(CFLAGS) $(DEF) $(TGT)
 
 noteye-jni.o: noteye-jni.cpp noteye.h
 	$(CC) -fpic -I. noteye-jni.cpp -c -o noteye-jni.o $(CFLAGS) $(DEF)
 
 # dynamic library (used for development)
 ../libnoteye.so: libnoteye.o noteye-jni.o
-	$(CC) -shared -Wl,-soname,libnoteye.so -o ../libnoteye.so libnoteye.o noteye-jni.o -lSDL2 -lSDL2_image $(LUAVER) -lutil -lSDL2_mixer -lSDL2_net -lGL $(TGT) -lz -lcurses -lSDL2_ttf
+	$(CC) -shared -Wl,-soname,libnoteye.so -o ../libnoteye.so libnoteye.o noteye-jni.o -lSDL2 -lSDL2_image $(LDFLAGS) -lutil -lSDL2_mixer -lSDL2_net -lGL $(TGT) -lz -lcurses -lSDL2_ttf
 
 # static library (used for Steam version)
 ../libnoteye.a: libnoteye.o noteye-jni.o
@@ -40,7 +46,7 @@ hydra.o: noteye-curses.h ../hydra/classes.cpp ../hydra/hydra.cpp ../hydra/mainme
 	$(CC) ../hydra/hydra.cpp -c -o hydra.o -DNOTEYE $(CFLAGS) $(TGT) $(DEF) -fPIC
 
 ../noteye: ../libnoteye.so hydra.o noteye-main.cpp ../hydra/hydra-noteye.cpp
-	$(CC) $(DEF) -Wl,-rpath,. -Wl,-rpath,/usr/share/noteye hydra.o noteye-main.cpp -o ../noteye ../libnoteye.so -lGL -lSDL2 $(TGT)
+	$(CC) $(DEF) -Wl,-rpath,. -Wl,-rpath,/usr/share/noteye hydra.o noteye-main.cpp -o ../noteye ../libnoteye.so $(LDFLAGS) -lGL -lSDL2 $(TGT)
 
 #../noteye: ../libnoteye.so noteye-main.cpp noteye.h
 #	$(CC) -Wl,-rpath,. noteye-main.cpp -o ../noteye ../libnoteye.so
@@ -97,7 +103,7 @@ clean:
 
 # note about the install script:
 # unfortunately I cannot set the group ID to games since it would cause a security hole (NotEye is scriptable)
-# I don't know how to solve this (other than creating a separate hydra slayer executable), thus I simply make 
+# I don't know how to solve this (other than creating a separate hydra slayer executable), thus I simply make
 # the scores writeable by anyone
 
 # uninstall will remove the global highscores!

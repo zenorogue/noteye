@@ -57,7 +57,7 @@ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net
 ~~~~
 
 (Note: since Oct 2016 LuaJIT is used instead of the standard Lua, for efficiency -- if you want to
-use the standard Lua, you need liblua5.1-0-dev and edit the Makefile)
+use the standard Lua, you need liblua5.1-0-dev and run make with LUAVER=lua5.1)
 
 Change the directory:
 ~~~~
