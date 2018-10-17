@@ -35,6 +35,13 @@ int lh_proccur(lua_State *L) {
   return 1;
   }
 
+point get_cursor(Process *P) {
+  point res;
+  res.x = P->curx;
+  res.y = P->cury;
+  return res;
+  }
+ 
 int lh_sendkey(lua_State *L) {
   checkArg(L, 2, "sendkey");
   Process *P = luaO(1, Process);

@@ -15,10 +15,6 @@ static SDL_Surface *exsurface;
 static bool sdlerror = false;
 #endif
 
-struct point {
-  int x, y;
-  };
-
 vector<point> origs;
 
 SDL_Joystick *joysticks[8];

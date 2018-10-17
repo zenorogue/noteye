@@ -663,6 +663,9 @@ struct InternalProcess *noteye_getinternal();
 int noteye_getinternalx();
 int noteye_getinternaly();
 
+struct point {int x, y;};
+struct point noteye_getcursor(Process *P);
+
 void noteye_setinternal(struct InternalProcess *Proc, lua_State *L, int spos);
 void noteye_finishinternal(int exitcode);
 
