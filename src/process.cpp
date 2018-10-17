@@ -35,7 +35,7 @@ int lh_proccur(lua_State *L) {
   return 1;
   }
 
-point get_cursor(Process *P) {
+point noteye_getcursor(Process *P) {
   point res;
   res.x = P->curx;
   res.y = P->cury;
