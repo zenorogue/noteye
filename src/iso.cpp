@@ -4,9 +4,13 @@
 
 namespace noteye {
 
-struct IsoParam : Object {
+struct isosizes {
   int floor, wall, icon, iconh;
   int sx, sy, flev;
+  isosizes *get_isosizes() { return this; }
+  };
+  
+struct IsoParam : Object, isosizes {
   smartptr<FreeFormParam> Floor, WalL, WalR, Item, Ceil;
   void build();
   };
@@ -77,6 +81,11 @@ void IsoParam::build() {
   }
 
 extern "C" {
+
+isosizes *get_isosizes(IsoParam *P) {
+  if(!P) return NULL;
+  return P->get_isosizes();
+  }
 
 Tile *getIso(Tile *ti, IsoParam *P) {
   Tile *t0;

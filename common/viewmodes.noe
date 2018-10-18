@@ -948,7 +948,8 @@ function fppbackground(v)
 drawmap[modeISO] = function()
   V.scrcopy_f(MAP, 0, Tiles, 0, D.map.size, xtile)
   scrset(Tiles, 999, 999, OutOfMap)
-  isi = V.be(isosizes(IsoParam))
+  isi = isosizes(IsoParam)
+  isv = V.be(isi.sx, isi.sy)
   
   setmaparea()
   settilectr()
@@ -956,7 +957,7 @@ drawmap[modeISO] = function()
   
   local dxy = D.mapcenter - mcf
   
-  tcs = tilectr - V(isi.x/2 + isi.floor*(dxy.x-dxy.y), isi.y/2 + isi.floor*(dxy.x+dxy.y)/2)
+  tcs = tilectr - V(isi.sx/2 + isi.floor*(dxy.x-dxy.y), isi.sy/2 + isi.floor*(dxy.x+dxy.y)/2)
 
   local rect = (D.maparea - tcs) / V(2*isi.floor, isi.floor)
   

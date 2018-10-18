@@ -197,6 +197,14 @@ ffi.cdef[[
   void scrcopy_f(Screen *srcS, int srcX, int srcY, Screen *tgtS, int tgtX, int tgtY, int SX, int SY, tilecopyfunction tcf);
   
   double noteye_precise_time();
+  
+  typedef struct isosizes {
+    int floor, wall, icon, iconh;
+    int sx, sy, flev;
+    } isosizes; 
+  
+  isosizes *get_isosizes(IsoParam *P);
+  void drawScreenIso(Image *dest, Screen *scr, IsoParam *P, double x0, double y0, double x1, double y1, int xc, int yc, int xm, int ym, int rx0, int ry0, int rx1, int ry1);
   ]]
 end
 
@@ -429,3 +437,7 @@ scrcopy_f = noteyelib.scrcopy_f
 scrcopy_sample = ffi.cast("tilecopyfunction", function(a,b,c) return a end)
 
 noteye_precise_time = noteyelib.noteye_precise_time
+
+isosizes = noteyelib.get_isosizes
+
+drawscreenIso = noteyelib.drawScreenIso
