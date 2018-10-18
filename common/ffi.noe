@@ -205,6 +205,26 @@ ffi.cdef[[
   
   isosizes *get_isosizes(IsoParam *P);
   void drawScreenIso(Image *dest, Screen *scr, IsoParam *P, double x0, double y0, double x1, double y1, int xc, int yc, int xm, int ym, int rx0, int ry0, int rx1, int ry1);
+
+  // 3D point, used in the FPP mode
+  typedef struct fpoint4 {
+    double x, y, z;
+  } fpoint4;
+  
+  // viewpar struct for the FPP
+  typedef struct viewpar {
+    Image* vimg;
+    int x0, x1, y0, y1, xm, ym, xs, ys;
+    double xz, yz;
+    int ctrsize, monsize, objsize, monpush, objpush;
+    bool shiftdown;
+    int side;
+    double cameraangle, cameratilt, camerazoom;
+    struct fpoint4 delta;
+    bool hex;
+    } viewpar;
+
+  void fpp(viewpar *vp, double wax, double way, double facedir, Screen *s);
   ]]
 end
 
@@ -441,3 +461,6 @@ noteye_precise_time = noteyelib.noteye_precise_time
 isosizes = noteyelib.get_isosizes
 
 drawscreenIso = noteyelib.drawScreenIso
+fpp = noteyelib.fpp
+fpp_parameters = ffi.typeof("viewpar")
+fpp_parameters_table = ffi.typeof("viewpar[1]")

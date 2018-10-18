@@ -702,15 +702,16 @@ void drawFPP_GL(double wax, double way, double facedir, Screen *s) {
 
 #ifdef USELUA
 extern "C" {
-void fpp(viewpar vp, double wax, double way, double facedir, Screen *s) {
+void fpp(viewpar *vp, double wax, double way, double facedir, Screen *s) {
 
   ASSERT_TYPE(s, Screen, );
   
   genfpporder();
   
-  V = vp;
+  V = *vp;
 
-  viewimage = vp.vimg;
+
+  viewimage = vp->vimg;
   
   viewglwindow = useGL(viewimage);
   viewsdlwindow = useSDL(viewimage);

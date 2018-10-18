@@ -456,7 +456,7 @@ function drawmessage()
       drawtile(D.output, tilefill(vgaget(1)), 0, D.xscreen.size.y-D.fontsize.y*yy, D.xscreen.size.x, D.fontsize.y*yy)
       Msgline = renewscreen(Msgline, D.conssize.x, 1)
       for y=1,yy do
-        scrfill(Msgline, 0, 0, D.conssize.x, 1, 0)
+        scrfill(Msgline, 0, 0, D.conssize.x, 1, EMPTYTILE)
         scrwrite(Msgline, 0, 0, messages[y].text, Font, vgaget(14))
         drawscreen(D.output, Msgline, 0, D.xscreen.size.y-D.fontsize.y*(yy-y+1), D.fontsize.x, D.fontsize.y)
         end
@@ -631,12 +631,12 @@ function miniFPP()
   V.scrcopy_f(MAP, 0, Tiles, 0, D.map.size, xtile) -- ffitodo make it fast as it was
   
   setfppvar()
-  fppvar.vx0 = fppvar.vx0 + D.cmini.top.x
-  fppvar.vy0 = fppvar.vy0 + D.cmini.top.y
-  fppvar.vx1 = fppvar.vx1 + D.cmini.top.x
-  fppvar.vy1 = fppvar.vy1 + D.cmini.top.y
-  fppvar.vxm = fppvar.vxm + D.cmini.top.x
-  fppvar.vym = fppvar.vym + D.cmini.top.y
+  fppvar.x0 = fppvar.x0 + D.cmini.top.x
+  fppvar.y0 = fppvar.y0 + D.cmini.top.y
+  fppvar.x1 = fppvar.x1 + D.cmini.top.x
+  fppvar.y1 = fppvar.y1 + D.cmini.top.y
+  fppvar.xm = fppvar.xm + D.cmini.top.x
+  fppvar.ym = fppvar.ym + D.cmini.top.y
   
   local fd = fppFacing or facedir * 45
   -- rear mirror!
@@ -868,15 +868,36 @@ drawmap[modeMed] = function()
 
 function setfppvar()
   setmaparea()
-  fppvar = {
-    vx0 = maparea.top.x, vy0 = maparea.top.y,
-    vx1 = maparea.bot.x, vy1 = maparea.bot.y,
-    vxm = maparea.ctr.x, vym = maparea.ctr.y,
-    vys = maparea.size.y/2,
-    vxs = maparea.size.y/2,
-    vimg = D.output,
-    dy = 2
-    }
+  fppvar = fpp_parameters()
+  fppvar.vimg = D.output
+  fppvar.x0 = maparea.top.x
+  fppvar.y0 = maparea.top.y
+  fppvar.x1 = maparea.bot.x
+  fppvar.y1 = maparea.bot.y
+  fppvar.xm = maparea.ctr.x
+  fppvar.ym = maparea.ctr.y
+  fppvar.ys = maparea.size.y/2
+  fppvar.xs = maparea.size.y/2
+  
+  fppvar.ctrsize = 16
+  fppvar.monsize = 16
+  fppvar.objsize = 8
+  fppvar.monpush = 12
+  fppvar.objpush = 14
+  
+  fppvar.xz = 1
+  fppvar.yz = 1
+
+  fppvar.delta.x = 0
+  fppvar.delta.y = 2
+  fppvar.delta.z = 0
+  
+  fppvar.side = 1
+  
+  fppvar.cameraangle = 0
+  fppvar.cameratilt = 0
+  fppvar.camerazoom = 1
+  fppvar.hex = false
   end
 
 drawmap[modeFPP] = function()
@@ -895,7 +916,10 @@ drawmap[modeFPP] = function()
   simFacing = be360(fppFacing)
   tppAngleRound = nil
   V.scrcopy_f(MAP, 0, Tiles, 0, D.map.size, xtile)
-  fpp(fppvar, mapcenter.x, mapcenter.y, fppFacing, Tiles)
+  
+  fppvar_table = fpp_parameters_table()
+  fppvar_table[0] = fppvar
+  fpp(fppvar_table, mapcenter.x, mapcenter.y, fppFacing, Tiles)
   return getAxCommon()
   end
 
@@ -918,9 +942,9 @@ drawmap[modeTPP] = function()
   local angle = tppFacing * math.pi / 180
   zsi = tppDistance * math.sin(tppAngleRad)
 
-  fppvar.dz = (fppvar.dz or 0) + zsi * 32
-  fppvar.dy = 0
-  fppvar.dx = 0
+  fppvar.delta.z = fppvar.delta.z + zsi * 32
+  fppvar.delta.y = 0
+  fppvar.delta.x = 0
   fppvar.cameraangle = tppAngle
   fppvar.camerazoom  = tppZoom
 
@@ -940,7 +964,7 @@ drawmap[modeTPP] = function()
   end
 
 function fppbackground(v)
-  fillimage(D.output, v.vx0, v.vy0, v.vx1-v.vx0, v.vy1-v.vy0, vgaget(0))
+  fillimage(D.output, v.x0, v.y0, v.x1-v.x0, v.y1-v.y0, vgaget(0))
   end
   
 -- iso display --

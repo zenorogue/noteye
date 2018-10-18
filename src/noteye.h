@@ -405,6 +405,7 @@ struct viewpar {
   int side;
   double cameraangle, cameratilt, camerazoom;
   fpoint4 delta;
+  bool hex;
   };
 
 struct drawmatrix {
@@ -730,7 +731,9 @@ void checkArg(struct lua_State *L, int q, const char *fname);
 #define luaBool(x) noteye_argBool(L, x)
 #define luaStr(x) noteye_argStr(L, x)
 
-#define ASSERT_TYPE(x, type, rval) if(!dynamic_cast<type*>(x)) { fprintf(stderr, "type assertion failed\n"); return rval; }
+#define ASSERT_TYPE(x, type, rval) \
+  if(x == NULL) { fprintf(stderr, "null passed\n"); return rval; } \
+  if(!dynamic_cast<type*>(x)) { fprintf(stderr, "type assertion failed, is: [%p] %s\n", x, typeid(*x).name()); return rval; }
 
 // #define luaO(x,t) (byId<t> (luaInt(x), L))
 // #define dluaO(x,t) (dbyId<t> (luaInt(x)))
