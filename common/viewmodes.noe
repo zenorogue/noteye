@@ -942,7 +942,7 @@ drawmap[modeTPP] = function()
   local angle = tppFacing * math.pi / 180
   zsi = tppDistance * math.sin(tppAngleRad)
 
-  fppvar.delta.z = fppvar.delta.z + zsi * 32
+  fppvar.delta.z = fppvar.delta.z - zsi * 32
   fppvar.delta.y = 0
   fppvar.delta.x = 0
   fppvar.cameraangle = tppAngle
