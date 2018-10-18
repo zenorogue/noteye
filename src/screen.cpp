@@ -108,6 +108,20 @@ void scrcopy(Screen *srcS, int srcX, int srcY, Screen *tgtS, int tgtX, int tgtY,
     }
   }
 
+typedef Tile* (*tilecopyfunction)(Tile *t, int x, int y);
+
+void scrcopy_f(Screen *srcS, int srcX, int srcY, Screen *tgtS, int tgtX, int tgtY, int SX, int SY, tilecopyfunction tcf) {
+  if(!srcS) { fprintf(stderr, "no screen\n"); return; }
+  if(!tgtS) { fprintf(stderr, "no screen\n"); return; }
+
+  for(int x=0; x<SX; x++) for(int y=0; y<SY; y++) {
+    tileptr& C1(srcS->get(srcX+x, srcY+y));
+    tileptr& C2(tgtS->get(tgtX+x, tgtY+y));
+
+    C2 = tcf(C1, srcX+x, srcY+y);
+    }
+  }
+
 void scrfill(Screen *tgtS, int tgtX, int tgtY, int SX, int SY, Tile *t) {
   if(!tgtS) { fprintf(stderr, "no screen\n"); return; }
   

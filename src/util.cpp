@@ -2,6 +2,10 @@
 // roguelike frontend
 // Copyright (C) 2010-2011 Zeno Rogue, see 'noteye.h' for details
 
+#ifdef LINUX
+#include <sys/time.h>
+#endif
+
 using namespace std;
 
 namespace noteye {
@@ -473,5 +477,17 @@ void noteye_free_handle(Object *o) {
     }
   }
 
+extern "C" {
 
+double noteye_precise_time() {
+#ifdef LINUX
+  struct timeval tim;
+  gettimeofday(&tim, NULL);
+  return tim.tv_sec + tim.tv_usec / 1000000.;
+#else
+  return 0;
+#endif
+  }
+  
+}
 }

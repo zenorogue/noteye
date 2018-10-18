@@ -192,6 +192,11 @@ ffi.cdef[[
   void noteye_free_handle(Object *o);
 
   void remove_event_listener(Object *o);
+
+  typedef Tile* (*tilecopyfunction)(Tile *t, int x, int y);
+  void scrcopy_f(Screen *srcS, int srcX, int srcY, Screen *tgtS, int tgtX, int tgtY, int SX, int SY, tilecopyfunction tcf);
+  
+  double noteye_precise_time();
   ]]
 end
 
@@ -418,3 +423,9 @@ noteye_get_handle = noteyelib.noteye_get_handle
 noteye_free_handle = noteyelib.noteye_free_handle
 
 remove_event_listener = noteyelib.remove_event_listener
+
+scrcopy_f = noteyelib.scrcopy_f
+
+scrcopy_sample = ffi.cast("tilecopyfunction", function(a,b,c) return a end)
+
+noteye_precise_time = noteyelib.noteye_precise_time

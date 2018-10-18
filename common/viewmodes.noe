@@ -1124,7 +1124,7 @@ function drawmessageTemp()
   end
 
 function drawconsolescreen()
-  V.scrcopy_f(IMG, 0, mainscreen, 0, D.conssize, TMAP_COPY)
+  V.scrcopy(IMG, 0, mainscreen, 0, D.conssize, TMAP_COPY)
   end
 
 function drawandrefresh()
