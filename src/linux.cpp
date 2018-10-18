@@ -29,7 +29,8 @@ struct LinuxProcess : Process {
   
   int scurx, scury;
 
-  int brushColor, brushback, brush0;
+  int brushColor;
+  tileptr brushback, brush0;
   int scrollbot, scrolltop;
 
   bool curvis, curbig, autowrap, autolf, insert, originmode;
@@ -696,7 +697,7 @@ bool LinuxProcess::checkEvent(lua_State *L) {
     isActive = false;
     lua_newtable(L);
     noteye_table_setInt(L, "type", evProcQuit);
-    noteye_table_setInt(L, "obj", id);
+    noteye_table_setInt(L, "obj", noteye_get_handle(this));
     noteye_table_setInt(L, "exitcode", WEXITSTATUS(exitcode));
     return true;
     }
@@ -705,7 +706,7 @@ bool LinuxProcess::checkEvent(lua_State *L) {
     // printf("sending ProcScreen event\n");
     lua_newtable(L);
     noteye_table_setInt(L, "type", evProcScreen);
-    noteye_table_setInt(L, "obj", id);
+    noteye_table_setInt(L, "obj", noteye_get_handle(this));
     return true;
     }
   

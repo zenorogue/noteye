@@ -139,14 +139,14 @@ function apply_prerenderer(a, str)
     return rn
     end
   local im = newimage(8,8)
-  ttfrender(a.font, a.size, str, a.color, im, a.flags)
+  ttfrender(a.font, a.size, tostring(str), a.color, im, a.flags)
   local si = V.be(imggetsize(im))
   local t = addtile(im, 0, 0, si.x, si.y, transAlpha)
   rn = {t = t, pic = im, size = si, timestamp = getticks()}
   for k,v in pairs(a.table) do if 
     v.timestamp < getticks() - 60000 then 
-      print("deleting prerendered '"..k.."'")
-      delete(a.table[k].pic)
+      print("nulling prerendered '"..k.."'")
+      -- delete(a.table[k].pic) -- ffitodo check
       a.table[k] = nil
       end
     end

@@ -54,116 +54,89 @@ Music::~Music() {
   Mix_FreeMusic(chunk); 
   }
 
-#ifdef USELUA
-int lh_loadsound(lua_State *L) {
-  checkArg(L, 1, "loadsound");
+extern "C" {
+Sound *loadsound(const char *fname) {
   initAudio();
-  if(audio == 1) return noteye_retInt(L, 0);
-  Mix_Chunk *chk = Mix_LoadWAV(luaStr(1));
-  if(!chk) return noteye_retInt(L, 0);
+  if(audio == 1) return NULL;
+  Mix_Chunk *chk = Mix_LoadWAV(fname);
+  if(!chk) return NULL;
   Sound *snd = new Sound();
   snd->chunk = chk;
-  return noteye_retObject(L, snd);
+  return registerObject(snd);
   }
 
-int lh_loadmusic(lua_State *L) {
-  checkArg(L, 1, "loadmusic");
+Music *loadmusic(const char *fname) {
   initAudio();
-  if(audio == 1) return noteye_retInt(L, 0);
-  Mix_Music *chk = Mix_LoadMUS(luaStr(1));
-  if(!chk) return noteye_retInt(L, 0);
+  if(audio == 1) return NULL;
+  Mix_Music *chk = Mix_LoadMUS(fname);
+  if(!chk) return NULL;
   Music *snd = new Music();
   snd->chunk = chk;
-  return noteye_retObject(L, snd);
+  return registerObject(snd);
   }
 
-int lh_playsound(lua_State *L) {
-  checkArg(L, 2, "playsound");
-  if(audio == 1 || luaInt(1) == 0) return 0;
-  Sound *s = luaO(1, Sound);
-  return noteye_retInt(L, s->play(luaInt(2)));
+int playsound(Sound *s, int volume) {
+  if(audio == 1 || !s) return 0;
+  return s->play(volume);
   }
 
-int lh_playsoundloop(lua_State *L) {
-  checkArg(L, 3, "playsound");
-  if(audio == 1 || luaInt(1) == 0) return 0;
-  Sound *s = luaO(1, Sound);
-  return noteye_retInt(L, s->play(luaInt(2), luaInt(3)));
+int playsoundloop(Sound *s, int volume, int loop) {
+  if(audio == 1 || !s) return 0;
+  return s->play(volume, loop);
   }
 
-int lh_musicvolume(lua_State *L) {
-  checkArg(L, 1, "musicvolume");
-  if(audio == 1) return 0;
-  int vol = luaInt(1);
-  Mix_VolumeMusic(vol);
-  return 0;
+void musicvolume(int volume) {
+  if(audio == 1) return;
+  Mix_VolumeMusic(volume);
   }
 
-int lh_musichalt(lua_State *L) {
+void musichalt() {
   Mix_HaltMusic();
   mplaying = false;
-  return 0;
   }
 
-int lh_playmusic(lua_State *L) {
-  checkArg(L, 1, "playmusic");
-  if(audio == 1 || luaInt(1) == 0) return 0;
-  Music *m = luaO(1, Music);
+void playmusic(Music *m) {
+  if(audio == 1 || !m) return;
   m->play();
-  return 0;
   }
 
-int lh_playmusicloop(lua_State *L) {
-  checkArg(L, 2, "playmusicloop");
-  if(audio == 1 || luaInt(1) == 0) return 0;
-  Music *m = luaO(1, Music);
-  m->play(luaInt(2));
-  return 0;
+void playmusicloop(Music *m, int loop) {
+  if(audio == 1 || !m) return;
+  m->play(loop);
   }
 
-int lh_fadeoutmusic(lua_State *L) {
-  checkArg(L, 1, "fadeoutmusic");
-  if(audio == 1 || luaInt(1) == 0) return 0;
-  Mix_FadeOutMusic(luaInt(1));
-  return 0;
+void fadeoutmusic(int length) {
+  if(audio == 1 || length == 0) return;
+  Mix_FadeOutMusic(length);
   }
 
-int lh_pausemusic(lua_State *L) {
-  checkArg(L, 0, "pausemusic");
-  if(audio == 1) return 0;
-  if(!mplaying) return 0;
+void pausemusic() {
+  if(audio == 1) return;
+  if(!mplaying) return;
   Mix_PauseMusic();
-  return 0;
   }
 
-int lh_resumemusic(lua_State *L) {
-  checkArg(L, 0, "resumemusic");
-  if(audio == 1) return 0;
-  if(!mplaying) return 0;
+void resumemusic() {
+  if(audio == 1) return;
+  if(!mplaying) return;
   Mix_ResumeMusic();
-  return 0;
   }
 
-int lh_musicon(lua_State *L) {
-  return noteye_retBool(L, mplaying);
+bool musicon() { return mplaying; }
+
+int mixsetdistance(int d1, int d2) {
+  return Mix_SetDistance(d1, d2);
   }
 
-int lh_mixsetdistance(lua_State *L) {
-  checkArg(L, 2, "mixsetdistance");
-  return noteye_retInt(L, Mix_SetDistance(luaInt(1), luaInt(2)));
+int mixsetpanning(int p1, int p2, int p3) {
+  return Mix_SetPanning(p1, p2, p3);
   }
 
-int lh_mixsetpanning(lua_State *L) {
-  checkArg(L, 3, "mixsetpanning");
-  return noteye_retInt(L, Mix_SetPanning(luaInt(1), luaInt(2), luaInt(3)));
+int mixunregisteralleffects(int channel) {
+  return Mix_UnregisterAllEffects(channel);
   }
 
-int lh_mixunregisteralleffects(lua_State *L) {
-  checkArg(L, 1, "mixunregisteralleffects");
-  return noteye_retInt(L, Mix_UnregisterAllEffects(luaInt(1)));
-  }
-
-#endif
+}
 
 #else
 void closeAudio() {}

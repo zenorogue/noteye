@@ -10,10 +10,28 @@ namespace noteye {
 
 int writeUnc, writeCmp, readUnc, readCmp;
 
+set<struct ImageAlias*> all_aliases;
+
 struct ImageAlias : Object {
-  Image *img;
+  smartptr<Image> img;
   string alias;
+  ~ImageAlias();
   };
+
+extern "C" {
+ImageAlias *imagealias(Image *i, const char *alias) {
+  ImageAlias *IA = new ImageAlias;
+  IA->img = i;
+  IA->alias = alias;
+  all_aliases.insert(IA);
+  return registerObject(IA);
+  }
+
+ImageAlias::~ImageAlias() {
+  all_aliases.erase(this);
+  }
+
+}
 
 void NStream::writeInt(int v) { 
   for(int i=0; i<4; i++) writeChar(v >> (i<<3));
@@ -126,18 +144,27 @@ void NCompressedStream::proceed(bool check) {
     }
   }
 
-void NStream::writeObj(int x) {
+void NStream::writeObj(Object *o) {
+  if(o == NULL) {
+    writeInt(0);
+    return;
+    }
+  if(knownout.count(o)) {
+    writeInt(knownout[o]);
+    return;
+    }
+  int x = nextid++;
+  knownout[o] = x;
   writeInt(x);
-  if(x && !knownout.count(x)) {
-    knownout.insert(x);
+  if(true) {
 
-    Get(Image, IM, x);
+    Get(Image, IM, o);
     if(IM) {
       writeInt(0x01);
       writeStr(IM->title);
       }
 
-    Get(TileImage, TI, x);
+    Get(TileImage, TI, o);
     if(TI) {
       writeInt(0x11);
       writeInt(TI->ox);
@@ -146,10 +173,10 @@ void NStream::writeObj(int x) {
       writeInt(TI->sy);
       writeInt(TI->trans);
       writeInt(TI->chid);
-      writeObj(TI->i->id);
+      writeObj(TI->i);
       }
     
-    Get(TileMerge, TM, x);
+    Get(TileMerge, TM, o);
     if(TM) {
       writeInt(TM->over ? 0x18 : 0x12);
       writeObj(TM->t1);
@@ -158,14 +185,14 @@ void NStream::writeObj(int x) {
       
     // 0x13 was old recolor
 
-    Get(TileSpatial, TSF, x);
+    Get(TileSpatial, TSF, o);
     if(TSF) {
       writeInt(0x14);
       writeInt(TSF->sf);
       writeObj(TSF->t1);
       }
       
-    Get(TileTransform, TT, x);
+    Get(TileTransform, TT, o);
     if(TT) {
       writeInt(0x22);
       writeDouble(TT->dx);
@@ -181,14 +208,14 @@ void NStream::writeObj(int x) {
     
     // note: 0x18 is reserved for TileMerge with over
 
-    Get(TileLayer, TL, x);
+    Get(TileLayer, TL, o);
     if(TL) {
       writeInt(0x19);
-      writeInt(TL->t1);
-      writeObj(TL->layerid);
+      writeObj(TL->t1);
+      writeInt(TL->layerid);
       }
     
-    Get(TileFill, TFI, x);
+    Get(TileFill, TFI, o);
     if(TFI) {
       if(TFI->alpha == 0xffffff)
         writeInt(0x17);
@@ -199,12 +226,12 @@ void NStream::writeObj(int x) {
       writeInt(TFI->color);
       }              
 
-    Get(TileRecolor, TR, x);
+    Get(TileRecolor, TR, o);
     if(TR) {
       writeInt(TR->mode == recDefault ? 0x13 : 0x21);
       writeInt(TR->color);
       writeObj(TR->t1);
-      if(TR->mode != recDefault) writeObj(TR->mode);
+      if(TR->mode != recDefault) writeInt(TR->mode);
       }
     }
   }
@@ -218,13 +245,14 @@ void NStream::writeScr(Screen *s) {
 void NStream::readScr(Screen *s) {
   int sx = readInt(), sy = readInt();
   s->setSize(sx, sy);
-  for(int i=0; i<sy*sx; i++) s->v[i] = readObj();
+  for(int i=0; i<sy*sx; i++) s->v[i] = (Tile*) readObj();
   }
 
 #ifdef USELUA
+
 static lua_State *LS_image;
 
-int imagenotfound(string s) {
+Image* imagenotfound(string s) {
   lua_State *L = LS_image;
   lua_pushvalue(L, -1);
   lua_pushstring(LS_image, s.c_str());
@@ -232,30 +260,24 @@ int imagenotfound(string s) {
     noteyeError(34, "error running imagenotfound", lua_tostring(LS_image, -1));
     return 0;
     }
-  int res =luaInt(-1);
-  lua_pop(LS_image, 1);
-  byId<Image> (res, L);
-  return res;
+  int res = luaInt(-1);
+  return dynamic_cast<Image*> (noteye_by_handle(res));
   }
   
 #endif
 
-int NStream::readObj() {
+Object *NStream::readObj() {
   int id = readInt();
-  if(id == 0) return 0;
   if(!knownin.count(id)) {
     int type = readInt();
-    int t1, ox, oy, c;
     if(type == 0x1) {
       string s = readStr();
       // printf("Image titled %s\n", s.c_str()); fflush(stderr);
-      int res = 0;
-      for(int i=1; i<size(objs); i++) {
-        Image *img = dbyId<Image> (i);
-        if(img && img->title == s) { res = i; break; }
-        ImageAlias *alias = dbyId<ImageAlias> (i);
-        if(alias && alias->alias == s) { res = alias->img->id; break; }
-        }
+      Image *res = NULL;
+      for(auto img: all_image_objects)
+        if(img->title == s) { res = img; break; }
+      if(!res) for(auto alias: all_aliases)
+        if(alias->alias == s) { res = alias->img; break; }
       if(!res) {
         res = imagenotfound(s);
         }
@@ -269,27 +291,29 @@ int NStream::readObj() {
       TI->sy = readInt();
       TI->trans = readInt();
       TI->chid = readInt();
-      TI->i = byId<Image> (readObj(), LS_image);
+      TI->i = (Image*) readObj();
       knownin[id] = registerObject(TI);
       }
     else if(type == 0x12 || type == 0x18) {
-      ox = readObj(); oy = readObj();
-      knownin[id] = addMerge(ox, oy, type == 0x18);
+      Tile *t1 = (Tile*) readObj();
+      Tile *t2 = (Tile*) readObj();
+      knownin[id] = addMerge(t1, t2, type == 0x18);
       }
     else if(type == 0x13) {
-      c = readInt(); t1 = readObj();
+      int c = readInt(); 
+      Tile *t1 = (Tile*) readObj();
       knownin[id] = addRecolor(t1, c, recDefault);
       }
     else if(type == 0x14) {
       TileSpatial TS;
       TS.sf = readInt();
-      TS.t1 = readObj();
+      TS.t1 = (Tile*) readObj();
       knownin[id] = registerTile(TS);
       }
     else if(type == 0x19) {
       TileLayer TL;
-      TL.t1 = readInt();
-      TL.layerid = readObj();
+      TL.t1 = (Tile*) readObj();
+      TL.layerid = readInt();
       knownin[id] = registerTile(TL);
       }
     else if(type == 0x15) {
@@ -300,7 +324,7 @@ int NStream::readObj() {
       TT.sy = readInt() / 1440.0;
       TT.dz = 0;
       TT.rot= 0; 
-      TT.t1 = readObj();
+      TT.t1 = (Tile*) readObj();
       knownin[id] = registerTile(TT);
       }
     else if(type == 0x16) {
@@ -310,16 +334,19 @@ int NStream::readObj() {
       knownin[id] = addFill(readInt(), 0xffffff);
       }
     else if(type == 0x19) {
-      t1 = readInt(); ox = readInt();
-      knownin[id] = addLayer(t1, ox);
+      Tile* t1 = (Tile*) readObj(); 
+      int layerid = readInt();
+      knownin[id] = addLayer(t1, layerid);
       }
     else if(type == 0x20) {
-      ox = readInt(); t1 = readInt(); 
-      knownin[id] = addFill(t1, ox);
+      int alpha = readInt(), color = readInt(); 
+      knownin[id] = addFill(alpha, color);
       }
     else if(type == 0x21) {
-      c = readInt(); t1 = readObj(); ox = readInt();
-      knownin[id] = addRecolor(t1, c, ox);
+      int c = readInt(); 
+      Tile *t1 = (Tile*) readObj(); 
+      int mode = readInt();
+      knownin[id] = addRecolor(t1, c, mode);
       }
     else if(type == 0x22) {
       TileTransform TT;
@@ -329,7 +356,7 @@ int NStream::readObj() {
       TT.sy = readDouble();
       TT.dz = readDouble();
       TT.rot= readDouble();
-      TT.t1 = readObj();
+      TT.t1 = (Tile*) readObj();
       knownin[id] = registerTile(TT);
       }
     else {
@@ -348,139 +375,95 @@ NOFStream :: ~NOFStream() {
   if(f) fclose(f);
   }
 
-#ifdef USELUA
-int lh_writefile(lua_State *L) {
-  checkArg(L, 1, "writefile");
+extern "C" {
+
+NOFStream* writefile(const char *s) {
   NOFStream *S = new NOFStream;
-  S->f = fopen(luaStr(1), "wb");
-  if(!S->f) { delete S; return noteye_retInt(L, 0); }
-  return noteye_retObject(L, S);
+  S->f = fopen(s, "wb");
+  if(!S->f) return NULL;
+  return registerObject(S);
   }
 
-int lh_readfile(lua_State *L) {
-  checkArg(L, 1, "readfile");
+NIFStream* readfile(const char *s) {
   NIFStream *S = new NIFStream;
-  S->f = fopen(luaStr(1), "rb");
-  if(!S->f) { 
-    delete S; 
-    return noteye_retInt(L, 0); 
-    }
-  return noteye_retObject(L, S);
+  S->f = fopen(s, "rb");
+  if(!S->f) return NULL;
+  return registerObject(S);
   }
 
-int lh_openstringstream(lua_State *L) {
-  checkArg(L, 1, "openstringstream");
+NStringStream* openstringstream() {
   NStringStream *S = new NStringStream;
   S->pos = 0;
   S->s = "";
-  return noteye_retObject(L, S);
+  return registerObject(S);
   }
 
-int lh_resetknownout(lua_State *L) {
-  checkArg(L, 1, "resetknownout");
-  NStream *S = luaO(1, NStream);
+void resetknownout(NStream *S) {
   S->knownout.clear();
-  return 0;
   }
 
-int lh_resetknownin(lua_State *L) {
-  checkArg(L, 1, "resetknownin");
-  NStream *S = luaO(1, NStream);
+void resetknownin(NStream *S) {
   S->knownin.clear();
-  return 0;
   }
 
-int lh_getstringstream(lua_State *L) {
-  checkArg(L, 1, "getstringstream");
-  NStringStream *S = luaO(1, NStringStream);
-  return noteye_retStr(L, S->s);
+const char *getstringstream(NStringStream *S) {
+  return S->s.c_str();
   }
 
-int lh_setstringstream(lua_State *L) {
-  checkArg(L, 2, "setstringstream");
-  NStringStream *S = luaO(1, NStringStream);
-  S->s = luaStr(2); S->pos = 0;
-  return 0;
+void setstringstream(NStringStream *S, const char *str) {
+  S->s = str; S->pos = 0;
   }
 
-int lh_writescr(lua_State *L) {
-  checkArg(L, 2, "writescr");
-  NStream *S = luaO(1, NStream);
-  Screen *SC = luaO(2, Screen);
+void writescr(NStream *S, Screen *SC) {
   S->writeScr(SC);
-  return 0;
   }
 
-int lh_readscr(lua_State *L) {
-  checkArg(L, 3, "readscr");
-  NStream *S = luaO(1, NStream);
-  Screen *SC = luaO(2, Screen);
-  LS_image = L;
+void readscr(NStream *S, Screen *SC) {
   S->readScr(SC);
-  return 0;
   }
 
-int lh_writeint(lua_State *L) {
-  checkArg(L, 2, "writeint");
-  luaO(1, NStream)->writeInt(luaInt(2));
-  return 0;
+void lh_writeint(NStream *S, int i) {
+  S->writeInt(i);
   }
 
-int lh_readint(lua_State *L) {
-  checkArg(L, 1, "readint");
-  lua_pushinteger(L, luaO(1, NStream)->readInt());
-  return 1;
+int readint(NStream *S) {
+  return S->readInt();
   }
 
-int lh_writebyte(lua_State *L) {
-  checkArg(L, 2, "writeint");
-  luaO(1, NStream)->writeChar(luaInt(2));
-  return 0;
+void writebyte(NStream *S, char x) {
+  S->writeChar(x);
   }
 
-int lh_readbyte(lua_State *L) {
-  checkArg(L, 1, "readint");
-  lua_pushinteger(L, luaO(1, NStream)->readChar());
-  return 1;
+char readbyte(NStream *S) {
+  return S->readChar();
   }
 
-int lh_writestr(lua_State *L) {
-  checkArg(L, 2, "writestr");
-  luaO(1, NStream)->writeStr(luaStr(2));
-  return 0;
+void writestr(NStream *S, const char *str) {
+  S->writeStr(str);
   }
 
-int lh_readstr(lua_State *L) {
-  checkArg(L, 1, "readstr");
-  string s = luaO(1, NStream)->readStr();
-  lua_pushstring(L, s.c_str());
-  return 1;
+const char *readstr(NStream *S) {
+  static string last;
+  last = S->readStr();
+  return last.c_str();
   }
 
-int lh_eof(lua_State *L) {
-  checkArg(L, 1, "neof");
-  lua_pushboolean(L, luaO(1, NStream)->eof());
-  return 1;
+bool neof(NStream *S) {
+  return S->eof();
   }
 
-int lh_flush(lua_State *L) {
-  checkArg(L, 1, "nflush");
-  luaO(1, NCompressedStream)->flush();
-  return 0;
+void nflush(NCompressedStream *S) {
+  S->flush();
   }
 
-int lh_finish(lua_State *L) {
-  checkArg(L, 1, "nfinish");
-  luaO(1, NCompressedStream)->finish();
-  return 0;
+void nfinish(NCompressedStream *S) {
+  S->finish();
   }
 
-int lh_ready(lua_State *L) {
-  checkArg(L, 1, "nready");
-  lua_pushboolean(L, luaO(1, NCompressedStream)->ready());
-  return 1;
+bool nready(NCompressedStream *S) {
+  return S->ready();
   }
-#endif
+}
 
 // == network ==
 
@@ -488,22 +471,11 @@ int lh_ready(lua_State *L) {
 
 #define NETWORK 0
 
-#ifdef USELUA
-int lh_connect(lua_State *L) {
-  checkArg(L, 2, "connect");
-  return noteye_retInt(L, 0);
-  }
-
-int lh_accept(lua_State *L) {
-  checkArg(L, 1, "accept");
-  return noteye_retInt(L, 0);
-  }
-
-int lh_server(lua_State *L) {
-  checkArg(L, 1, "server");
-  return noteye_retInt(L, 0);
-  }
-#endif
+extern "C" {
+TCPServer *nserver(int argument) { return NULL; }
+TCPStream *naccept(TCPServer *SERV) { return NULL; }
+TCPStream *nconnect(const char *addr, int port) { return NULL; }
+}
 
 #else
 
@@ -564,52 +536,49 @@ bool NTCPStream::readyPrim() {
   return ret;
   }
 
-#ifdef USELUA
-int lh_server(lua_State *L) {
-  checkArg(L, 1, "server");
+extern "C" {
+
+TCPServer *nserver(int argument) {
   IPaddress ip;
   noteye_initnet();
   
-  if(SDLNet_ResolveHost(&ip, NULL, luaInt(1)) != 0) {
+  if(SDLNet_ResolveHost(&ip, NULL, argument) != 0) {
     fprintf(errfile, "SDLNet_ResolveHost: %s\n", SDLNet_GetError());    
-    return noteye_retInt(L, 0);
+    return NULL;
     }
   TCPsocket skt = SDLNet_TCP_Open(&ip);
   if(!skt) {
     fprintf(errfile, "SDLNet_TCP_Open: %s\n", SDLNet_GetError());
-    return noteye_retInt(L, 0);
+    return NULL;
     }
 
-  return noteye_retObject(L, new TCPServer(skt));
+  return registerObject(new TCPServer(skt));
   }
 
-int lh_accept(lua_State *L) {
-  checkArg(L, 1, "accept");
-  TCPServer *SERV = luaO(1, TCPServer);
+NTCPStream *naccept(TCPServer *SERV) {
   TCPsocket skt = SDLNet_TCP_Accept(SERV->socket);
-  if(!skt) return noteye_retInt(L, 0);
-  return noteye_retObject(L, new NTCPStream(skt));
+  if(!skt) return NULL;
+  return registerObject(new NTCPStream(skt));
   }
 
-int lh_connect(lua_State *L) {
-  checkArg(L, 2, "connect");
+NTCPStream *nconnect(const char *addr, int port) {
   IPaddress ip;
   
   noteye_initnet();
-  if(SDLNet_ResolveHost(&ip, luaStr(1), luaInt(2)) != 0) {
+  if(SDLNet_ResolveHost(&ip, addr, port) != 0) {
     fprintf(errfile, "SDLNet_ResolveHost: %s\n", SDLNet_GetError());    
-    return noteye_retInt(L, 0);
+    return NULL;
     }
   TCPsocket skt = SDLNet_TCP_Open(&ip);
   if(!skt) {
     fprintf(errfile, "SDLNet_TCP_Open: %s\n", SDLNet_GetError());
-    return noteye_retInt(L, 0);
+    return NULL;
     }
 
-  return noteye_retObject(L, new NTCPStream(skt));
+  return registerObject(new NTCPStream(skt));
   }
 
-#endif
+}
 
 #endif
 
@@ -632,15 +601,5 @@ char NTCPStream::readCharPrim() {
 NTCPStream::~NTCPStream() { SDLNet_TCP_Close(socket); }
 #endif
 
-#ifdef USELUA
-int lh_imagealias(lua_State *L) {
-  checkArg(L, 2, "imagealias");
-  ImageAlias *IA = new ImageAlias;
-  IA->img = luaO(1, Image);
-  IA->alias = luaStr(2);
-  return noteye_retObject(L, IA);
-  }
-
-#endif
 
 }

@@ -13,30 +13,63 @@ if AVOID_FFI then
   end
 
 local ffi = require("ffi")
+local jit = require("jit")
+
+if not ffi_defined then
+ffi_defined = true
+ffi_attempts = 0
 
 ffi.cdef[[
-  int addTile(struct Image *i, int ox, int oy, int sx, int sy, int trans);
-  int addTileID(int id, int ox, int oy, int sx, int sy, int trans);
-  int addSpatial(int t1, int sf);
-  int addMerge(int t1, int t2, bool over);
-  int addMerge0(int t1, int t2);
-  int addMerge1(int t1, int t2);
-  int addRecolor(int t1, int color, int mode);
-  int addFill(int color, int alpha);
-  int addTransform(int t1, double dx, double dy, double sx, double sy, double dz, double rot);
-  int addLayer(int t1, int layerid);
-  int distillLayer(int x, int layerid);
-  int distill(int x, int sp);
-  int getChar(int x);
-  int getBak(int x);
-  const char* getChar2(int i);
-  int getCol(int x);
-  int getImage(int x);
-  void tileSetChid(int x, int chid);
+  typedef struct Object Object;
+  typedef struct Object Image;
+  typedef struct Object Tile;
+  typedef struct Object Screen;
+  typedef struct Object FreeFormParam;
+  typedef struct Object TileFreeform;
+  typedef struct Object IsoParam;
+  typedef struct Object ImageAlias;
+  typedef struct Object TileMapping;
+  typedef struct Object TileMappingLua;
+  typedef struct Object Font;
+  typedef struct Object BitmapFont;
+  typedef struct Object DynamicFont;
+  typedef struct Object TTFont;
+  typedef struct Object Window;
+  typedef struct Object InternalProcess;
+  typedef struct Object Sound;
+  typedef struct Object Music;
+  typedef struct Object NStringStream;
+  typedef struct Object NStream;
+  typedef struct Object Process;
+  typedef unsigned int noteyecolor;
+  
+  typedef struct point { int x, y; } point;
 
-  void saveimage(int id, const char *fname);
-  int scrget(int scr, int x, int y);
-  void scrset(int scr, int x, int y, int val);
+  Tile *addTile(Image *i, int ox, int oy, int sx, int sy, int trans);
+
+  Tile *addSpatial(Tile *t1, int sf);
+  Tile *addMerge(Tile *t1, Tile *t2, bool over);
+  Tile *addMerge0(Tile *t1, Tile *t2);
+  Tile *addMerge1(Tile *t1, Tile *t2);
+  Tile *addRecolor(Tile *t1, int color, int mode);
+  Tile *addFill(int color, int alpha);
+  Tile *addTransform(Tile *t1, double dx, double dy, double sx, double sy, double dz, double rot);
+  Tile *addLayer(Tile *t1, int layerid);
+  Tile *distillLayer(Tile *x, int layerid);
+  Tile *distill(Tile *x, int sp);
+  int getChar(Tile *x);
+  int getBak(Tile *x);
+  const char* getChar2(Tile *i);
+  int getCol(Tile *x);
+  Image *getImage(Tile *x);
+  void tileSetChid(Tile *x, int chid);
+
+  void increase_refcount(Object *o);
+  void decrease_refcount(Object *o);
+
+  void saveimage(Image *i, const char *fname);
+  Tile *scrget(Screen *scr, int x, int y);
+  void scrset(Screen *scr, int x, int y, Tile *val);
   void setdirectansi(int val);
   void setconsolewindowtitle(const char *s);
 
@@ -46,12 +79,180 @@ ffi.cdef[[
   int utf8_strlen(const char *s);
   const char *utf8_substr(const char *s, int from, int len);
 
-  int img_getpixel(int src, int srcX, int srcY);
-  void img_setpixel(int src, int srcX, int srcY, unsigned int pix);
+  int img_getpixel(Image *src, int srcX, int srcY);
+  void img_setpixel(Image *src, int srcX, int srcY, unsigned int pix);
+  void imgcopy(Image *srcI, int srcX, int srcY, Image *tgtI, int tgtX, int tgtY, int six, int siy);
+
+  void fillimage(Image *img, int x, int y, int w, int h, int col);
+
+  FreeFormParam *freeformparam(double x00, double x01, double x02, double x03, double x10, double x11, double x12, double x13, double x20, double x21, double x22, double x23, double x30, double x31, double x32, double x33);
+  void freeformparamflags(FreeFormParam* P, int side, bool shiftdown);
+
+  TileFreeform* addFreeform(Tile *t1, FreeFormParam *p);
+
+  Image *loadimage(const char *fname);
+  void saveimage(Image *o, const char *fname);
+  Image *newimage(int x, int y);
+  Image *newimage_color(int x, int y, int color);
+
+  IsoParam* isoparam(int floor, int wall, int icon, int iconh);
+
+  TTFont *newTTFont(const char *fname);
+
+  point imggetsize(Image *img);
+  point ttfgetsize(TTFont *f, int s, const char *bstr, int flags);
+  int ttfrender(TTFont *f, int s, const char *bstr, noteyecolor color, Image *i, int flags);
+
+  ImageAlias *imagealias(Image *i, const char *alias);
+
+  Screen* newScreen(int x, int y);
+  void scrfill(Screen *tgtS, int tgtX, int tgtY, int SX, int SY, Tile *t);
+  void scrsave(Screen *srcS, const char *s, int mode);
+  void scrsetsize(Screen *s, int x, int y);
+  point scrgetsize(Screen *s);
+  void scrcopy(Screen *srcS, int srcX, int srcY, Screen *tgtS, int tgtX, int tgtY, int SX, int SY, TileMapping *utm);
+  void scrwrite(Screen *s, int x, int y, const char *buf, Font *f, int color);
+
+  void drawScreen(Image *dest, Screen *s, int ox, int oy, int tx, int ty);
+  void drawScreenX(Image *dest, Screen *scr, int ox, int oy, int tx, int ty, TileMapping *utm);
+  void drawTile(Image *dest, Tile *t, int x, int y, int tx, int ty);
+
+  Tile *setfont(Object *o, Font *f);
+
+  Window *newwindow(const char *title);
+  bool openwindow(Window *w, int x, int y, int newflags, int newrenflags, int px, int py);
+  bool windowusetex(Window *w, bool usetex);
+  const char *SDL_GetRendererInfoName(Window *w);
+  void closewindow(Window *w);
+  void setwindowtitle(Window *w, const char *title);
+  void setwindowminsize(Window *w, int x, int y);
+  void setwindowmaxsize(Window *w, int x, int y);
+  void setwindowicon(Window *w, Image *i);
+  int renderwindow(Window *w);
+
+  point origvideomode(Window *w);
+
+  InternalProcess* internal(Screen *s, Font *f, const char *str);
+
+  Sound *loadsound(const char *fname);
+  Music *loadmusic(const char *fname);
+  int playsound(Sound *s, int volume);
+  int playsoundloop(Sound *s, int volume, int loop);
+  void musicvolume(int volume);
+  void musichalt();
+  void playmusic(Music *m);
+  void playmusicloop(Music *m, int loop);
+  void pausemusic();
+  void resumemusic();
+  bool musicon();
+  int mixsetdistance(int d1, int d2);
+  int mixsetpanning(int p1, int p2, int p3);
+  int mixunregisteralleffects(int channel);
+  void fadeoutmusic(int length);
+
+  NStringStream* openstringstream();
+  void setstringstream(NStringStream *S, const char *str);
+  const char *getstringstream(NStringStream *S);
+  void resetknownout(NStream *S);
+  void resetknownin(NStream *S);
+  void writescr(NStream *S, Screen *SC);
+  void readscr(NStream *S, Screen *SC);
+  
+  typedef Tile* (*dynamicfontfun)(int i);
+  DynamicFont* newdynamicfont(dynamicfontfun f);  
+
+  typedef Tile* (*tilemapper)(Tile *t);
+  TileMappingLua* newmapping(tilemapper tm);
+  Tile *mapapply(TileMapping *tmap, Tile *t);
+
+  Tile *fontgetchar(Font *F, const char *s);
+  Tile *fontgetcharav(Font *F, int id);
+
+  Tile *gp2(Tile *x);
+
+  BitmapFont *newFont(Image *base, int inx, int iny, int trans);
+
+  point noteye_getcursor(Process *p);
+
+  int sendkey(Process *P, int scancode, int keycode, int mod, int type);
+  int sendtext(Process *P, const char *s);
+  bool processActive(Process *P);
+
+  typedef struct avcoba { int chr, col, bak; } avcoba;
+  avcoba gavcoba(Tile *x);
+
+  void inform_all_objects();
+  void remove_transcaches();
+  void noteye_gc();
+  void remove_tilemapcaches();
+
+  int noteye_assign_handle(Object *o);
+  Object *noteye_by_handle(int handle);
+  int noteye_get_handle(Object *o);
+  void noteye_free_handle(Object *o);
+
+  void remove_event_listener(Object *o);
   ]]
+end
 
 local noteyelib = ffi.os == "Windows" and ffi.load("noteye") or ffi.C
 
+function protect(obj)
+  if obj == nil then return obj end
+  noteyelib.increase_refcount(obj)
+  return ffi.gc(obj, noteyelib.decrease_refcount)
+  end
+
+-- FFI does not seem to support unpack
+
+local function protected0(x)
+  return function()
+    return protect(x())
+    end
+  end
+
+local function protected1(x, name)
+  return function (a1)
+    local z = protect(x(a1))
+    return z
+    end
+  end
+
+local function protected2(x)
+  return function (a1, a2)
+    return protect(x(a1, a2))
+    end
+  end
+
+local function protected3(x)
+  return function (a1, a2, a3)
+    return protect(x(a1, a2, a3))
+    end
+  end
+
+local function protected4(x)
+  return function (a1, a2, a3, a4)
+    return protect(x(a1, a2, a3, a4))
+    end
+  end
+
+local function protected6(x)
+  return function (a1, a2, a3, a4, a5, a6)
+    return protect(x(a1, a2, a3, a4, a5, a6))
+    end
+  end
+
+local function protected7(x)
+  return function (a1, a2, a3, a4, a5, a6, a7)
+    return protect(x(a1, a2, a3, a4, a5, a6, a7))
+    end
+  end
+
+local function protected16(x)
+  return function (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16)
+    return protect(x(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16))
+    end
+  end
 
 utf8 = {}
 utf8.nb = noteyelib.utf8_numbytes
@@ -61,18 +262,30 @@ utf8.len = noteyelib.utf8_strlen
 utf8.sub = function(x,y,z) return ffi.string(noteyelib.utf8_substr(x,y,z)) end
 
 tilesetchid = noteyelib.tileSetChid
-tilespatial = noteyelib.addSpatial
-tilecol = noteyelib.addRecolor
-tilemergep = noteyelib.addMerge
-tilemerge = noteyelib.addMerge0
-tilemergeover = noteyelib.addMerge1
-tilelayer = noteyelib.addLayer
-getlayer = noteyelib.distillLayer
-getdistill = noteyelib.distill
-tilexf = noteyelib.addTransform
-tilealpha = noteyelib.addFill
+tilespatial = protected2(noteyelib.addSpatial)
+tilecol = protected3(noteyelib.addRecolor)
+tilemergep = protected3(noteyelib.addMerge)
 
-addtile = noteyelib.addTileID
+function nulzero(x) 
+  if x == nil then return nil
+  elseif type(x) ~= "cdata" then print("wrong type detected: "..type(x)..", "..tostring(x)) print(debug.traceback()) return EMPTYTILE 
+  else return x 
+  end 
+  end
+
+tilemerge = function(x,y) return protect(noteyelib.addMerge0(nulzero(x), nulzero(y))) end
+tilemergeover = function(x,y) return protect(noteyelib.addMerge1(nulzero(x), nulzero(y))) end
+
+tilelayer = protected2(noteyelib.addLayer)
+getlayer = protected2(noteyelib.distillLayer)
+getdistill = protected2(noteyelib.distill)
+tilexf = protected7(noteyelib.addTransform)
+tilealpha = protected2(noteyelib.addFill)
+
+freeformparam = protected16(noteyelib.freeformparam)
+freeformparamflags = noteyelib.freeformparamflags
+
+addtile = protected6(noteyelib.addTile)
 setconsolewindowtitle = noteyelib.setconsolewindowtitle
 
 gchv = noteyelib.getChar
@@ -81,10 +294,74 @@ gch = function(x) return ffi.string(noteyelib.getChar2(x)) end
 gco = noteyelib.getCol
 gimg = noteyelib.getImage
 
-scrget = noteyelib.scrget
+scrget = protected3(noteyelib.scrget)
 scrset = noteyelib.scrset
 saveimage = noteyelib.saveimage
 setdirectansi = noteyelib.setdirectansi
+
+loadimage = protected1(noteyelib.loadimage, "loadimage")
+saveimage = noteyelib.saveimage
+newimage = function(x,y,z) return protect(z and noteyelib.newimage_color(x,y,z) or noteyelib.newimage(x,y)) end
+
+isoparam = protected4(noteyelib.isoparam)
+newttfont = protected1(noteyelib.newTTFont, "newTTFont")
+imggetsize = noteyelib.imggetsize
+ttfgetsize = noteyelib.ttfgetsize
+ttfrender = noteyelib.ttfrender
+
+imagealias = protected2(noteyelib.imagealias)
+newscreen = protected2(noteyelib.newScreen)
+
+scrfill = noteyelib.scrfill
+scrsave = noteyelib.scrsave
+scrsetsize = noteyelib.scrsetsize
+scrgetsize = noteyelib.scrgetsize
+scrcopy = noteyelib.scrcopy
+scrwrite = noteyelib.scrwrite
+
+drawscreen = noteyelib.drawScreen
+drawscreenx = noteyelib.drawScreenX
+drawtile = noteyelib.drawTile
+
+setfont = protected2(noteyelib.setfont)
+
+newwindow = protected1(noteyelib.newwindow, "newwindow")
+openwindow = noteyelib.openwindow
+windowusetex = noteyelib.windowusetex
+SDL_GetRendererInfoName = function(x) return ffi.string(noteyelib.SDL_GetRendererInfoName(x)) end
+closewindow = noteyelib.closewindow
+setwindowtitle = noteyelib.setwindowtitle
+setwindowminsize = noteyelib.setwindowminsize
+setwindowmaxsize = noteyelib.setwindowmaxsize
+setwindowicon = noteyelib.setwindowicon
+renderwindow = noteyelib.renderwindow
+origvideomode = noteyelib.origvideomode
+
+internal = protected3(noteyelib.internal)
+
+loadsound = protected1(noteyelib.loadsound, "loadsound")
+loadmusic = protected1(noteyelib.loadmusic, "loadmusic")
+playsound = noteyelib.playsound
+playsoundloop = noteyelib.playsoundloop
+musicvolume = noteyelib.musicvolume
+musichalt = noteyelib.musichalt
+playmusic = noteyelib.playmusic
+playmusicloop = noteyelib.playmusicloop
+pausemusic = noteyelib.pausemusic
+resumemusic = noteyelib.resumemusic
+musicon = noteyelib.musicon
+mixsetdistance = noteyelib.mixsetdistance
+mixsetpanning = noteyelib.mixsetpanning
+mixunregisteralleffects = noteyelib.mixunregisteralleffects
+fadeoutmusic = noteyelib.fadeoutmusic
+
+nopenstringstream = protected0(noteyelib.openstringstream)
+nsetstringstream = noteyelib.setstringstream
+ngetstringstream = noteyelib.getstringstream
+nresetknownout = noteyelib.resetknownout
+nresetknownin = noteyelib.resetknownin
+nwritescr = noteyelib.writescr
+nreadscr = noteyelib.readscr
 
 local fff = tonumber("FFFFFFFF", 16)
 
@@ -92,6 +369,7 @@ getpixel = noteyelib.img_getpixel
 function setpixel(img,x,y,p)
   noteyelib.img_setpixel(img,x,y, bAND(p, fff))
   end
+fillimage = noteyelib.fillimage
 
 function xsetpixel(img,x,y,p)
   local old = getpixel(img,x,y)
@@ -105,3 +383,38 @@ function xsetpixel(img,x,y,p)
 bAND = bit.band
 bOR = bit.bor
 bXOR = bit.bxor
+
+newmapping = protected1(noteyelib.newmapping, "newmapping")
+newdynamicfont = protected1(noteyelib.newdynamicfont, "newdynamicfont")
+
+mapapply = protected2(noteyelib.mapapply)
+
+fget = protected2(noteyelib.fontgetchar)
+fgetav = protected2(noteyelib.fontgetcharav)
+
+gp2 = protected1(noteyelib.gp2, "gp2")
+newfont = protected4(noteyelib.newFont)
+
+tilefreeform = protected2(noteyelib.addFreeform)
+noteye_getcursor = noteyelib.noteye_getcursor
+
+gavcoba = noteyelib.gavcoba
+
+sendtext = noteyelib.sendtext
+processActive = noteyelib.processActive
+function sendkey(P, f) return noteyelib.sendkey(P, f.scancode or 0, f.keycode or 0, f.mod or 0, f.type or 0) end
+
+imgcopy = noteyelib.imgcopy
+
+inform_all_objects = noteyelib.inform_all_objects
+
+remove_transcaches = noteyelib.remove_transcaches
+remove_tilemapcaches = noteyelib.remove_tilemapcaches
+noteye_gc = noteyelib.noteye_gc
+
+noteye_assign_handle = noteyelib.noteye_assign_handle
+noteye_by_handle = protected1(noteye_by_handle)
+noteye_get_handle = noteyelib.noteye_get_handle
+noteye_free_handle = noteyelib.noteye_free_handle
+
+remove_event_listener = noteyelib.remove_event_listener

@@ -181,7 +181,7 @@ function dftconfig()
   D.mapextent = 2
   
   -- which tile is used out of the map
-  D.OutOfMap = 0
+  D.OutOfMap = EMPTYTILE
   
   -- what color to use for the border of the minimap?
   D.minimapborder = tonumber("808080", 16)
@@ -372,7 +372,7 @@ function winmaxsize()
   end
 
 function applysizelimits()
-  if Gfx and Gfx ~= 0 then 
+  if Gfx and Gfx ~= nil then 
     local minsize = winminsize()
     local maxsize = winmaxsize()
     print("set minsize to = "..tostring(minsize))
@@ -628,7 +628,7 @@ function miniFPP()
   savecopy("rmaparea",  rmaparea)
   savecopy("tilectr",  tilectr)
   
-  V.scrcopy(MAP, 0, Tiles, 0, D.map.size, xtile)
+  V.scrcopy_f(MAP, 0, Tiles, 0, D.map.size, xtile) -- ffitodo make it fast as it was
   
   setfppvar()
   fppvar.vx0 = fppvar.vx0 + D.cmini.top.x
@@ -657,7 +657,7 @@ function miniFPP()
   mode = modeFPP
   
   fppbackground(fppvar, fd)
-  V.scrcopy(MAP, 0, Tiles, 0, D.map.size, xtile)
+  V.scrcopy_f(MAP, 0, Tiles, 0, D.map.size, xtile)
   fpp(fppvar, D.mapcenter.x, D.mapcenter.y, fd, Tiles)
   
   D.mapcenter = mc
@@ -753,7 +753,7 @@ drawmap[modeMini] = function()
   setmaparea()
   if mapon then
     MiniTiles = V.renewscreen(MiniTiles, D.map.size)
-    V.scrcopy(MAP, 0, MiniTiles, 0, D.map.size, xtile)
+    V.scrcopy_f(MAP, 0, MiniTiles, 0, D.map.size, xtile)
     uselayers(tilelayers)
     V.drawscreen(D.output, MiniTiles, D.screen.top + D.fontsize * D.map.top, D.fontsize)
     return false
@@ -821,9 +821,9 @@ drawmap[modeTiles] = function()
   adjusttileext()
   TileCut = V.renewscreen(TileCut, D.tileext.size)
   
-  scrset(MAP, 999, 999, 0)
+  scrset(MAP, 999, 999, EMPTYTILE)
   --profstart("xtile")
-  V.scrcopy(MAP, mcf+D.tileext.top, TileCut, 0, D.tileext.size, xtile)
+  V.scrcopy_f(MAP, mcf+D.tileext.top, TileCut, 0, D.tileext.size, xtile)
   --profend("xtile")
   
   local tcs2 = tcs + (D.tileext.top - 0.5) * D.tilesize
@@ -852,7 +852,7 @@ drawmap[modeMed] = function()
   end
   
   MedTiles = renewscreen(MedTiles, medsize, D.map.size.y)
-  scrcopy(MAP, tx, 0, MedTiles, 0, 0, medsize, D.map.size.y, xtile)
+  V.scrcopy_f(MAP, V(tx, 0), MedTiles, V(0, 0), V(medsize, D.map.size.y), xtile)
 
   uselayers()
   V.drawscreen(D.output, MedTiles, screen.top + map.top * D.fontsize, 
@@ -894,7 +894,7 @@ drawmap[modeFPP] = function()
   if playerpos then mapcenter = animated_playerpos() end
   simFacing = be360(fppFacing)
   tppAngleRound = nil
-  V.scrcopy(MAP, 0, Tiles, 0, D.map.size, xtile)
+  V.scrcopy_f(MAP, 0, Tiles, 0, D.map.size, xtile)
   fpp(fppvar, mapcenter.x, mapcenter.y, fppFacing, Tiles)
   return getAxCommon()
   end
@@ -932,7 +932,7 @@ drawmap[modeTPP] = function()
      -math.sin(angle) * tppDistance * math.cos(tppAngleRad))
   
   fppbackground(fppvar, facedir * 45)
-  V.scrcopy(MAP, realmapshift*-1, Tiles, 0, D.realmapsize, xtile)
+  V.scrcopy_f(MAP, realmapshift*-1, Tiles, 0, D.realmapsize, xtile)
   
   fpp(fppvar, mapcenterTPP.x + realmapshift.x, mapcenterTPP.y + realmapshift.y, tppFacing, Tiles)
   
@@ -946,7 +946,7 @@ function fppbackground(v)
 -- iso display --
 
 drawmap[modeISO] = function()
-  V.scrcopy(MAP, 0, Tiles, 0, D.map.size, xtile)
+  V.scrcopy_f(MAP, 0, Tiles, 0, D.map.size, xtile)
   scrset(Tiles, 999, 999, OutOfMap)
   isi = V.be(isosizes(IsoParam))
   
@@ -1124,7 +1124,7 @@ function drawmessageTemp()
   end
 
 function drawconsolescreen()
-  V.scrcopy(IMG, 0, mainscreen, 0, D.conssize, TMAP_COPY)
+  V.scrcopy_f(IMG, 0, mainscreen, 0, D.conssize, TMAP_COPY)
   end
 
 function drawandrefresh()

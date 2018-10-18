@@ -7,32 +7,31 @@ namespace noteye {
 struct IsoParam : Object {
   int floor, wall, icon, iconh;
   int sx, sy, flev;
-  FreeFormParam *Floor, *WalL, *WalR, *Item, *Ceil;
+  smartptr<FreeFormParam> Floor, WalL, WalR, Item, Ceil;
   void build();
-  ~IsoParam();
   };
 
-#ifdef USELUA
-int lh_isoparam(lua_State *L) {
-  checkArg(L, 4, "isoparam");
+extern "C" {
+IsoParam* isoparam(int floor, int wall, int icon, int iconh) { 
   
   IsoParam *P = new IsoParam;
-  P->floor = luaInt(1);
-  P->wall  = luaInt(2);
-  P->icon  = luaInt(3);
-  P->iconh = luaInt(4);
+  P->floor = floor;
+  P->wall  = wall;
+  P->icon  = icon;
+  P->iconh = iconh;
   
   P->build();
   
-  return noteye_retObject(L, P);
+  return registerObject(P);
   }
 
 FreeFormParam *ffClear() {
   FreeFormParam *P = new FreeFormParam;
   for(int i=0; i<16; i++) P->d[i/4][i%4] = 0;
   P->d[0][0] = 1; 
-  return P;
+  return registerObject(P);
   }
+}
 
 void IsoParam::build() {
   sx = max(icon, floor*2);
@@ -77,29 +76,10 @@ void IsoParam::build() {
   
   }
 
-IsoParam::~IsoParam() {
-  delete Floor;
-  delete WalL;
-  delete WalR;
-  delete Item;
-  delete Ceil;
-  }
+extern "C" {
 
-int lh_isosizes(lua_State *L) {
-  checkArg(L, 1, "isosizes");
-  IsoParam *P = luaO(1, IsoParam);
-  lua_newtable(L);
-  noteye_table_setInt(L, "floor", P->floor);
-  noteye_table_setInt(L, "wall", P->wall);
-  noteye_table_setInt(L, "icon", P->icon);
-  noteye_table_setInt(L, "iconh", P->iconh);
-  noteye_table_setInt(L, "x", P->sx);
-  noteye_table_setInt(L, "y", P->sy);
-  return 1;
-  }
-
-int getIso(lua_State *L, int ti, IsoParam *P) {
-  int t0;
+Tile *getIso(Tile *ti, IsoParam *P) {
+  Tile *t0;
   t0 = addFreeform(tmIFloor->apply(ti), P->Floor);
   t0 = addMerge(t0, addFreeform(addRecolor(tmIWallL->apply(ti), 0xFF808080, recMult), P->WalL), false);
   t0 = addMerge(t0, addFreeform(addRecolor(tmIWallR->apply(ti), 0xFFC0C0C0, recMult), P->WalR), false);
@@ -109,53 +89,9 @@ int getIso(lua_State *L, int ti, IsoParam *P) {
   t0 = addMerge(t0, addFreeform(tmIItem->apply(ti), P->Item), false);
   
   return t0;
-  // return noteye_retInt(L, renderAsIso(luaInt(1), spIFloor | spIItem | spIWallL | spIWallR | spICeil, luaO(2, IsoParam)));
   }
 
-int lh_iso(lua_State *L) {
-  checkArg(L, 2, "isoproject");
-  IsoParam *P = luaO(2, IsoParam);
-  int ti = luaInt(1);
-  return getIso(L, ti, P);
-  }
-
-/*
-  local dminx = math.floor(rect.top.x + rect.top.y) - 2
-  local dminy = math.floor(rect.top.y - rect.bot.x) - 2
-  local dmaxx = math.ceil(rect.bot.x + rect.bot.y) + 2
-  local dmaxy = math.ceil(rect.bot.y - rect.top.x) + 2
-  
-  print("draw "..getticks())
-  for dx=dminx,dmaxx do
-  for dy=dminy,dmaxy do
-    local dr = V(tcs.x+isi.floor*(dx-dy), tcs.y+isi.floor*(dx+dy)/2)
-    if dr > D.maparea.top - isi and dr < D.maparea.bot then
-      local sg = scrget(Tiles, mcf.x+dx, mcf.y+dy)
-      local ip = isoproject(sg, IsoParam)
-      V.drawtile(D.output, ip, rectTS(dr, isi))
-      end
-    end end
-
-  print("done "..getticks())
-*/
-
-int lh_drawScreenIso(lua_State *L) {
-  checkArg(L, 15, "drawscreenIso");
-  Screen *scr = luaO(2, Screen);
-  Image *dest = luaO(1, Image);
-  IsoParam *P = luaO(3, IsoParam);
-  double x0 = luaNum(4);
-  double y0 = luaNum(5);
-  double x1 = luaNum(6);
-  double y1 = luaNum(7);
-  int xc = luaInt(8);
-  int yc = luaInt(9);
-  int xm = luaInt(10);
-  int ym = luaInt(11);
-  int rx0 = luaInt(12);
-  int ry0 = luaInt(13);
-  int rx1 = luaInt(14);
-  int ry1 = luaInt(15);
+void drawScreenIso(Image *dest, Screen *scr, IsoParam *P, double x0, double y0, double x1, double y1, int xc, int yc, int xm, int ym, int rx0, int ry0, int rx1, int ry1) {
 
   int dminx = (int) floor(x0 + y0) - 2;
   int dminy = (int) floor(y0 - x1) - 2;
@@ -177,15 +113,12 @@ int lh_drawScreenIso(lua_State *L) {
   
     if(M.x >= rx0 && M.x <= rx1 &&
        M.y >= ry0 && M.y <= ry1) {
-      int sg = scr->get(xm+dx, ym+dy);
-      int ip = getIso(L, sg, P);
+      Tile *sg = scr->get(xm+dx, ym+dy);
+      Tile *ip = getIso(sg, P);
       drawTile(dest, M, ip);
       }
     }
-  
-  return 1;
   }
-
-#endif
+}
 
 }

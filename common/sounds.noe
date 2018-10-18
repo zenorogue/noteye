@@ -99,7 +99,7 @@ function freeoldmusic(maximum)
   for n,t in pairs(MusicTime) do
     if t == maxt and q > maximum then 
       -- logprint2("freeing: "..n)
-      delete(Musics[n])
+      -- delete(Musics[n]) ffitodo
       Musics[n] = nil
       MusicTime[n] = nil
       end
@@ -109,7 +109,7 @@ function freeoldmusic(maximum)
 function loadmusic2(filename)
   if not Musics[filename] then
     local m = loadmusic(musicdir..filename)
-    if m > 0 then Musics[filename] = m 
+    if m ~= nil then Musics[filename] = m 
     else
       logprint2("unable to load music file: "..filename)
       return

@@ -96,6 +96,7 @@ function V.mt.__tostring(a)
 
 function V.be(v)
   if type(v) == "number" then return V(v,v) end
+  if type(v) == "cdata" then return V(v.x, v.y) end
   setmetatable(v, V.mt)
   v.isvec = true
   return v
@@ -280,6 +281,15 @@ function V.scrcopy(S1, V1, S2, V2, size, f)
   V2 = V.be(V2)
   if not S2 then vecerror("ss") end
   return scrcopy(S1, V1.x, V1.y, S2, V2.x, V2.y, size.x, size.y, f)
+  end
+
+function V.scrcopy_f(S1, V1, S2, V2, size, f)
+  V1 = V.be(V1)
+  V2 = V.be(V2)
+  for x = 0, size.x-1 do
+  for y = 0, size.y-1 do
+    scrset(S2, V2.x+x, V2.y+y, f(scrget(S1, V1.x+x, V1.y+y), V1.x+x, V1.y+y))
+    end end
   end
 
 function V.scrget(S, V)

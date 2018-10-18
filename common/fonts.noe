@@ -108,8 +108,10 @@ function ttf_getAtSize(F, sx, sy)
   F2.alias = imagealias(P, F.name..".ttf")
   -- F2.font = fontadj.simpleA(P,1,256,Psize.x,Psize.y)
   -- local bfont = newfont(P, 1, 256, transAlpha)
-  F2.font = newdynamicfont(function(x) 
-    if x == "\n" then return 0 end
+  
+  local function dfontfun(x)
+    x = utf8.enc(x)
+    if x == "\n" then return nil end
     rendertext(F.ttfont, ts, x, hexFF0000FF, P, V(sx/2, sy*F2.nextid+sy/2), V(-.5,-.5))
     for x=0,sx-1 do for y=sy*F2.nextid,sy*F2.nextid+sy-1 do
       local c = getpixel(P,x,y)
@@ -125,7 +127,13 @@ function ttf_getAtSize(F, sx, sy)
       end
     return t
     -- return fget(bfont, x) 
-    end)
+    end
+  
+  F2.font = newdynamicfont(dfontfun)
+    
+  for a=32,127 do fgetav(F2.font, a) end
+  
+  pre = true
 
   return F2
   end

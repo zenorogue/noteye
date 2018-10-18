@@ -11,7 +11,7 @@ bool debugon;
 
 lua_State *luamapstate;
 
-int outscr;
+tileptr outscr;
 
 void Screen::setSize(int x, int y) {
   sx = x; sy = y;
@@ -19,11 +19,13 @@ void Screen::setSize(int x, int y) {
   for(int i=0; i<sx*sy; i++) v[i] = 0;
   }
 
+extern "C" {
 Screen* newScreen(int x, int y) {
   Screen *s = new Screen;
   s->setSize(x, y);
-  return s;
+  return registerObject(s);
   }
+}
 
 void Screen::write(int x, int y, const char *buf, Font *f, int color) {
   int colorstack[128], qcolorstack = 1;
@@ -58,119 +60,69 @@ void Screen::write(int x, int y, const char *buf, Font *f, int color) {
         }
       else ch = '?';
       }
-          
-    int& c(get(x,y));
-    int ti = f->gettile(ch);
-    c = addRecolor(ti, color, recDefault);
+    
+    Tile *ti = f->gettile(ch);
+    get(x,y) = addRecolor(ti, color, recDefault);
     x++;
     }
   }
 
-int& Screen::get(int x, int y) {
+tileptr& Screen::get(int x, int y) {
   if(x < 0 || x >=sx || y < 0 || y >= sy) return outscr;
   return v[y*sx+x];
   }
 
 // --- lua
 
-#ifdef USELUA
-int lh_newScreen(lua_State *L) {
-  checkArg(L, 2, "newscreen");
-  Screen *s = newScreen(luaInt(1), luaInt(2));
-  return noteye_retObject(L, s);
+extern "C" {
+
+void scrwrite(Screen *s, int x, int y, const char *buf, Font *f, int color) {
+  if(!s) { fprintf(stderr, "no screen\n"); return; }
+  s->write(x, y, buf, f, color);
   }
 
-int lh_scrwrite(lua_State *L) {
-  checkArg(L, 6, "scrwrite");
-  luaO(1, Screen)->write(luaInt(2), luaInt(3), luaStr(4), luaO(5, Font), luaInt(6));
-  return 0;
+void scrsetsize(Screen *s, int x, int y) {
+  if(!s) { fprintf(stderr, "no screen\n"); return; }
+  s->setSize(x, y);
   }
 
-int lh_scrsetsize(lua_State *L) {
-  checkArg(L, 3, "scrsetsize");
-  luaO(1, Screen)->setSize(luaInt(2), luaInt(3));
-  return 0;
+point scrgetsize(Screen *s) {
+  point res;
+  if(!s) { fprintf(stderr, "no screen\n"); return res; }
+  res.x = s->sx;
+  res.y = s->sy;
+  return res;
   }
 
-int lh_scrgetsize(lua_State *L) {
-  checkArg(L, 1, "scrgetsize");
-  Screen *scr = luaO(1, Screen);
-  lua_newtable(L);
-  noteye_table_setInt(L, "x", scr->sx);
-  noteye_table_setInt(L, "y", scr->sy);
-  return 1;
-  }
+smartptr<Screen> prep_scrS, prep_tgtS;
 
-int lh_scrcopy(lua_State *L) {
-  checkArg(L, 9, "scrcopy");
-  Screen *srcS = luaO(1, Screen);
-  int srcX = luaInt(2);
-  int srcY = luaInt(3);
-  
-  Screen *tgtS = luaO(4, Screen);
-  int tgtX = luaInt(5);
-  int tgtY = luaInt(6);
-  
-  int SX = luaInt(7);
-  int SY = luaInt(8);
-  
-  int fid = lua_type(L, 9) == LUA_TFUNCTION ? -1 : luaInt(9);
-  luamapstate = L;
-  TileMapping *utm = fid > 0 ? byId<TileMapping> (fid, L) : 0;
+void scrcopy(Screen *srcS, int srcX, int srcY, Screen *tgtS, int tgtX, int tgtY, int SX, int SY, TileMapping *utm) {
+  if(!srcS) { fprintf(stderr, "no screen\n"); return; }
+  if(!tgtS) { fprintf(stderr, "no screen\n"); return; }
 
   for(int x=0; x<SX; x++) for(int y=0; y<SY; y++) {
-    int& C1(srcS->get(srcX+x, srcY+y));
-    int& C2(tgtS->get(tgtX+x, tgtY+y));
+    tileptr& C1(srcS->get(srcX+x, srcY+y));
+    tileptr& C2(tgtS->get(tgtX+x, tgtY+y));
     
-    if(fid == -1) {
-      lua_pushvalue(L, -1);
-      lua_pushinteger(L, C1);
-      lua_pushinteger(L, srcX+x);
-      lua_pushinteger(L, srcY+y);
-      
-      if (lua_pcall(L, 3, 1, 0) != 0) {
-        noteyeError(15, "error running scrcopy", lua_tostring(L, -1));
-        return 0;
-        }
-  
-      C2 = luaInt(-1);
-      lua_pop(L, 1);
-      }
-    else if(fid > 0) C2 = utm->apply(C1);
-    else
-      C2 = C1;
+    C2 = utm ? utm->apply(C1) : C1.base;
     }
-  
-  return 0;
   }
 
-int lh_scrfill(lua_State *L) {
-  checkArg(L, 6, "scrfill");
-  
-  Screen *tgtS = luaO(1, Screen);
-  int tgtX = luaInt(2);
-  int tgtY = luaInt(3);
-  
-  int SX = luaInt(4);  
-  int SY = luaInt(5);
-  
-  int C = luaInt(6);
+void scrfill(Screen *tgtS, int tgtX, int tgtY, int SX, int SY, Tile *t) {
+  if(!tgtS) { fprintf(stderr, "no screen\n"); return; }
   
   for(int x=0; x<SX; x++) for(int y=0; y<SY; y++) {
-    tgtS->get(tgtX+x, tgtY+y) = C;
+    tgtS->get(tgtX+x, tgtY+y) = t;
     }
-  
-  return 0;
   }
 
-int lh_scrsave(lua_State *L) {
-  Screen *srcS = luaO(1, Screen);
-  const char *s = luaStr(2);
-  int mode = luaInt(3);
+void scrsave(Screen *srcS, const char *s, int mode) {
+  if(!srcS) { fprintf(stderr, "no screen\n"); return; }
+
   FILE *f = fopen(s, "wt");
   if(!f) {
     fprintf(errfile, "could not save file '%s'\n", s);
-    return 0;
+    return;
     }
 
   int lcolor = getCol(srcS->get(0,0)) & 0xFFFFFF;
@@ -201,7 +153,6 @@ int lh_scrsave(lua_State *L) {
   fprintf(f, mode ? "[/color][/tt]" : "</font></body></html>\n");
 
   fclose(f);
-  return 0;
   }
 
 vector<int> layerstodraw;
@@ -212,33 +163,30 @@ int lh_uselayer(lua_State *L) {
   return 0;
   }
 
-int lh_drawScreen(lua_State *L) {
-  check1(luaInt(1));
-  Image *dest = luaO(1, Image);
-  Screen *scr = luaO(2, Screen);
-  int ox = luaInt(3); int oy = luaInt(4);
-  int tx = luaInt(5); int ty = luaInt(6);
+void drawScreen(Image *dest, Screen *s, int ox, int oy, int tx, int ty) {
+  if(!dest) { fprintf(stderr, "no image\n"); return; }
+  if(!s) { fprintf(stderr, "no screen\n"); return; }
   
   drawmatrix M;
   M.tx = tx; M.ty = ty;
   M.txy = M.tyx = M.tzx = M.tzy = 0;
   
   if(layerstodraw.size() == 0) {  
-    for(int y=0; y<scr->sy; y++)
-      for(int x=0; x<scr->sx; x++) {
+    for(int y=0; y<s->sy; y++)
+      for(int x=0; x<s->sx; x++) {
         M.x = ox+x*tx; M.y = oy+y*ty;
-        drawTile(dest, M, tmFlat->apply(scr->get(x,y)));
+        drawTile(dest, M, tmFlat->apply(s->get(x,y)));
         }
     }
   else {
     layerstodraw.push_back(-1);
     for(int pos = 0; pos < (int) layerstodraw.size(); pos++) { 
-      for(int y=0; y<scr->sy; y++) {
+      for(int y=0; y<s->sy; y++) {
         for(int p=pos; layerstodraw[p] != -1; p++) {
           int lr = layerstodraw[p];
-          for(int x=0; x<scr->sx; x++) {
+          for(int x=0; x<s->sx; x++) {
             M.x = ox+x*tx; M.y = oy+y*ty;
-            drawTile(dest, M, tmFlat->apply(tmLayer[lr]->apply(scr->get(x,y))));
+            drawTile(dest, M, tmFlat->apply(tmLayer[lr]->apply(s->get(x,y))));
             }
           }
         }
@@ -248,20 +196,13 @@ int lh_drawScreen(lua_State *L) {
     }
   
   dest->changes++;
-  return 0;
   }
 
-int lh_drawScreenX(lua_State *L) {
-  check1(luaInt(1));
-  Image *dest = luaO(1, Image);
-  Screen *scr = luaO(2, Screen);
-  int ox = luaInt(3); int oy = luaInt(4);
-  int tx = luaInt(5); int ty = luaInt(6);
-  
-  int fid = lua_type (L, 7) == LUA_TFUNCTION ? -1 : luaInt(7);
-  luamapstate = L;
-  TileMapping *utm = fid > 0 ? byId<TileMapping> (fid, L) : 0;
-  
+void drawScreenX(Image *dest, Screen *scr, int ox, int oy, int tx, int ty, TileMapping *utm) {
+
+  if(!dest) { fprintf(stderr, "no image\n"); return; }
+  if(!scr) { fprintf(stderr, "no screen\n"); return; }
+
   drawmatrix M;
   M.tx = tx; M.ty = ty;
   M.txy = M.tyx = M.tzx = M.tzy = 0;
@@ -270,110 +211,77 @@ int lh_drawScreenX(lua_State *L) {
   for(int y=0; y<scr->sy; y++)
     for(int x=0; x<scr->sx; x++) {
 
-      int C1 = scr->get(x, y);
-      
-      if(fid == -1) {
-        lua_pushvalue(L, -1);
-        lua_pushinteger(L, C1);
-        lua_pushinteger(L, x);
-        lua_pushinteger(L, y);
-        
-        if (lua_pcall(L, 3, 1, 0) != 0) {
-          noteyeError(16, "error running drawScreenX", lua_tostring(L, -1));
-          return 0;
-          }
-        C1 = luaInt(-1);
-        lua_pop(L, 1);
-        }
-      else if(fid > 0)
-        C1 = utm->apply(C1);
+      Tile *C1 = scr->get(x, y);
+     
+      if(utm) C1 = utm->apply(C1);
   
       M.x = ox+x*tx; M.y = oy+y*ty;
       drawTile(dest, M, tmFlat->apply(C1));
       }
-  
-  return 0;
   }
 
-int lh_drawTile(lua_State *L) {
-  check1(luaInt(1));
-  Image *dest = luaO(1, Image);
+void drawTile(Image *dest, Tile *t, int x, int y, int tx, int ty) {
+  if(!dest) { fprintf(stderr, "no image\n"); return; }
+
   drawmatrix M;
-  M.x = luaInt(3); M.y = luaInt(4);
-  M.tx = luaInt(5); M.ty = luaInt(6);
+  M.x = x; M.y = y;
+  M.tx = tx; M.ty = ty;
   M.tyx = M.txy = M.tzx = M.tzy = 0;
 
-  if(luaInt(2) < 0) printf("apply flat to -1\n");
-  
-  drawTile(dest, M, tmFlat->apply(luaInt(2)));
+  drawTile(dest, M, tmFlat->apply(t));
   dest->changes++;
-  return 0;
   }
-#endif
+}
 
 #define NOT_CACHED (-1)
 
 set<struct TileMapping*> all_mappings;
 
-void TileMapping::uncache(int id) {
-  if(int(cache.size()) > id)
-    cache[id] = NOT_CACHED;
+tileptr cache_identity = registerObject(new Tile);
+
+void TileMapping::uncache(Tile *t) {
+  cache.erase(t);
   }
 
-int TileMapping::apply(int id) {
-  if(id < 0 || id >= int(objs.size())) {
-    noteyeError(36, "odd object ID in tileMapping", NULL, id);
-    return 0;
+Tile *TileMapping::apply(Tile *t) {
+  if(cache.count(t)) {
+    auto res = cache[t];
+    if(res == cache_identity) return t;
+    return res;
     }
-  while(int(cache.size()) < id+1)
-    cache.push_back(NOT_CACHED);
-  if(cache[id] != NOT_CACHED) return cache[id];
-  return cache[id] = applyRaw(id);
+  auto res = applyRaw(t);
+  cache[t] = res == t ? cache_identity.base : res;
+  return res;
   }
 
 struct TileMappingDistill : TileMapping {
   int flag;
   TileMappingDistill(int f) : flag(f) {}
-  int applyRaw(int id) { return distill(id, flag); }
+  Tile* applyRaw(Tile *t) { return distill(t, flag); }
   };
 
 struct TileMappingLayer : TileMapping {
   int layer;
   TileMappingLayer(int l) : layer(l) {}
-  int applyRaw(int id) { return distillLayer(id, layer); }
+  Tile* applyRaw(Tile *t) { return distillLayer(t, layer); }
   };
 
 #ifdef USELUA
-struct TileMappingLua : TileMapping {
-  lua_State *L;
-  int ref;
-  TileMappingLua(lua_State *L2, int r) : L(L2), ref(r) {}
-  void deleteLua() { 
-    if(ref == -1) return;
-    luaL_unref(L, LUA_REGISTRYINDEX, ref);
-    ref = -1;
-    }
 
-  ~TileMappingLua() { deleteLua(); }
-  int applyRaw(int id) { 
-    lua_rawgeti(luamapstate, LUA_REGISTRYINDEX, ref);
-    lua_pushinteger(luamapstate, id);
-    if (lua_pcall(luamapstate, 1, 1, 0) != 0) {
-      noteyeError(16, "error running TileMapping", lua_tostring(luamapstate, -1));
-      return 0;
-      }
-    int ret = noteye_argInt(luamapstate, -1);
-    lua_pop(luamapstate, 1);
-    return ret;
-    }
+typedef Tile* (*tilemapper)(Tile *t);
+
+extern std::set<struct TileMapping*> all_mappings;
+
+struct TileMappingLua : TileMapping {
+  tilemapper tm;
+  TileMappingLua(tilemapper _tm) : tm(_tm) {}
+  Tile* applyRaw(Tile *t) { return t; } // tm(t); }
   };
 #endif
 
-TileMapping *tmFlat, *tmFloor, *tmCeil, *tmMonst, *tmItem, *tmCenter, *tmIFloor, *tmIItem,
-  *tmICeil, *tmIWallL, *tmIWallR, *tmWallN, *tmWallE, *tmWallS, *tmWallW,
-  *tmFree, *tmWallTop, *tmWallBot, *tmAllWall, *tmCMI;
-
-TileMapping *tmLayer[16];
+smartptr<TileMapping> tmFlat, tmFloor, tmCeil, tmMonst, tmItem, tmCenter, tmIFloor, tmIItem,
+  tmICeil, tmIWallL, tmIWallR, tmWallN, tmWallE, tmWallS, tmWallW,
+  tmFree, tmWallTop, tmWallBot, tmAllWall, tmCMI, tmLayer[16];
 
 #define Q(x) \
   tm##x = new TileMappingDistill(sp##x); registerObject(tm##x);
@@ -392,41 +300,28 @@ void initMappings() {
 
 #undef Q
 
-#ifdef USELUA
-int lh_newmapping(lua_State *L) {
-  checkArg(L, 1, "newmapping");
-  lua_pushvalue(L, -1);
-  return noteye_retObject(L, new TileMappingLua(L, luaL_ref(L, LUA_REGISTRYINDEX)));
+extern "C" {
+
+TileMappingLua* newmapping(tilemapper tm) {
+  return registerObject(new TileMappingLua(tm));
   }
 
-int lh_mapapply(lua_State *L) {
-  checkArg(L, 2, "mapapply");
-  int id = luaInt(2);
-  if(luaInt(1) == 0) return noteye_retInt(L, id);
-  TileMapping *tmap = luaO(1, TileMapping);
-  return noteye_retInt(L, tmap->apply(id));
-  }
-#endif
 
-int scrget(int scr, int x, int y) {
-  Screen* s = dbyId<Screen> (scr);
-  if(!s) {
-    if(logfile) fprintf(logfile, "scrget with invalid screen\n");
-    fprintf(stderr, "scrget with invalid screen\n");
-    return 0;
-    }
-  return s ? s->get(x,y) : 0;
+Tile *mapapply(TileMapping *tmap, Tile *t) {
+  if(!tmap) return NULL;
+  return tmap->apply(t);
   }
 
-void scrset(int scr, int x, int y, int val) {
-  Screen* s = dbyId<Screen> (scr);
-  if(!s) {
-    if(logfile) fprintf(logfile, "scrset with invalid screen\n");
-    fprintf(stderr, "scrset with invalid screen\n");
-    return;
-    }
-  if(s) s->get(x,y) = val;
+Tile *scrget(Screen *s, int x, int y) {
+  if(!s) return outscr;
+  return s->get(x, y);
   }
+
+void scrset(Screen *s, int x, int y, Tile *t) {
+  if(!s) outscr = t;
+  s->get(x,y) = t;
+  }
+}
 
 }
 

@@ -132,25 +132,21 @@ hexF000000 = tonumber("F000000", 16)
 hexFF000000 = tonumber("FF000000", 16)
 
 function cellblack(x)
-  if bAND(gco(x),hexF000000) == 0 then return 0
+  if bAND(gco(x),hexF000000) == 0 then return EMPTYTILE
   else
     return tilecol(fixgp2(x), hexFF000000, recMult)
     end
   end
 
 function cellbigblack(x)
-  if bAND(gco(x),hexF000000) == 0 then return 0
+  if bAND(gco(x),hexF000000) == 0 then return EMPTYTILE
   else
     return mapapply(tmap_bigaux, tilecol(fixgp2(x), 0, recDefault))
     -- x)
     end
   end
 
-function fixgp2(x)
-  local z = gp2(x)
-  if z < 0 then return 0 end
-  return z
-  end
+fixgp2 = gp2
 
 tmap_black = newmapping(cellblack)
 tmap_bigaux = newmapping(cellbigaux)

@@ -42,10 +42,6 @@ extern "C" {
 
 void noteye_init() {
   errfile = stdout;
-  objs.resize(0);
-  objs.push_back(NULL);
-  eventobjs.resize(0);
-  eventobjs.push_back(1);
   initMode();  
   initMappings();
   initLua();
@@ -53,18 +49,13 @@ void noteye_init() {
 
 void noteye_run(const char *noemain, bool applyenv) {
   
-  char *buf;
+  string runfile = noemain;
   
-  if(applyenv && getenv("NOTEYEDIR")) {
-    buf = (char*) malloc(strlen(getenv("NOTEYEDIR")) + strlen(noemain) + 8);
-    sprintf(buf, "%s/%s", getenv("NOTEYEDIR"), noemain);
-    }
-  else buf = strdup(noemain);
+  if(applyenv && getenv("NOTEYEDIR"))
+    runfile = getenv("NOTEYEDIR") + ("/" + runfile);
   
-  if(luaL_dofile(LS, buf))
+  if(luaL_dofile(LS, runfile.c_str()))
     noteyeError(21, "dofile", lua_tostring(LS, -1));
-  
-  free(buf);
   }
 
 void noteye_handleerror(noteyehandler h) {
@@ -72,9 +63,12 @@ void noteye_handleerror(noteyehandler h) {
   }
 
 void noteye_halt() {
-  for(int i=1; i<size(objs); i++) 
-    if(objs[i]) objs[i]->deleteLua();
-  closeLua();  
+  closeLua();
+  eventobjs.clear();
+  object_to_handle.clear();
+  handle_to_object.clear();  
+  printf("after closing:\n");
+  noteye_gc();
   if(logfile) {
     fprintf(logfile, "%s", noteyeStats());
     fclose(logfile);
@@ -85,14 +79,8 @@ void noteye_halt() {
   closeAudio();
 #endif
   initJoysticks(false);
-  for(int i=1; i<size(objs); i++) deleteobj(i);
-  deleted_objects.clear();
   SDL_Quit();
   SDL_FreeSurface(exsurface); exsurface = NULL;
-  for(int i=0; i<=HASHMAX; i++) if(hashtab[i] != NULL) {
-    printf("hashtab not clear\n");
-    hashtab[i] = NULL;
-    }
   P = NULL;
   }
 

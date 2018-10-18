@@ -11,6 +11,8 @@
 
 namespace noteye {
 
+extern std::set<TileImage*> all_images;
+
 // on some machines you need to use texture sizes which are powers of 2
 #define POWEROFTWO
 
@@ -138,10 +140,8 @@ void genTextureGL(TileImage *T) {
 
 void disableGL(Window *w) {
   if(setContext(w)) {
-    for(int i=0; i<(int) objs.size(); i++) {
-      TileImage *TI = dbyId<TileImage> (i);
-      if(TI) deleteTextureGL(TI);
-      }
+    for(TileImage *TI: all_images)
+      deleteTextureGL(TI);
     }
   if(w->gl) SDL_GL_DeleteContext(w->gl);
   w->gl = NULL;
@@ -238,7 +238,7 @@ void fillRectGL(Window *dest, int x, int y, int w, int h, noteyecolor col) {
 
 extern viewpar V;
 
-static fpoint4 addShift(fpoint4 o, fpoint4 y, TileImage *w);
+extern "C" { static fpoint4 addShift(fpoint4 o, fpoint4 y, TileImage *w); }
 
 struct coord3d_t {
   float x,y,z;

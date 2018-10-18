@@ -294,7 +294,7 @@ function animateAutoexplore()
   end
 
 function uisleep2()
-  if threaded and not inAnimation then
+  if threaded and not inAnimation then    
     -- print(addindent().."UI coroutine yields.")
     uisleep()
     -- print(addindent().."UI coroutine is resumed.")
@@ -417,7 +417,7 @@ function copygamedata()
 
 function copymapall()
   if P == LUAPROCESS then setcursor(luag.cursor)
-  elseif P then setcursor(proccur(P)) end
+  elseif P then setcursor(noteye_getcursor(P)) end
   copygamedata()
   if maptocopy then
     maptocopy = false
@@ -493,9 +493,9 @@ function mainloopcyc_small()
     end
 
   if protectevents then
-    return 
-      noteye_pcall("event type "..ev.type, elSerious, 1, function() return handler(ev) end)
+    v = noteye_pcall("event type "..ev.type, elSerious, 1, function() return handler(ev) end)
       or 1
+    return v
     end
   return handler(ev) or 1
     
@@ -810,7 +810,10 @@ function rungame2(cmdline)
 
   if havemain then createmain() end
   if P == LUAPROCESS then P = nil end
-  if P then delete(P); P = nil end
+  if P then 
+    remove_event_listener(P)   
+    P = nil
+    end
   savegameconfigonexit()
   end
 
@@ -835,7 +838,6 @@ function rungame(cmdline)
   elseif threaded and not viewmode then
 
     function rungamex(cmdline)
-
       P = internal(S, FixedFont or Font, cmdline)
       end
     

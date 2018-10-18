@@ -202,23 +202,23 @@ void renderAffineImage(TileImage *w, fpoint4 orig, fpoint4 ox, fpoint4 oy) {
       );
   }
 
-void renderAffine(int ch, fpoint4 orig, fpoint4 dx, fpoint4 dy, fpoint4 dz) {
-  if(ch == 0) return;
+void renderAffine(Tile *ch, fpoint4 orig, fpoint4 dx, fpoint4 dy, fpoint4 dz) {
+  if(ch == NULL) return;
 
-  TileImage *TI = dbyId<TileImage> (ch);
+  Get(TileImage, TI, ch);
   if(TI) renderAffineImage(TI, orig, dx, dy);
   
-  TileFill *TF = dbyId<TileFill> (ch);
+  Get(TileFill, TF, ch);
   if(TF) renderAffineImage(getFillCache(TF), orig, dx, dy);
 
-  TileMerge *TM = dbyId<TileMerge> (ch);
+  Get(TileMerge, TM, ch);
   if(TM)
     renderAffine(TM->t1, orig, dx, dy, dz),
     renderAffine(TM->t2, orig, dx, dy, dz);
 
   bool b = V.shiftdown;
   
-  TileFreeform *TFF = dbyId<TileFreeform> (ch);
+  Get(TileFreeform, TFF, ch);
   if(TFF) {
     fpoint4 norig = 
       orig * TFF->par->d[0][0] + 
@@ -251,7 +251,7 @@ void renderAffine(int ch, fpoint4 orig, fpoint4 dx, fpoint4 dy, fpoint4 dz) {
     V.side = s;
     }
 
-  TileTransform *TTF = dbyId<TileTransform> (ch);
+  Get(TileTransform, TTF, ch);
   if(TTF) { 
     fpoint4 norig = orig + dx * (TTF->dx) + dy * (TTF->dy) + dz * (TTF->dz);
     double C = TTF->sx * +cos(TTF->rot*M_PI/180);
@@ -357,23 +357,23 @@ void renderTileImage(TileImage *w, cd p0, cd p1, double z0, double z1) {
   
   }
 
-void renderChar0(int ch, cd p0, cd p1, cd p2, double z0, double z1) {
-  if(ch == 0) return;
+void renderChar0(Tile* ch, cd p0, cd p1, cd p2, double z0, double z1) {
+  if(ch == NULL) return;
 
-  TileImage *TI = dbyId<TileImage> (ch);
+  Get(TileImage, TI, ch);
   if(TI) renderTileImage(TI, p0, p1, z0, z1);
 
-  TileFill *TF = dbyId<TileFill> (ch);
+  Get(TileFill, TF, ch);
   if(TF) renderTileImage(getFillCache(TF), p0, p1, z0, z1);
 
-  TileMerge *TM = dbyId<TileMerge> (ch);
+  Get(TileMerge, TM, ch);
   if(TM) 
     renderChar0(TM->t1, p0, p1, p2, z0, z1),
     renderChar0(TM->t2, p0, p1, p2, z0, z1);
   
   bool b = V.shiftdown;
 
-  TileTransform *TT = dbyId<TileTransform> (ch);
+  Get(TileTransform, TT, ch);
   if(TT) {
     cd shift(TT->dx, TT->dz);
     double scale = TT->sx;
@@ -388,7 +388,7 @@ void renderChar0(int ch, cd p0, cd p1, cd p2, double z0, double z1) {
     V.shiftdown = b;
     }
 
-  TileFreeform *TFF = dbyId<TileFreeform> (ch);
+  Get(TileFreeform, TFF, ch);
   if(TFF) {
     // use Affine instead
     fpoint4 orig = fpoint4(real(p0), imag(p0), z0);
@@ -401,7 +401,7 @@ void renderChar0(int ch, cd p0, cd p1, cd p2, double z0, double z1) {
     }
   }
 
-void renderChar(int ch, cd p0, cd p1, cd p2, double z0, double z1) {
+void renderChar(Tile *ch, cd p0, cd p1, cd p2, double z0, double z1) {
   z0 -= V.delta.z;
   z1 -= V.delta.z;
   p0 = p0 + cd(-V.delta.x, -V.delta.y);
@@ -409,24 +409,24 @@ void renderChar(int ch, cd p0, cd p1, cd p2, double z0, double z1) {
   renderChar0(ch, p0, p1, p2, z0, z1);
   }
 
-void cellpixel(noteyecolor &pix, int ch, int x, int y) {
-  if(ch == 0) return;
+void cellpixel(noteyecolor &pix, Tile *ch, int x, int y) {
+  if(ch == NULL) return;
 
-  TileImage *TI = dbyId<TileImage> (ch);
+  Get(TileImage, TI, ch);
   if(TI) { imagepixel(pix, TI, x, y); return; }
 
-  TileMerge *TM = dbyId<TileMerge> (ch);
+  Get(TileMerge, TM, ch);
   if(TM) {
     cellpixel(pix, TM->t1, x, y),
     cellpixel(pix, TM->t2, x, y);
     return;
     }
 
-  TileFill *TF = dbyId<TileFill> (ch);
+  Get(TileFill, TF, ch);
   if(TF) pix = TF->color;
   }
 
-void drawFPP(double x, double y, int c) {
+void drawFPP(double x, double y, Tile *c) {
 
   if(!c) return;
   
@@ -510,7 +510,7 @@ void drawFPPat(double wax, double way, double facedir, Screen *s) {
     int C=(s->get(ux0,uy0));
 #else
     //int flag=-1;
-    int C=(y > V.ym ? sfloor : sceil).get(ux0,uy0);
+    Tile *C=(y > V.ym ? sfloor : sceil).get(ux0,uy0);
     #endif
       
     ux &= 255;
@@ -525,16 +525,16 @@ void drawFPPat(double wax, double way, double facedir, Screen *s) {
   for(int i=0; i<(int) fpporder.size(); i++) {
     int X = fpporder[i].x;
     int Y = fpporder[i].y;
-    int g = s->get(iwax+X,iway+Y);
+    Tile *g = s->get(iwax+X,iway+Y);
     if(g) drawFPP(X-(wax-iwax), Y-(way-iway), g);
     }
   }
 
 // ph=0: walls and floors
 // ph=1: other stuff
-void drawFPP_GL(double xx, double yy, int c, int ph) {
+void drawFPP_GL(double xx, double yy, Tile *c, int ph) {
   if(!c) return;
-  int cc;
+  Tile *cc;
   
   fpoint4 orig = rotgl(32*xx-16, 16-yy*32, +16, 0, 0) + V.delta;
   fpoint4 ox = rotgl(32, 0, 0, 0, 0);
@@ -556,7 +556,7 @@ void drawFPP_GL(double xx, double yy, int c, int ph) {
 
   V.shiftdown = false;
   
-  int cw = tmAllWall->apply(c);
+  Tile *cw = tmAllWall->apply(c);
 
   if(yy <= 0 && cw && (cc = tmWallN->apply(c))) {
     orig = rotgl(16+32*xx, +16-yy*32, -16, 0, 0) + V.delta;
@@ -592,7 +592,7 @@ void drawFPP_GL(double xx, double yy, int c, int ph) {
   
   V.shiftdown = true;
   
-  int ci = tmCMI->apply(c);
+  Tile *ci = tmCMI->apply(c);
   
   if(ci) {
 
@@ -694,59 +694,34 @@ void drawFPP_GL(double wax, double way, double facedir, Screen *s) {
   for(int ph=0; ph<2; ph++) for(int i=0; i<(int) fpporder.size(); i++) {
     int X = fpporder[i].x;
     int Y = fpporder[i].y;
-    int g = s->get(iwax+X,iway+Y);
+    Tile *g = s->get(iwax+X,iway+Y);
     if(g) drawFPP_GL(X-(wax-iwax), Y-(way-iway), g, ph);
     }
   }
 
 
 #ifdef USELUA
-int lh_fpp(lua_State *L) {
+extern "C" {
+void fpp(viewpar vp, double wax, double way, double facedir, Screen *s) {
+
+  ASSERT_TYPE(s, Screen, );
   
   genfpporder();
   
-  lua_pushvalue(L, 1);
+  V = vp;
 
-  viewimage = byId<Image> (getfieldInt(L, "vimg"), L);
+  viewimage = vp.vimg;
   
   viewglwindow = useGL(viewimage);
   viewsdlwindow = useSDL(viewimage);
     
-  V.x0 = getfieldInt(L, "vx0");
-  V.y0 = getfieldInt(L, "vy0");
-  V.x1 = getfieldInt(L, "vx1");
-  V.y1 = getfieldInt(L, "vy1");
-  V.xm = getfieldInt(L, "vxm");
-  V.ym = getfieldInt(L, "vym");
-  V.xs = getfieldInt(L, "vxs");
-  V.ys = getfieldInt(L, "vys");
-
-  V.ctrsize = getfieldInt(L, "ctrsize", 16);
-  V.monsize = getfieldInt(L, "monsize", 16);
-  V.objsize = getfieldInt(L, "objsize", 8);
-  V.monpush = getfieldInt(L, "monpush", 12);
-  V.objpush = getfieldInt(L, "objpush", 14);
-
-  V.xz = getfieldNum(L, "xz", 1);
-  V.yz = getfieldNum(L, "yz", 1);
-
-  V.delta.x = getfieldNum(L, "dx", 0);
-  V.delta.y = getfieldNum(L, "dy", 0);
-  V.delta.z = -getfieldNum(L, "dz", 0);
-  
-  V.side = getfieldInt(L, "side", 1);
-
-  V.cameraangle = getfieldNum(L, "cameraangle", 0);
-  V.cameratilt  = getfieldNum(L, "cameratilt", 0);
-  V.camerazoom  = getfieldNum(L, "camerazoom", 1);
-
 #ifdef OPENGL  
   if(viewglwindow) {
     initFPPGL(viewglwindow);
-    drawFPP_GL(luaNum(2), luaNum(3), luaNum(4), luaO(5, Screen));
+    drawFPP_GL(wax, way, facedir, s);
     initOrthoGL(viewglwindow);
     //glDisable( GL_DEPTH_TEST );
-    return 0;
+    return;
     }
 #endif
 
@@ -754,18 +729,17 @@ int lh_fpp(lua_State *L) {
     int x0, y0;
     initFPPSDL(viewsdlwindow, x0, y0);
     viewimg = viewimage->s;
-    drawFPPat(luaNum(2), luaNum(3), luaNum(4), luaO(5, Screen));
+    drawFPPat(wax, way, facedir, s);
     drawFPPSDL(viewsdlwindow, x0, y0);
     }
   
   else {
     viewimg = viewimage->s;
     viewimage->setLock(true);
-    drawFPPat(luaNum(2), luaNum(3), luaNum(4), luaO(5, Screen));
+    drawFPPat(wax, way, facedir, s);
     }
   
-  lua_pop(L, 1);
-  return 0;
+  return;
   }
 #endif
 
@@ -774,5 +748,6 @@ static fpoint4 addShift(fpoint4 o, fpoint4 y, TileImage *w) {
   return o + y * (getFppDown(w) * 1. / w->sy);
   }
 #endif
+}
 
 }

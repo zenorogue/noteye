@@ -81,6 +81,8 @@ void noteye_refresh() {
       }
     lua_pop(internalstate, 1);
     }
+  
+  noteye_gc();
   }
 
 int halfdelaymode = -1;
@@ -388,7 +390,7 @@ bool InternalProcess::checkEvent(lua_State *L) {
   if(!isActive) {
     lua_newtable(L);
     noteye_table_setInt(L, "type", evProcQuit);
-    noteye_table_setInt(L, "obj", P->id);
+    noteye_table_setInt(L, "obj", noteye_get_handle(P));
     noteye_table_setInt(L, "exitcode", exitcode);
     return true;
     }
@@ -397,7 +399,7 @@ bool InternalProcess::checkEvent(lua_State *L) {
     changed = false;
     lua_newtable(L);
     noteye_table_setInt(L, "type", evProcScreen);
-    noteye_table_setInt(L, "obj", id);
+    noteye_table_setInt(L, "obj", noteye_get_handle(P));
     return true;
     }
   
@@ -409,7 +411,7 @@ void InternalProcess::setColor(int _fore, int _back) {
   back = _back;
   fore = _fore;
   brushback = addFill(back, 0xffffff);
-  int rec = addRecolor(f->gettile(32), fore, 0xffffff);
+  Tile *rec = addRecolor(f->gettile(32), fore, 0xffffff);
   brush0 = addMerge(brushback, rec, false);
   }
 
@@ -417,23 +419,13 @@ int InternalProcess::getCursorSize() {
   return cursorsize;
   }
 
-#ifdef USELUA
-
 extern "C" {
 
-int lh_internal(lua_State *L) {
-  checkArg(L, 3, "internal");
-
-  P = new InternalProcess(luaO(1, Screen), luaO(2, Font), luaStr(3));
-  
-  return retObjectEv(L, P);
+InternalProcess* internal(Screen *s, Font *f, const char *str) {
+  P = new InternalProcess(s, f, str);
+  add_event_listener(registerObject(P));
+  return P;
   }
-
-}
-
-#endif
-
-extern "C" {
 
 void noteye_setinternal(InternalProcess *Proc, lua_State *L, int spos) {
   P = Proc;
@@ -503,6 +495,7 @@ void noteye_uifinish() {
     if(status == 0) break;
     if(status == LUA_YIELD && t>0) { t--; continue; }
     noteyeError(12, "uifinish did not finish thread", lua_tostring(uithread, -1), status);
+    break;
     }
   uithread_running = false;
   uithread = NULL;
