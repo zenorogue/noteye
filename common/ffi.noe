@@ -252,6 +252,18 @@ ffi.cdef[[
   void fpp(viewpar *vp, double wax, double way, double facedir, Screen *s);
   
   int getobjectinfo(Object *o, int i);
+  
+  MainScreen *openconsole();
+  
+  typedef uint32_t Uint32;
+
+  void imagetitle(Image *o, const char *title);
+  void tiledebug(Tile *T);
+  Tile *tileavcobaf(int kv, noteyecolor color, noteyecolor back, Font *F);
+  int getobjectinfo(Object *o, int i);
+  int noteye_messagebox(Uint32 flags, const char* title, const char* message, int window_id);
+  Tile *getIso(Tile *ti, IsoParam *P);
+  Process *newProcess(Screen *s, Font *f, const char *str);
   ]]
 end
 
@@ -508,7 +520,17 @@ fpp = noteyelib.fpp
 fpp_parameters = ffi.typeof("viewpar")
 fpp_parameters_table = ffi.typeof("viewpar[1]")
 
+imagetitle = noteyelib.imagetitle
+tiledebug = noteyelib.tiledebug
+tileavcobaf = protected4(noteyelib.tileavcobaf)
+
 getobjectinfo = noteyelib.getobjectinfo
+
+openconsole = protected0(noteyelib.openconsole)
+
+messagebox = protected4(noteyelib.noteye_messagebox)
+isoproject = protected2(noteyelib.getIso)
+newprocess = protected3(noteyelib.newProcess)
 
 function unhandle(X)
   local Y = noteye_by_handle(X)
