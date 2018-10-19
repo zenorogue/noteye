@@ -41,7 +41,15 @@ ffi.cdef[[
   typedef struct Object NStringStream;
   typedef struct Object NStream;
   typedef struct Object Process;
-  typedef unsigned int noteyecolor;
+  typedef struct Object MainScreen;
+
+  typedef struct Object TCPStream;
+  typedef struct Object TCPServer;
+  typedef struct Object NOFStream;
+  typedef struct Object NIFStream;
+  typedef struct Object NCompressedStream;
+
+  typedef uint32_t noteyecolor;
   
   typedef struct point { int x, y; } point;
 
@@ -150,13 +158,30 @@ ffi.cdef[[
   int mixunregisteralleffects(int channel);
   void fadeoutmusic(int length);
 
-  NStringStream* openstringstream();
-  void setstringstream(NStringStream *S, const char *str);
-  const char *getstringstream(NStringStream *S);
-  void resetknownout(NStream *S);
-  void resetknownin(NStream *S);
-  void writescr(NStream *S, Screen *SC);
-  void readscr(NStream *S, Screen *SC);
+  NStringStream* nopenstringstream();
+  void nsetstringstream(NStringStream *S, const char *str);
+  const char *ngetstringstream(NStringStream *S);
+  void nresetknownout(NStream *S);
+  void nresetknownin(NStream *S);
+  void nwritescr(NStream *S, Screen *SC);
+  void nreadscr(NStream *S, Screen *SC);
+
+  NOFStream* nwritefile(const char *s);
+  NIFStream* nreadfile(const char *s);
+  void nwriteint(NStream *S, int i);
+  int nreadint(NStream *S);
+  void nwritebyte(NStream *S, char x);
+  char nreadbyte(NStream *S);
+  void nwritestr(NStream *S, const char *str);
+  const char *nreadstr(NStream *S);
+  bool neof(NStream *S);
+  void nflush(NCompressedStream *S);
+  void nfinish(NCompressedStream *S);
+  bool nready(NCompressedStream *S);
+  TCPServer *nserver(int argument);
+  TCPStream *naccept(TCPServer *SERV);
+  TCPStream *nconnect(const char *addr, int port);
+
   
   typedef Tile* (*dynamicfontfun)(int i);
   DynamicFont* newdynamicfont(dynamicfontfun f);  
@@ -388,13 +413,29 @@ mixsetpanning = noteyelib.mixsetpanning
 mixunregisteralleffects = noteyelib.mixunregisteralleffects
 fadeoutmusic = noteyelib.fadeoutmusic
 
-nopenstringstream = protected0(noteyelib.openstringstream)
-nsetstringstream = noteyelib.setstringstream
-ngetstringstream = noteyelib.getstringstream
-nresetknownout = noteyelib.resetknownout
-nresetknownin = noteyelib.resetknownin
-nwritescr = noteyelib.writescr
-nreadscr = noteyelib.readscr
+nopenstringstream = protected0(noteyelib.nopenstringstream)
+nsetstringstream = noteyelib.nsetstringstream
+ngetstringstream = noteyelib.ngetstringstream
+nresetknownout = noteyelib.nresetknownout
+nresetknownin = noteyelib.nresetknownin
+nwritescr = noteyelib.nwritescr
+nreadscr = noteyelib.nreadscr
+
+nwritefile = protected1(noteyelib.nwritefile)
+nreadfile = protected1(noteyelib.nreadfile)
+nwriteint = noteyelib.nwriteint
+nreading = noteyelib.nreadint
+nwritebyte = noteyelib.nwritebyte
+nreadbyte = noteyelib.nreadbyte
+nwritestr = noteyelib.nwritestr
+nreadstr = function(x) return ffi.string(noteyelib.nreadstr(x)) end
+neof = noteyelib.neof
+nflush = noteyelib.nflush
+nfinish = noteyelib.nfinish
+nready = noteyelib.nready
+nserver = protected1(noteyelib.nserver)
+naccept = protected1(noteyelib.naccept)
+nconnect = protected2(noteyelib.nconnect)
 
 local fff = tonumber("FFFFFFFF", 16)
 

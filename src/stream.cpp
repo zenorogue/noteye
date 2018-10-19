@@ -377,72 +377,72 @@ NOFStream :: ~NOFStream() {
 
 extern "C" {
 
-NOFStream* writefile(const char *s) {
+NOFStream* nwritefile(const char *s) {
   NOFStream *S = new NOFStream;
   S->f = fopen(s, "wb");
   if(!S->f) return NULL;
   return registerObject(S);
   }
 
-NIFStream* readfile(const char *s) {
+NIFStream* nreadfile(const char *s) {
   NIFStream *S = new NIFStream;
   S->f = fopen(s, "rb");
   if(!S->f) return NULL;
   return registerObject(S);
   }
 
-NStringStream* openstringstream() {
+NStringStream* nopenstringstream() {
   NStringStream *S = new NStringStream;
   S->pos = 0;
   S->s = "";
   return registerObject(S);
   }
 
-void resetknownout(NStream *S) {
+void nresetknownout(NStream *S) {
   S->knownout.clear();
   }
 
-void resetknownin(NStream *S) {
+void nresetknownin(NStream *S) {
   S->knownin.clear();
   }
 
-const char *getstringstream(NStringStream *S) {
+const char *ngetstringstream(NStringStream *S) {
   return S->s.c_str();
   }
 
-void setstringstream(NStringStream *S, const char *str) {
+void nsetstringstream(NStringStream *S, const char *str) {
   S->s = str; S->pos = 0;
   }
 
-void writescr(NStream *S, Screen *SC) {
+void nwritescr(NStream *S, Screen *SC) {
   S->writeScr(SC);
   }
 
-void readscr(NStream *S, Screen *SC) {
+void nreadscr(NStream *S, Screen *SC) {
   S->readScr(SC);
   }
 
-void lh_writeint(NStream *S, int i) {
+void nwriteint(NStream *S, int i) {
   S->writeInt(i);
   }
 
-int readint(NStream *S) {
+int nreadint(NStream *S) {
   return S->readInt();
   }
 
-void writebyte(NStream *S, char x) {
+void nwritebyte(NStream *S, char x) {
   S->writeChar(x);
   }
 
-char readbyte(NStream *S) {
+char nreadbyte(NStream *S) {
   return S->readChar();
   }
 
-void writestr(NStream *S, const char *str) {
+void nwritestr(NStream *S, const char *str) {
   S->writeStr(str);
   }
 
-const char *readstr(NStream *S) {
+const char *nreadstr(NStream *S) {
   static string last;
   last = S->readStr();
   return last.c_str();
