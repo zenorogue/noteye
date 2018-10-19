@@ -28,15 +28,15 @@ function switchpalc(C)
   end
 
 function switchpal(T)
-  local O = getobjectinfo(T)
-  if O.type == 33 then
-    return tilecol(O.t1, switchpalc(O.color), O.mode)
+  local Otype = getobjectinfo(T, 0)
+  if Otype == 33 then
+    return tilecol(unhandle(getobjectinfo(T, 1)), switchpalc(getobjectinfo(T, 3)), getobjectinfo(T, 2))
 
-  elseif O.type == 32 then
-    return tilealpha(switchpalc(O.color), O.alpha)
+  elseif Otype == 32 then
+    return tilealpha(switchpalc(getobjectinfo(T, 1)), getobjectinfo(T, 32))
 
-  elseif O.type == 24 or O.type == 18 then
-    return (O.type == 24 and tilemergeover or tilemerge)(switchpal(O.t1), switchpal(O.t2))
+  elseif Otype == 24 or Otype == 18 then
+    return (Otype == 24 and tilemergeover or tilemerge)(switchpal(unhandle(getobjectinfo(T, 1))), switchpal(unhandle(getobjectinfo(T, 2))))
   
   else return T
     end

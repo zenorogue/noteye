@@ -626,80 +626,78 @@ int getFppDown(TileImage *T) {
   return T->sy - T->by;
   }
 
-#ifdef USELUA
-/*
-int lh_getobjectinfo(lua_State *L) {
-  checkArg(L, 1, "getobjectinfo");
+#define Info(x, y, z) if(id++ == i) return z;
 
-  lua_newtable(L);
-  
-  int id = luaInt(1);
+extern "C" {
 
-  Get(TileImage, TI, id);
+int getobjectinfo(Object *o, int i) {
+  int id = 0;
+  Get(TileImage, TI, o);
   if(TI) {
-    noteye_table_setInt(L, "type", 0x11);
-    noteye_table_setInt(L, "ox", TI->ox);
-    noteye_table_setInt(L, "oy", TI->oy);
-    noteye_table_setInt(L, "sx", TI->sx);
-    noteye_table_setInt(L, "sy", TI->sy);
-    noteye_table_setInt(L, "ch", TI->chid);
-    noteye_table_setInt(L, "trans", TI->trans);
-    noteye_table_setInt(L, "i", TI->i->id);
-    noteye_table_setInt(L, "bottom", getFppDown(TI));
-    return 1;
+    Info(L, "type", 0x11);
+    Info(L, "ox", TI->ox);
+    Info(L, "oy", TI->oy);
+    Info(L, "sx", TI->sx);
+    Info(L, "sy", TI->sy);
+    Info(L, "ch", TI->chid);
+    Info(L, "trans", TI->trans);
+    Info(L, "i", noteye_get_handle(TI->i));
+    Info(L, "bottom", getFppDown(TI));
+    return id;
     }
 
-  Get(TileRecolor, TR, id);
+  Get(TileRecolor, TR, o);
   if(TR) {
-    noteye_table_setInt(L, "type", 0x21);
-    noteye_table_setInt(L, "t1", TR->t1);
-    noteye_table_setInt(L, "mode", TR->mode);
-    noteye_table_setInt(L, "color", TR->color);
-    return 1;
+    Info(L, "type", 0x21);
+    Info(L, "t1", noteye_get_handle(TR->t1));
+    Info(L, "mode", TR->mode);
+    Info(L, "color", TR->color);
+    return id;
     }
   
-  Get(TileMerge, TM, id);
+  Get(TileMerge, TM, o);
   if(TM) {
-    noteye_table_setInt(L, "type", TM->over ? 0x18 : 0x12);
-    noteye_table_setInt(L, "t1", TM->t1);
-    noteye_table_setInt(L, "t2", TM->t2);
-    return 1;
+    Info(L, "type", TM->over ? 0x18 : 0x12);
+    Info(L, "t1", noteye_get_handle(TM->t1));
+    Info(L, "t2", noteye_get_handle(TM->t2));
+    return id;
     }
   
-  Get(TileSpatial, TSp, id);
+  Get(TileSpatial, TSp, o);
   if(TSp) {
-    noteye_table_setInt(L, "type", 0x14);
-    noteye_table_setInt(L, "t1", TSp->t1);
-    noteye_table_setInt(L, "sf", TSp->sf);
-    return 1;
+    Info(L, "type", 0x14);
+    Info(L, "t1", noteye_get_handle(TSp->t1));
+    Info(L, "sf", TSp->sf);
+    return id;
     }
   
-  Get(TileLayer, TL, id);
+  Get(TileLayer, TL, o);
   if(TL) {
-    noteye_table_setInt(L, "type", 0x19);
-    noteye_table_setInt(L, "t1", TL->t1);
-    noteye_table_setInt(L, "sf", TL->layerid);
-    return 1;
+    Info(L, "type", 0x19);
+    Info(L, "t1", noteye_get_handle(TL->t1));
+    Info(L, "sf", TL->layerid);
+    return id;
     }
   
-  Get(TileFill, TF, id);
+  Get(TileFill, TF, o);
   if(TF) {
-    noteye_table_setInt(L, "type", 0x20);
-    noteye_table_setInt(L, "color", TF->color);
-    noteye_table_setInt(L, "alpha", TF->alpha);
-    return 1;
+    Info(L, "type", 0x20);
+    Info(L, "color", TF->color);
+    Info(L, "alpha", TF->alpha);
+    return id;
     }
   
-  Get(Tile, TX, id);
+  Get(Tile, TX, o);
   if(TX) {
-    noteye_table_setInt(L, "type", 0x10);
-    return 1;
+    Info(L, "type", 0x10);
+    return id;
     }
 
-  noteye_table_setInt(L, "type", 0);
-  return 1;
+  Info(L, "type", 0);
+  return id;
   }
-*/
-#endif
+}
+
+#undef Info
 
 }

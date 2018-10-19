@@ -250,6 +250,8 @@ ffi.cdef[[
     } viewpar;
 
   void fpp(viewpar *vp, double wax, double way, double facedir, Screen *s);
+  
+  int getobjectinfo(Object *o, int i);
   ]]
 end
 
@@ -505,3 +507,11 @@ drawscreenIso = noteyelib.drawScreenIso
 fpp = noteyelib.fpp
 fpp_parameters = ffi.typeof("viewpar")
 fpp_parameters_table = ffi.typeof("viewpar[1]")
+
+getobjectinfo = noteyelib.getobjectinfo
+
+function unhandle(X)
+  local Y = noteye_by_handle(X)
+  noteye_free_handle(Y)
+  return Y
+  end

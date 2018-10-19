@@ -191,14 +191,6 @@ function fontadj.simple(P,fx,fy,sx,sy)
   return newfont(P, fx, fy, 0)
   end
 
-function goi(x)
-  local s = x
-  for k,v in pairs(getobjectinfo(x)) do
-    s = s..":"..k..","..tostring(v)
-    end
-  return s
-  end
-
 function fontadj.simpleA(P,fx,fy,sx,sy)
 
   for x=0,sx-1 do
