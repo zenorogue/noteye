@@ -27,7 +27,7 @@ Screen* newScreen(int x, int y) {
   }
 }
 
-void Screen::write(int x, int y, const char *buf, Font *f, int color) {
+void Screen::write(int x, int y, const char *buf, Font *f, noteyecolor color) {
   int colorstack[128], qcolorstack = 1;
   while(*buf) {
     int len = utf8_numbytes(buf, 0);
@@ -76,7 +76,7 @@ tileptr& Screen::get(int x, int y) {
 
 extern "C" {
 
-void scrwrite(Screen *s, int x, int y, const char *buf, Font *f, int color) {
+void scrwrite(Screen *s, int x, int y, const char *buf, Font *f, noteyecolor color) {
   if(!s) { fprintf(stderr, "no screen\n"); return; }
   s->write(x, y, buf, f, color);
   }

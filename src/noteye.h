@@ -464,7 +464,7 @@ struct Screen : Object {
   int sx, sy;
   std::vector<tileptr> v;
   void setSize(int _sx, int _sy);
-  void write(int x, int y, const char *buf, Font *f, int color);
+  void write(int x, int y, const char *buf, Font *f, noteyecolor color);
   tileptr& get(int x, int y);
   };
 
@@ -801,16 +801,16 @@ TileSpatial* addSpatial(Tile *t1, int sf);
 Tile* addMerge(Tile *t1, Tile *t2, bool over);
 Tile* addMerge0(Tile *t1, Tile *t2);
 Tile* addMerge1(Tile *t1, Tile *t2);
-Tile* addRecolor(Tile *t1, int color, int mode);
-TileFill* addFill(int color, int alpha);
+Tile* addRecolor(Tile *t1, noteyecolor color, int mode);
+TileFill* addFill(noteyecolor color, noteyecolor alpha);
 TileTransform* addTransform(Tile *t1, double dx, double dy, double sx, double sy, double dz, double rot);
 TileLayer* addLayer(Tile *t1, int layerid);
 Tile* distillLayer(Tile *x, int layerid);
 Tile* distill(Tile *x, int sp);
 int getChar(Tile *x); 
-int getBak(Tile *x);
+noteyecolor getBak(Tile *x);
 const char* getChar2(Tile *i);
-int getCol(Tile *x);
+noteyecolor getCol(Tile *x);
 Image *getImage(Tile *x);
 void tileSetChid(Tile *x, int chid);
 

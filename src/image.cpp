@@ -133,7 +133,7 @@ Image *newimage(int x, int y) {
   return registerObject(new Image(x, y, 0));
   }
 
-Image *newimage_color(int x, int y, int color) {
+Image *newimage_color(int x, int y, noteyecolor color) {
   return registerObject(new Image(x, y, color));
   }
 
@@ -142,7 +142,7 @@ void imagetitle(Image *o, const char *title) {
   else fprintf(stderr, "null imagetitle\n"); // todo
   }
 
-void fillimage(Image *img, int x, int y, int w, int h, int col) {
+void fillimage(Image *img, int x, int y, int w, int h, noteyecolor col) {
   if(!img) { fprintf(stderr, "null imagetitle\n"); return; }
   SDL_Rect rect;
   rect.x = x;

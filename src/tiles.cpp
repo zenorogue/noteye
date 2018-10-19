@@ -304,7 +304,7 @@ void TileRecolor::preprocess() {
 
 extern "C" {
 
-TileFill *addFill(int color, int alpha) {
+TileFill *addFill(noteyecolor color, noteyecolor alpha) {
   TileFill TF;
   TF.color = color;
   TF.alpha = alpha;
@@ -312,10 +312,10 @@ TileFill *addFill(int color, int alpha) {
   return registerTile(TF);
   }
 
-Tile *addRecolor(Tile *t1, int color, int mode) {
+Tile *addRecolor(Tile *t1, noteyecolor color, int mode) {
 
   // optimizations first
-  if(color == -1) return t1;
+  if(color == noteyecolor(-1)) return t1;
   if(t1 == NULL) return NULL;
   
   auto TR = dynamic_cast<TileRecolor*> (t1);
@@ -333,11 +333,11 @@ Tile *addRecolor(Tile *t1, int color, int mode) {
   return registerTile(T);
   }
 
-int getCol(Tile *x) {
-  if(!x) return -1;
+noteyecolor getCol(Tile *x) {
+  if(!x) return noteyecolor(-1);
   
   Get(TileImage, TI, x);
-  if(TI) return -1;
+  if(TI) return noteyecolor(-1);
 
   Get(TileRecolor, TR, x);
   if(TR) return TR->color;
@@ -382,7 +382,7 @@ int getChar(Tile *x) {
   return 0;
   }
 
-int getBak(Tile *x) {
+noteyecolor getBak(Tile *x) {
   //Get(TileRecolor, TR, x);
   //if(TR) return TR->color;
   
@@ -392,7 +392,7 @@ int getBak(Tile *x) {
   Get(TileMerge, TM, x);
   if(TM) return getBak(TM->t1.base);
   
-  return -1;
+  return noteyecolor(-1);
   }
 
 void tileSetChid(Tile *x, int chid) {
@@ -543,7 +543,7 @@ avcoba gavcoba(Tile *x) {
   return res;
   }
 
-Tile *tileavcobaf(int kv, int color, int back, Font *F) {
+Tile *tileavcobaf(int kv, noteyecolor color, noteyecolor back, Font *F) {
   if(!F) return NULL;
   return addMerge(addFill(back, 0xFFFFFF), addRecolor(F->gettile(kv), color, recDefault), false);
   }
