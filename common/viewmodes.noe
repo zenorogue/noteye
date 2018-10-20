@@ -29,6 +29,8 @@ if rendererVsync == nil then
 function chooseActualRenderer()
   if currentRenderer ~= rendererAuto then
     actualRenderer = currentRenderer
+  elseif true then
+    actualRenderer = rendererOpenGL
   elseif mode == modeFPP or mode == modeTPP then
     actualRenderer = rendererOpenGL
   elseif mode == modeASCII then
