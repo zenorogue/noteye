@@ -40,7 +40,11 @@ typedef int bool;
 #include <complex>
 #include <string>
 #include <map>
+#ifdef MAC
+#include <tr1/unordered_map>
+#else
 #include <unordered_map>
+#endif
 #include <set>
 #include <iostream>
 #include <fstream>
@@ -475,7 +479,11 @@ extern std::set<struct TileMapping*> all_mappings;
 extern tileptr cache_identity;
 
 struct TileMapping : Object {
+#ifdef MAC
+  std::tr1::unordered_map<Tile*, tileptr> cache;
+#else
   std::unordered_map<Tile*, tileptr> cache;
+#endif
   virtual Tile* apply(Tile*);
   virtual void uncache(Tile*);
   virtual Tile* applyRaw(Tile*) = 0;

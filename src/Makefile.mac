@@ -11,7 +11,7 @@ CFLAGS=-O2 -mmacosx-version-min=10.5 -F$(FRAMEWORK_DIR) -I$(FRAMEWORK_DIR)/lua/i
 #	g++ noteye.cpp -o noteye -lSDL2 -lSDL2_image -llua5.1 -lutil -DLINUX -lSDL2_net -lz
 
 libnoteye.o: libnoteye.cpp noteye.h util.cpp screen.cpp tiles.cpp gfx.cpp linux.cpp image.cpp fpp.cpp font.cpp internal.cpp stream.cpp consout.cpp sound.cpp lua.cpp iso.cpp sdltex.cpp drawtile.cpp noteye-curses.h
-	g++ -fpic libnoteye.cpp -c -o libnoteye.o -DLINUX -DHYDRA $(CFLAGS)
+	g++ -std=c++11 -fpic libnoteye.cpp -c -o libnoteye.o -DLINUX -DHYDRA $(CFLAGS)
 
 ../libnoteye.dylib: libnoteye.o
 #	g++ -shared -Wl,-soname,libnoteye.so -o ../libnoteye.so libnoteye.o -lSDL -lSDL_image -llua5.1 -lutil -lSDL_mixer -lSDL_net
