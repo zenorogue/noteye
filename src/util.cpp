@@ -409,7 +409,7 @@ void noteye_gc() {
       deletions++;
       }
     }
-  printf("objcount %6d deletions %6d false_alarms %6d IP %12lld CP %12lld\n", objcount, deletions, false_alarms, totalimagesize, totalimagecache);
+//  printf("objcount %6d deletions %6d false_alarms %6d IP %12lld CP %12lld\n", objcount, deletions, false_alarms, totalimagesize, totalimagecache);
   }
 }
 
