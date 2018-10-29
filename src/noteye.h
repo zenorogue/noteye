@@ -328,11 +328,17 @@ struct TileImage : Tile {
   virtual void debug();
   TileImage();
   TileImage(int _sx, int _sy);
+#ifdef _WIN32
+  TileImage(TileImage& ti);
+#else
   TileImage(TileImage& ti) = delete;
+#endif
   ~TileImage();
   virtual void inform() { 
+#ifndef _WIN32
     inform_base("image"); printf("  tile of %p (%d,%d,%d,%d)\n", i.base, ox, oy, sx, sy); 
     for(auto& c: caches) printf("  transcache %p\n", c.base);
+#endif
     }
   };
 
@@ -490,6 +496,7 @@ struct TileMapping : Object {
   TileMapping() { all_mappings.insert(this); }
   ~TileMapping() { all_mappings.erase(this); }
   virtual void inform() { 
+#ifndef _WIN32
     inform_base("tilemapping"); 
     int identities = 0;
     for(auto& p: cache)
@@ -498,6 +505,7 @@ struct TileMapping : Object {
       else
         printf("  [%p] -> %p\n", p.first, p.second.base);        
     printf("  indentities = %d\n", identities);
+#endif
     }
   };
 
