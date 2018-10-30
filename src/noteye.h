@@ -40,7 +40,7 @@ typedef int bool;
 #include <complex>
 #include <string>
 #include <map>
-#ifdef MAC
+#if __cplusplus < 201103L
 #include <tr1/unordered_map>
 #else
 #include <unordered_map>
@@ -485,7 +485,7 @@ extern std::set<struct TileMapping*> all_mappings;
 extern tileptr cache_identity;
 
 struct TileMapping : Object {
-#ifdef MAC
+#if __cplusplus < 201103L
   std::tr1::unordered_map<Tile*, tileptr> cache;
 #else
   std::unordered_map<Tile*, tileptr> cache;
