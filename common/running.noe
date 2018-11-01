@@ -415,9 +415,17 @@ evhandlers[evProcScreen] = function(ev)
 function copygamedata()
   end
 
+function get_cursor_and_size(P)
+  local c = noteye_getcursor(P)  
+  local size = noteye_getcursorsize(P)
+  c = V(c.x, c.y)
+  c.size = size
+  return c
+  end
+  
 function copymapall()
   if P == LUAPROCESS then setcursor(luag.cursor)
-  elseif P then setcursor(noteye_getcursor(P)) end
+  elseif P then setcursor(get_cursor_and_size(P)) end
   copygamedata()
   if maptocopy then
     maptocopy = false

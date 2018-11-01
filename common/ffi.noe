@@ -198,6 +198,7 @@ ffi.cdef[[
   BitmapFont *newFont(Image *base, int inx, int iny, int trans);
 
   point noteye_getcursor(Process *p);
+  int noteye_getcursorsize(Process *P);
 
   int sendkey(Process *P, int scancode, int keycode, int mod, int type);
   int sendtext(Process *P, const char *s);
@@ -485,6 +486,7 @@ newfont = protected4(noteyelib.newFont)
 
 tilefreeform = protected2(noteyelib.addFreeform)
 noteye_getcursor = noteyelib.noteye_getcursor
+noteye_getcursorsize = noteyelib.noteye_getcursorsize
 
 gavcoba = noteyelib.gavcoba
 
