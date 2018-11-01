@@ -131,7 +131,7 @@ function palettehdr()
   scrwrite(IMG, 1, 1, "Current palette: \ve"..curpalette.desc.."\vp", Font, vgaget(10))
   
   for x = 0, 7 do
-    scrwrite(IMG, 1+3*x, 3, x, Font, vgaget(15))
+    scrwrite(IMG, 1+3*x, 3, ""..x, Font, vgaget(15))
     -- scrwrite(IMG, 1+3*x, 4, string.char(219, 219, 219), Font, vgaget(x))
     -- scrwrite(IMG, 1+3*x, 5, string.char(219, 219, 219), Font, vgaget(x+8))
     end
