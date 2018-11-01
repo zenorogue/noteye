@@ -501,7 +501,7 @@ remove_tilemapcaches = noteyelib.remove_tilemapcaches
 noteye_gc = noteyelib.noteye_gc
 
 noteye_assign_handle = noteyelib.noteye_assign_handle
-noteye_by_handle = protected1(noteye_by_handle)
+noteye_by_handle = protected1(noteyelib.noteye_by_handle)
 noteye_get_handle = noteyelib.noteye_get_handle
 noteye_free_handle = noteyelib.noteye_free_handle
 
