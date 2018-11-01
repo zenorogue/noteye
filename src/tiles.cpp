@@ -641,7 +641,7 @@ int getobjectinfo(Object *o, int i) {
     Info(L, "sy", TI->sy);
     Info(L, "ch", TI->chid);
     Info(L, "trans", TI->trans);
-    Info(L, "i", noteye_get_handle(TI->i));
+    Info(L, "i", noteye_assign_handle(TI->i));
     Info(L, "bottom", getFppDown(TI));
     return id;
     }
@@ -649,7 +649,7 @@ int getobjectinfo(Object *o, int i) {
   Get(TileRecolor, TR, o);
   if(TR) {
     Info(L, "type", 0x21);
-    Info(L, "t1", noteye_get_handle(TR->t1));
+    Info(L, "t1", noteye_assign_handle(TR->t1));
     Info(L, "mode", TR->mode);
     Info(L, "color", TR->color);
     return id;
@@ -658,15 +658,15 @@ int getobjectinfo(Object *o, int i) {
   Get(TileMerge, TM, o);
   if(TM) {
     Info(L, "type", TM->over ? 0x18 : 0x12);
-    Info(L, "t1", noteye_get_handle(TM->t1));
-    Info(L, "t2", noteye_get_handle(TM->t2));
+    Info(L, "t1", noteye_assign_handle(TM->t1));
+    Info(L, "t2", noteye_assign_handle(TM->t2));
     return id;
     }
   
   Get(TileSpatial, TSp, o);
   if(TSp) {
     Info(L, "type", 0x14);
-    Info(L, "t1", noteye_get_handle(TSp->t1));
+    Info(L, "t1", noteye_assign_handle(TSp->t1));
     Info(L, "sf", TSp->sf);
     return id;
     }
@@ -674,7 +674,7 @@ int getobjectinfo(Object *o, int i) {
   Get(TileLayer, TL, o);
   if(TL) {
     Info(L, "type", 0x19);
-    Info(L, "t1", noteye_get_handle(TL->t1));
+    Info(L, "t1", noteye_assign_handle(TL->t1));
     Info(L, "sf", TL->layerid);
     return id;
     }
