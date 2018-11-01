@@ -16,7 +16,7 @@ function setpalette(p, power)
   
   if S then
     ncs = scrgetsize(S)
-    scrcopy(S, 0, 0, S, 0, 0, ncs.x, ncs.y, switchpal)
+    V.scrcopy_f(S, V(0, 0), S, V(0, 0), V(ncs.x, ncs.y), switchpal)
     end
   end
 
