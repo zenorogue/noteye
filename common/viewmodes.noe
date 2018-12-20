@@ -558,8 +558,9 @@ function createZoomCache()
   if ZoomCache then
     zcs = V.imggetsize(ZoomCache)
     if zcs ~= V.floor(D.cmini.size) then
-      delete(ZoomCacheTile)
-      delete(ZoomCache)
+-- TODO: Zeno
+--      delete(ZoomCacheTile)
+--      delete(ZoomCache)
       ZoomCache = nil
       end
     end
