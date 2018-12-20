@@ -671,7 +671,11 @@ function miniFPP()
 
 function miniReal()
   V.scrfill(Minimap, rectS(D.mmapsize), tilefill(minimapborder))
-  V.scrcopy(MAP, 0, Minimap, (minimap_haveborder() and V(1,1) or V(0,0)), D.map.size, minimode == modeASCII and tm_minifont_pick() or tm_minimap)
+  if minimode == modeASCII then
+    V.scrcopy(MAP, 0, Minimap, (minimap_haveborder() and V(1,1) or V(0,0)), D.map.size, tm_minifont_pick())
+  else
+    V.scrcopy_f(MAP, 0, Minimap, (minimap_haveborder() and V(1,1) or V(0,0)), D.map.size, tm_minimap)
+    end
   
   if actualRenderer == rendererSurface then
     V.drawscreen(D.output, Minimap, D.cmini.top, D.minimapsize)
