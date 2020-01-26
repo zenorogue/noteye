@@ -1045,7 +1045,9 @@ function drawAscii(ax)
     V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, TMAP_COPY)
   else
     --profstart("ax1")
-    if ax[1] then V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, ax[1]) end
+    if ax[1] then 
+      V.drawscreenx(D.output, IMG, D.screen.top, D.fontsize, ax[1]) 
+      end
     --profend("ax1")
 
     --profstart("ax2")
