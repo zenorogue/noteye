@@ -1017,6 +1017,8 @@ D.shifts = {V(-1,0), V(0,-1), V(1,0), V(0,1)}
 
 function drawAscii(ax)
 
+  setOptimizeForText(true)
+  
   local mp
   local undermouse
   local undercursor  
@@ -1062,6 +1064,8 @@ function drawAscii(ax)
   
   if undercursor then scrset(IMG, cursor.x, cursor.y, undercursor) end
   if undermouse then scrset(IMG, mp.x, mp.y, undermouse) end
+
+  setOptimizeForText(false)
   end
 
 axTransparent = {nil, tmap_bigblack, tmap_transorshade}

@@ -177,6 +177,12 @@ int lh_uselayer(lua_State *L) {
   return 0;
   }
 
+bool optimize_for_text;
+
+void setOptimizeForText(bool b) { 
+  optimize_for_text = b; 
+  }
+
 void drawScreen(Image *dest, Screen *s, int ox, int oy, int tx, int ty) {
   if(!dest) { fprintf(stderr, "no image\n"); return; }
   if(!s) { fprintf(stderr, "no screen\n"); return; }
@@ -184,11 +190,32 @@ void drawScreen(Image *dest, Screen *s, int ox, int oy, int tx, int ty) {
   drawmatrix M;
   M.tx = tx; M.ty = ty;
   M.txy = M.tyx = M.tzx = M.tzy = 0;
-  
-  if(layerstodraw.size() == 0) {  
+
+  if(layerstodraw.size() == 0 && optimize_for_text) {  
+    for(int ph=0; ph<2; ph++)
     for(int y=0; y<s->sy; y++)
       for(int x=0; x<s->sx; x++) {
         M.x = ox+x*tx; M.y = oy+y*ty;
+
+        auto t = tmFlat->apply(s->get(x,y));
+
+        auto TM = dynamic_cast<TileMerge*> (t);
+        if(ph == 0) {
+          if(TM) t = TM->t1;
+          else continue;
+          }
+        else {
+          if(TM) t = TM->t2;
+          }
+
+        drawTile(dest, M, t);
+        }
+    }
+  else if(layerstodraw.size() == 0) {  
+    for(int y=0; y<s->sy; y++)
+      for(int x=0; x<s->sx; x++) {
+        M.x = ox+x*tx; M.y = oy+y*ty;
+
         drawTile(dest, M, tmFlat->apply(s->get(x,y)));
         }
     }
@@ -222,6 +249,31 @@ void drawScreenX(Image *dest, Screen *scr, int ox, int oy, int tx, int ty, TileM
   M.txy = M.tyx = M.tzx = M.tzy = 0;
 
   dest->changes++;
+  
+  if(optimize_for_text) {
+    for(int ph=0; ph<2; ph++)
+    for(int y=0; y<scr->sy; y++)
+      for(int x=0; x<scr->sx; x++) {
+        M.x = ox+x*tx; M.y = oy+y*ty;
+
+        Tile *t = scr->get(x, y);     
+        if(utm) t = utm->apply(t);
+        t = tmFlat->apply(t);
+
+        auto TM = dynamic_cast<TileMerge*> (t);
+        if(ph == 0) {
+          if(TM) t = TM->t1;
+          else continue;
+          }
+        else {
+          if(TM) t = TM->t2;
+          }
+
+        drawTile(dest, M, t);
+        }
+    return;
+    }
+    
   for(int y=0; y<scr->sy; y++)
     for(int x=0; x<scr->sx; x++) {
 

@@ -121,6 +121,8 @@ ffi.cdef[[
   void scrcopy(Screen *srcS, int srcX, int srcY, Screen *tgtS, int tgtX, int tgtY, int SX, int SY, TileMapping *utm);
   void scrwrite(Screen *s, int x, int y, const char *buf, Font *f, noteyecolor color);
 
+  void setOptimizeForText(bool b);
+  
   void drawScreen(Image *dest, Screen *s, int ox, int oy, int tx, int ty);
   void drawScreenX(Image *dest, Screen *scr, int ox, int oy, int tx, int ty, TileMapping *utm);
   void drawTile(Image *dest, Tile *t, int x, int y, int tx, int ty);
@@ -395,6 +397,8 @@ scrwrite = noteyelib.scrwrite
 drawscreen = noteyelib.drawScreen
 drawscreenx = noteyelib.drawScreenX
 drawtile = noteyelib.drawTile
+
+setOptimizeForText = noteyelib.setOptimizeForText
 
 setfont = protected2(noteyelib.setfont)
 
