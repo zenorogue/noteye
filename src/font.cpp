@@ -230,6 +230,7 @@ int lh_ttfrender(lua_State *L) {
     else {
       if(bufpos) {
         SDL_Color col;
+        col.a = (ncolor >> 24) & 255;
         col.r = (ncolor >> 16) & 255;
         col.g = (ncolor >> 8 ) & 255;
         col.b = (ncolor >> 0 ) & 255;
