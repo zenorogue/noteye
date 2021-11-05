@@ -53,7 +53,11 @@ void noteye_refresh() {
   if(uithread && !uithread_running) {
     if(uithread_err) return;
     uithread_running = true;
+#if LUA_VERSION_NUM > 501
+    int status = lua_resume(uithread, NULL, 0);
+#else
     int status = lua_resume(uithread,0);
+#endif
     luamapstate = uithread_out;
     uithread_running = false;
     if(status != LUA_YIELD) {
@@ -61,7 +65,7 @@ void noteye_refresh() {
       uithread_err = true;
       }
     }
-  
+
   else if(uithread) {
     lua_getglobal(uithread, CALLUI);
     // lua_pushvalue(internalstate, 2);
@@ -72,7 +76,7 @@ void noteye_refresh() {
     lua_pop(uithread, 1);
     }
 
-  else {      
+  else {
     lua_getglobal(internalstate, CALLUI);
     // lua_pushvalue(internalstate, 2);
     int status = lua_pcall(internalstate, 0, 1, 0);
@@ -108,7 +112,7 @@ int noteye_eventtokey(SDL_Event *ev) {
 
   if(ev->type == SDL_TEXTINPUT)
     return kev.keysym.sym;
-  
+
   bool down = ev->type == SDL_KEYDOWN;
 
   int retkey = 0;
@@ -116,10 +120,10 @@ int noteye_eventtokey(SDL_Event *ev) {
   if(!down) return 0;
 
   int sym = kev.keysym.sym;
-  
+
   #define Snd(key, x) else if(sym == SDLK_ ## key) retkey = x;
   #define SndKP(key, x) else if(sym == SDLK_KP_ ## key) retkey = x;
-  
+
   if(sym == SDLK_LSHIFT) return 0;
   else if(sym == SDLK_RSHIFT) return 0;
   else if(sym == SDLK_LCTRL) return 0;
@@ -168,16 +172,16 @@ int noteye_eventtokey(SDL_Event *ev) {
 
   #undef Snd
   #undef SndKP
-  
+
   if(sym > 0 && sym < 32) return sym;
 
-  if(sym >= 'a' && sym <= 'z' && (ev->key.keysym.mod & (KMOD_LCTRL|KMOD_RCTRL))) 
+  if(sym >= 'a' && sym <= 'z' && (ev->key.keysym.mod & (KMOD_LCTRL|KMOD_RCTRL)))
     return sym - 96;
 
   // added by JT: maybe we need to do this differently, but it seems to work
-  if(sym >= 'a' && sym <= 'z' && (ev->key.keysym.mod & KMOD_LALT)) 
+  if(sym >= 'a' && sym <= 'z' && (ev->key.keysym.mod & KMOD_LALT))
     return sym;
-  
+
   // use this for NotEye specials
   if((sym >= 1024 && sym < 0x10000000) || sym < 0)
     return sym;
@@ -188,10 +192,10 @@ int noteye_eventtokey(SDL_Event *ev) {
 int noteye_getchfull(bool total = false) {
   if(halfdelaymode >= 0) nextdelay = SDL_GetTicks() + halfdelaymode;
   else nextdelay = 0;
-  
+
   if(!P) return NOTEYEERR;
   while(true) {
-    if(uithread && uithread_err) 
+    if(uithread && uithread_err)
       return NOTEYEERR;
     noteye_getevent();
     if(P->lastevent) {
@@ -244,7 +248,7 @@ void noteye_addchx(int ch) {
     return;
     }
   if(P->curx < P->s->sx)
-    P->s->get(P->curx, P->cury) = 
+    P->s->get(P->curx, P->cury) =
         addMerge(
           P->brushback,
           addRecolor(P->f->gettile(ch), P->fore, recDefault),
@@ -261,16 +265,16 @@ void noteye_addch(char ch) {
   noteye_addchx(ch & 0xFF);
   }
 
-void noteye_addstr(const char *buf) { 
+void noteye_addstr(const char *buf) {
   while(*buf) noteye_addch(*buf), buf++;
   }
 
 void noteye_endwin() { }
 
-void noteye_erase() { 
+void noteye_erase() {
   if(!P) return;
   P->changed = true;
-  for(int y=0; y<P->s->sy; y++) for(int x=0; x<P->s->sx; x++) 
+  for(int y=0; y<P->s->sy; y++) for(int x=0; x<P->s->sx; x++)
     P->s->get(x, y) = P->brush0;
   P->curx=0; P->cury=0;
   }
@@ -283,7 +287,7 @@ void noteye_move(int y, int x) {
   if(P->cury<0) P->cury=0;
   if(P->cury>=P->s->sy) P->cury=P->s->sy-1;
   }
-void noteye_clrtoeol() { 
+void noteye_clrtoeol() {
   if(!P) return;
   P->changed = true;
   if(P->cury<P->s->sy)
@@ -328,17 +332,17 @@ int getVGAcolor(int c) {
 InternalProcess::InternalProcess(Screen *scr, Font *f, const char *cmdline) : Process(scr, f, cmdline) {
 
   isActive = true;  changed = false;
-  curx = 0; cury = 0; 
+  curx = 0; cury = 0;
   setColor(vgacol[7], vgacol[0]);
   evs = 0; eve = 0; lastevent = NULL;
   for(int i=0; i<EVENTBUFFER; i++) evbuf[i] = NULL;
-  
+
   for(int x=0; x<scr->sx; x++) for(int y=0; y<scr->sy; y++)
     scr->get(x,y) = brush0;
   }
 
 InternalProcess::~InternalProcess() {
-  for(int i=0; i<EVENTBUFFER; i++) if(evbuf[i]) delete evbuf[i];  
+  for(int i=0; i<EVENTBUFFER; i++) if(evbuf[i]) delete evbuf[i];
   }
 
 void InternalProcess::sendText(const string& s) {
@@ -396,7 +400,7 @@ bool InternalProcess::checkEvent(lua_State *L) {
     noteye_table_setInt(L, "obj", id);
     return true;
     }
-  
+
   return false;
   }
 
@@ -421,7 +425,7 @@ int lh_internal(lua_State *L) {
   checkArg(L, 3, "internal");
 
   P = new InternalProcess(luaO(1, Screen), luaO(2, Font), luaStr(3));
-  
+
   return retObjectEv(L, P);
   }
 
@@ -457,7 +461,11 @@ int lh_uicreate(lua_State *L) {
   uithread_out = L;
   lua_getglobal(uithread, "threadtemp");
   uithread_running = true;
-  int status = lua_resume(uithread, 0);
+#if LUA_VERSION_NUM > 501
+  int status = lua_resume(uithread, NULL, 0);
+#else
+  int status = lua_resume(uithread,0);
+#endif
   luamapstate = uithread_out;
   uithread_err = false;
   if (status != LUA_YIELD) {
@@ -478,7 +486,11 @@ void noteye_uiresume() {
     return;
     }
   uithread_running = true;
-  int status = lua_resume(uithread, 0);
+#if LUA_VERSION_NUM > 501
+  int status = lua_resume(uithread, NULL, 0);
+#else
+  int status = lua_resume(uithread,0);
+#endif
   luamapstate = uithread_out;
   uithread_running = false;
   if(status != LUA_YIELD) {
@@ -495,7 +507,11 @@ void noteye_uifinish() {
   uithread_running = true;
   int t = 100;
   while(true) {
-    int status = lua_resume(uithread, 0);
+#if LUA_VERSION_NUM > 501
+    int status = lua_resume(uithread, NULL, 0);
+#else
+    int status = lua_resume(uithread,0);
+#endif
     if(status == 0) break;
     if(status == LUA_YIELD && t>0) { t--; continue; }
     noteyeError(12, "uifinish did not finish thread", lua_tostring(uithread, -1), status);
