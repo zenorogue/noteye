@@ -145,7 +145,7 @@ void twinswap_phase() {
 hydra *twinAlive() {
   if(twin)
     return twin;
-  for(int i=0; i<size(stairqueue); i++)
+  for(int i=0; i<isize(stairqueue); i++)
     if(stairqueue[i]->color == HC_TWIN)
       return stairqueue[i];
   return NULL;
@@ -701,7 +701,7 @@ void movedir(int dir) {
     else
       addMessage("The poor mushroom shakes and the ground trembles"+exclamation);
     playSound("../hydra-old/quake", 100, 0);
-    for(int i=0; i<size(hydras); i++) {
+    for(int i=0; i<isize(hydras); i++) {
       hydra *h (hydras[i]);
       h->sheads = h->heads;
       if(h->lowhead())
@@ -1242,7 +1242,7 @@ bool useup(int ii, weapon *orb) {
 
 bool canGoDown() {
   
-  for(int i=0; i<size(hydras); i++)
+  for(int i=0; i<isize(hydras); i++)
     if(!hydras[i]->lowhead() && !hydras[i]->zombie)
       return false;
 
@@ -1251,7 +1251,7 @@ bool canGoDown() {
 
 bool noEnemies() {
   
-  for(int i=0; i<size(hydras); i++)
+  for(int i=0; i<isize(hydras); i++)
     if(!hydras[i]->zombie)
       return false;
 
@@ -1421,7 +1421,7 @@ void initCharacter() {
     pinfo.trollwpn.push_back(newTrap(7, 10, WT_BLUNT));
 
     pinfo.trollkey.clear();
-    for(int i=0; i<size(pinfo.trollwpn); i++)
+    for(int i=0; i<isize(pinfo.trollwpn); i++)
       pinfo.trollkey.push_back(i<26 ? 'a'+i : 'A'+(i-26));
     }    
 

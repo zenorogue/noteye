@@ -97,7 +97,7 @@ void viewNumAchievements(const vector<playerinfo>& pi, bool global) {
   int mots[MOT];
   for(int a=0; a<MOT; a++) mots[a] = 1000000;
 
-  for(int i=0; i<size(pi); i++) {
+  for(int i=0; i<isize(pi); i++) {
     const playerinfo& Pi(pi[i]);
     if(global ? false : Pi.username != pinfo.username)
       continue;
@@ -248,7 +248,7 @@ void viewAchievements(const vector<playerinfo>& pi, bool global) {
   
   uint64_t total = 0;
 
-  for(int i=0; i<size(pi); i++) {
+  for(int i=0; i<isize(pi); i++) {
     const playerinfo& Pi(pi[i]);
     if(global ? false : Pi.username != pinfo.username)
       continue;

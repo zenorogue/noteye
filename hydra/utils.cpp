@@ -101,7 +101,7 @@ int bitcount(int x) { return x ? (x&1) + bitcount(x>>1) : 0; }
 
 bool havebit(int set, int bit) { return (set>>bit)&1; }
 
-template<class T> int size(const T& u) { return u.size(); }
+template<class T> int isize(const T& u) { return u.size(); }
 
 // vector utilities:
 struct vec2 {
@@ -222,7 +222,7 @@ int primediv(int x) {
 vector<int> sieve;
 
 int getPrimeIndex(int x) {
-  if(size(sieve) == 0) {
+  if(isize(sieve) == 0) {
     sieve.resize(SIEVE);
     for(int i=0; i<SIEVE; i++) sieve[i] = true;
     sieve[0] = 0; sieve[1] = 0;

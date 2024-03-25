@@ -204,9 +204,9 @@ void viewMultiLine(string s, int& cy, int narrow) {
     move(cy, cx);
     if(s[0] == '\b') { col(s[1] - 'a' + 1); s = s.substr(2); }
     
-    cut = size(s);
+    cut = isize(s);
 
-    for(int x=0; x<MAXLINE-narrow*2 && x < size(s); x++) 
+    for(int x=0; x<MAXLINE-narrow*2 && x < isize(s); x++) 
       if(s[x] == '\n' || s[x] == '\r') { cut = x; break; } 
       else if(s[x] == ' ' ) cut = x;
     
@@ -476,8 +476,8 @@ void showResistanceHydraWeapon(hydra *h, weapon *w) {
       else
         s = "+" + its(val);
 
-      if(size(s) < 4) s += " ";
-      if(size(s) > 4) s.resize(4);
+      if(isize(s) < 4) s += " ";
+      if(isize(s) > 4) s.resize(4);
       addstri(s);
       }
   
@@ -604,7 +604,7 @@ void drawScreen() {
   
   int cy = MAXARMS+1;
   
-  for(int i=0; i<size(hydras); i++) if(hydras[i]->aware()) {
+  for(int i=0; i<isize(hydras); i++) if(hydras[i]->aware()) {
     hydra* h = hydras[i];
     col(h->gcolor());
     move(cy, SDIV);
@@ -674,8 +674,8 @@ void drawScreen() {
 #endif
 
   col(deadcol);
-  move(SY, 0); addstri(msgs[size(msgs)-2]);
-  move(SY+1, 0); addstri(msgs[size(msgs)-1]);
+  move(SY, 0); addstri(msgs[isize(msgs)-2]);
+  move(SY+1, 0); addstri(msgs[isize(msgs)-1]);
   
   cursorOnPlayer();
   }
@@ -723,8 +723,8 @@ void viewWoundTable(hydra *h) {
 
   SI.prepare(COLLAPSE+20, h);
   while(true) {
-    if(size(minhead) == 0) break;
-    int headhere = minhead[size(minhead)-1];
+    if(isize(minhead) == 0) break;
+    int headhere = minhead[isize(minhead)-1];
     int atx = 0;
     
     erase();
@@ -870,7 +870,7 @@ void fullHydraInfo() {
   
   sclass * infos[MAXINF];
 
-  for(int i=0; i<size(hydras); i++) if(hydras[i]->aware()) {
+  for(int i=0; i<isize(hydras); i++) if(hydras[i]->aware()) {
     if(cy >= MAXINF) break;
     if(cy>=scrollval && cy<scrollval+MAXINFSCR)  {
       showMenuOption(cy+2-scrollval, 'a'+cy, cy==selection);
@@ -991,7 +991,7 @@ bool viewHelpForItem(int ii) {
   else 
     addMessage("Use the "+iinf[ii].name+"? (y/n)");
   
-  col(15); move(23, 0); addstri(msgs[size(msgs)-1]);
+  col(15); move(23, 0); addstri(msgs[isize(msgs)-1]);
   return yesno(IC_MYESNO);
   }
 
@@ -1410,7 +1410,7 @@ string sortorder = "tkbl";
 bool trollcmp(int a, int b) {
   weapon *wa = pinfo.trollwpn[a];
   weapon *wb = pinfo.trollwpn[b];
-  for(int i = 0; i < size(sortorder); i++) switch(sortorder[i]) {
+  for(int i = 0; i < isize(sortorder); i++) switch(sortorder[i]) {
     case 't':
       if(wa->type != wb->type) return wa->type > wb->type;
       break;
@@ -1437,7 +1437,7 @@ bool quickGet(weapon*& w) {
   // don't get traps
   if(w->wpnflags & wfTrap) return false;
   
-  int s = size(pinfo.trollwpn);
+  int s = isize(pinfo.trollwpn);
   for(int i=0; i<s; i++) {
     free[int(pinfo.trollkey[i])] = false;
     }
@@ -1468,7 +1468,7 @@ bool viewTrollInventory(hydra *resistancesOf) {
   move(0,45); col(8); addstr("Ctrl+FLBKT = change sort order");
   
   move(0,0); col(14); 
-  int s = size(pinfo.trollwpn);
+  int s = isize(pinfo.trollwpn);
   if(resistancesOf) 
      addstri("Resistances for: "+resistancesOf->name());
   else if(wpn[P.cArm])
@@ -1624,7 +1624,7 @@ void createTargetLines() {
       }
     }
 
-  for(int i=0; i<size(hydras); i++) {
+  for(int i=0; i<isize(hydras); i++) {
     hydra *H = hydras[i];
     if(M[H->pos].seen)
     if(H->color & HC_DRAGON) for(int d=0; d<DIRS; d++) breathAttack(H, d, false);
@@ -1641,7 +1641,7 @@ int headask() {
 
 hydra *enemyInSight() {
   
-  for(int i=0; i<size(hydras); i++)
+  for(int i=0; i<isize(hydras); i++)
     if(M[hydras[i]->pos].seen && !hydras[i]->zombie && hydras[i]->aware())
       return hydras[i];
 
@@ -1652,7 +1652,7 @@ int closestHydraDistance() {
   
   int hd = 5000;
 
-  for(int i=0; i<size(hydras); i++)
+  for(int i=0; i<isize(hydras); i++)
     if(M[hydras[i]->pos].seen && !hydras[i]->zombie && hydras[i]->aware()) {
       int dist = len(pickMinus(playerpos, hydras[i]->pos));
       if(dist < hd) hd = dist;
@@ -2074,7 +2074,7 @@ void mainloop() {
         col(15);
         for(int i=0; i<24; i++) {
           move(i, 0);
-          int xpos = size(msgs) + i - 24;
+          int xpos = isize(msgs) + i - 24;
           if(xpos >= 0) addstr(msgs[xpos].c_str());
           }
         ghch(IC_VIEWDESC);
@@ -2148,7 +2148,7 @@ void mainloop() {
             continue;
             }
         
-          for(int i=0; i<size(hydras); i++) {
+          for(int i=0; i<isize(hydras); i++) {
             M[hydras[i]->pos].h = NULL;
             if(hydras[i]->color == HC_ETTIN) {
               stats.ettinsave++;

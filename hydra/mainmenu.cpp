@@ -287,10 +287,10 @@ void addCurrentInfoToLog() {
   glog.push_back("Weapons at the end:\n");
   for(int i=0; i<P.arms; i++) if(wpn[i]) weaponToLog(wpn[i], "");
 
-  if(size(pinfo.trollkey)) {
+  if(isize(pinfo.trollkey)) {
     glog.push_back("\n");
     glog.push_back("Titan weapon inventory:\n");
-    for(int i=0; i<size(pinfo.trollkey); i++) {
+    for(int i=0; i<isize(pinfo.trollkey); i++) {
       string s = "[";
       s += pinfo.trollkey[i];
       s += "] ";
@@ -334,9 +334,9 @@ void addCurrentInfoToLog() {
 
   glog.push_back("\n");
   glog.push_back("Last messages:\n");
-  int from = size(msgs)-loglines;
+  int from = isize(msgs)-loglines;
   if(from < 0) from = 0;
-  for(int f=from; f<size(msgs); f++) glog.push_back("  "+msgs[f]+"\n");  
+  for(int f=from; f<isize(msgs); f++) glog.push_back("  "+msgs[f]+"\n");  
   }
 
 void editString(string& s, string title = "Enter the name: ") {
@@ -500,7 +500,7 @@ void viewHall(bool current) {
     int cury = 1, at = startat;
     
     while(cury < 19) {
-      if(at >= size(pi)) break;
+      if(at >= isize(pi)) break;
       playerinfo& Pi(pi[at]);
       if(!global && Pi.username != pinfo.username) { at++; continue; }
       if(crace >= 0 && Pi.player.race != crace) { at++; continue; }
@@ -679,8 +679,8 @@ void viewHall(bool current) {
         if(c == D_PGUP) startat -= 10;
         if(c == D_PGDN) startat += 10;
         if(c == D_HOME) startat = 0;
-        if(c == D_END ) startat = size(pi);
-        if(startat > size(pi)-17) startat = size(pi) - 17;
+        if(c == D_END ) startat = isize(pi);
+        if(startat > isize(pi)-17) startat = isize(pi) - 17;
         if(startat < 0) startat = 0;
         break;
       }
@@ -690,14 +690,14 @@ void viewHall(bool current) {
 void clearGame() {
   // if(!gameExists) return;
   for(int i=0; i<GLEVELS; i++) {
-    for(int j=0; j<size(toput[i]); j++) delete toput[i][j];
+    for(int j=0; j<isize(toput[i]); j++) delete toput[i][j];
     toput[i].clear();
     }
   gameExists = false;
   
   pinfo.player.flags |= dfCleanup;
   
-  while(size(hydras))
+  while(isize(hydras))
     M[hydras[0]->pos].hydraDead(NULL);
 
   pinfo.player.flags &= ~dfCleanup;
@@ -1052,7 +1052,7 @@ void mainmenu() {
         initScreen();
         FILE *f = fopen(logname.c_str(), "wt");
         if(f) {
-          for(int i=0; i<size(glog); i++) {
+          for(int i=0; i<isize(glog); i++) {
             fprintf(f, "%s", glog[i].c_str());
             #ifndef ANDROID
             printf("%s", glog[i].c_str());
@@ -1240,7 +1240,7 @@ bool selectRace(bool rchal) {
     for(int i=0; i<RACES; i++) if(i != R_ELF) {
       if(i) { col(8); addstr(" | "); }
       bool light = true;
-      for(int l=0; l<size(rinf[i].rname); l++) {
+      for(int l=0; l<isize(rinf[i].rname); l++) {
         char c = rinf[i].rname[l];
         if(rinf[i].rkey == tolower(c) && light) col(14), light = false;
         else if(i == P.race) col(15);

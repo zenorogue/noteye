@@ -61,8 +61,8 @@ void saveGame(string sav = savename) {
   #else
   P.flags |= dfFree;
   #endif
-  stats.whistSize = size(pinfo.whist);
-  P.stairqueue = size(stairqueue);
+  stats.whistSize = isize(pinfo.whist);
+  P.stairqueue = isize(stairqueue);
   
   save(P);
   save(stats);
@@ -79,7 +79,7 @@ void saveGame(string sav = savename) {
   save(set); for(int i=0; i<MAXARMS; i++) if(wpn[i]) wpn[i]->csave();
   
   if(true) {
-    int trollsize = size(pinfo.trollwpn);
+    int trollsize = isize(pinfo.trollwpn);
     save(trollsize);
     for(int i=0; i<trollsize; i++) save(pinfo.trollkey[i]);
     for(int i=0; i<trollsize; i++) pinfo.trollwpn[i]->csave();
@@ -99,7 +99,7 @@ void saveGame(string sav = savename) {
     }  
   
   int32_t i = hydras.size();
-  save(i); for(int i=0; i<size(hydras); i++) hydras[i]->csave();
+  save(i); for(int i=0; i<isize(hydras); i++) hydras[i]->csave();
   
   if(P.flags & dfChallenge) save(pinfo.cdata);
   
@@ -281,7 +281,7 @@ void loadGame(string sav = savename) {
   M.out.clear(); M.out.type = CT_WALL;
   
   int32_t i; load(i); hydras.resize(i);
-  for(int i=0; i<size(hydras); i++) {
+  for(int i=0; i<isize(hydras); i++) {
     hydra *h = (hydra*) loadS();
     hydras[i] = h;
     M[h->pos].h = h;

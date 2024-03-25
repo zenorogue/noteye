@@ -93,7 +93,7 @@ void shieldinfo::prepare(int maxsh, hydra *h, bool shu) {
 
 int shieldinfo::ehcntx(int q) {
   if(maxss == 0) return q;
-  if(q >= size(ehcnt)) {
+  if(q >= isize(ehcnt)) {
     int b = (q / maxss) - (maxss-1);
     return ehcnt[q - b * maxss] + b;
     }
@@ -121,7 +121,7 @@ int shieldinfo::dampost_true(int q) {
   }
 
 int shieldinfo::usize(int siz) {
-  if(siz < size(shused)) return shused[siz];
+  if(siz < isize(shused)) return shused[siz];
   return maxss;
   }
 
@@ -197,9 +197,9 @@ void cell::hydraDead(hydra *killer) {
 
   if(h->color == HC_VAMPIRE && !stats.unhonor) achievement("VAMPIRESLAYER");
   
-  for(int i=0; i<size(hydras); i++) if(hydras[i] == h) {
-    for(int j=i+1; j<size(hydras); j++) hydras[j-1] = hydras[j];
-    hydras.resize(size(hydras)-1);
+  for(int i=0; i<isize(hydras); i++) if(hydras[i] == h) {
+    for(int j=i+1; j<isize(hydras); j++) hydras[j-1] = hydras[j];
+    hydras.resize(isize(hydras)-1);
     }
 
   bool cleanup = (pinfo.player.flags & dfCleanup);
@@ -391,7 +391,7 @@ void hydraAttackPlayer(hydra* H, bool brother) {
   
   if(H->ewpn) {
     string verb = H->ewpn->info().hverb;
-    if(verb[size(verb)-1] == 'h') verb += "e";
+    if(verb[isize(verb)-1] == 'h') verb += "e";
     amsg = "The "+H->name()+" "+verb+"s";
     }
   else if(H->color == (HC_ANCIENT | HC_DRAGON))
@@ -888,7 +888,7 @@ void popStairQueue() {
   if(c.h) return;
   
   hydra *h = stairqueue[0];
-  int n = size(stairqueue);
+  int n = isize(stairqueue);
   for(int i=1; i<n; i++) stairqueue[i-1] = stairqueue[i];
   stairqueue.resize(n-1);
 
@@ -916,7 +916,7 @@ void moveHydras() {
   
   traps.clear();
   
-  for(int i=0; i<size(hydras); i++) {
+  for(int i=0; i<isize(hydras); i++) {
 
     hydra* H(hydras[i]);
     if(H->power()) {
@@ -944,7 +944,7 @@ void moveHydras() {
       }
     }
   
-  for(int i=0; i<size(traps); i++) {
+  for(int i=0; i<isize(traps); i++) {
     weapon *t = traps[i]->trapped();
     if(!t) continue;
     if(trapHits(traps[i])) {
@@ -1260,7 +1260,7 @@ bool specialMove(hydra *H) {
     if(P.active[IT_PAMBI]) return false;
     vector<int> owncost;
     
-    for(int hi=0; hi<size(hydras); hi++) if(hydras[hi] != H) {
+    for(int hi=0; hi<isize(hydras); hi++) if(hydras[hi] != H) {
       hydra *H2 = hydras[hi];
       if(!nearPlayer(H2)) continue;
       if(isEnemy(H, H2)) continue;
@@ -1274,7 +1274,7 @@ bool specialMove(hydra *H) {
         }
       int hcount = 0, bscore = 0, noop = 0;
       prepareHah(H2);
-      for(int i=0; i<size(owncost); i++) {
+      for(int i=0; i<isize(owncost); i++) {
         int aw = headsafterhit(H2, H2->heads+i);
         if(i==0) noop = aw;
         int cscore = (aw - noop) + (owncost[i] - owncost[0]);

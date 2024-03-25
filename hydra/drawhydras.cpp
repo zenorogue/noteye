@@ -305,19 +305,19 @@ void addAnimation(cell *c, int headid, int cutcount, int color = 0) {
   }
 
 Image *headimage;
-Tile *headtile[ANIM_MAX];
+tileptr headtile[ANIM_MAX];
 
 double r64(double z) { return floor(z * 64 + .5) / 64; }
 
-Tile *getAnimation(cell *c) {
-  Tile *res = nullptr;
+tileptr getAnimation(cell *c) {
+  tileptr res = nullptr;
   int d = 0;
   int t = SDL_GetTicks();
-  for(; d<size(c->animations); d++) {
+  for(; d<isize(c->animations); d++) {
     animinfo& ai = c->animations[d];
     if(ai.t < t - 250) {
-      c->animations[d] = c->animations[size(c->animations)-1];
-      c->animations.resize(size(c->animations)-1);
+      c->animations[d] = c->animations[isize(c->animations)-1];
+      c->animations.resize(isize(c->animations)-1);
       d--; continue;
       }
     
@@ -420,7 +420,7 @@ void drawMapLua(lua_State *L, int x, int y, int mode) {
   bool hvis =
     (c.h && (c.h->visible() ? c.seen : seeallmode()));
     
-  Tile *anim = getAnimation(&c);
+  tileptr anim = getAnimation(&c);
 
   if(!onplayer && !hvis && !anim && !(mode == 8 && (c.mushrooms || c.it || c.dead))) {
     long long cacheid = shadow&15;
@@ -545,7 +545,7 @@ void sendAttackEvent(int hid, vec2 from, vec2 to) {
 
 int lh_getSounds(lua_State *L) {
   noteye_table_new(L);
-  for(int i=0; i<size(soundqueue); i++) {
+  for(int i=0; i<isize(soundqueue); i++) {
     soundtoplay& P(soundqueue[i]);
     noteye::noteye_table_opensubAtInt(L, i);
     if(P.type == 0) {

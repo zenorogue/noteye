@@ -1601,7 +1601,7 @@ struct hydraAnalyzer {
   void addEdge(int y, int hd, int sh, int w, int wnd) {
     int y2;
     if(encode(hd, sh, y2) > 0) {
-      int i = size(cf);
+      int i = isize(cf);
       cfrom c; c.from = y; c.wpn = w; c.next = lcf[y2]; c.wounds = wnd;
       cf.push_back(c);
       lcf[y2] = i;
@@ -1620,7 +1620,7 @@ struct hydraAnalyzer {
     if(wnd[code] > neww) {
       wnd[code] = neww;
 
-      int i = size(wrec);
+      int i = isize(wrec);
       woundrec wr; wr.next = -1; wr.code = code;
       wrec.push_back(wr);
       

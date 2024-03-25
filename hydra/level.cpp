@@ -244,7 +244,7 @@ void bfs(int who, bool nmush) {
     }
   
   int qs = 0;
-  while(qs < size(d)) {
+  while(qs < isize(d)) {
     vec2 pos = d[qs++];
     int di = M[pos].dist;
     int gv = M[pos].govia;
@@ -294,7 +294,7 @@ void bfs(int who, bool nmush) {
     }
   
   if(who == 2) {
-    for(int i=0; i<size(hydras); i++)
+    for(int i=0; i<isize(hydras); i++)
       if(M[hydras[i]->pos].seen && 
         !hydras[i]->zombie && 
         hydras[i]->heads > hydras[i]->sheads &&
@@ -433,7 +433,7 @@ bool verifyConnected(int mode = 0) {
       }
     }
 
-  for(int i=1; i<size(av); i++) 
+  for(int i=1; i<isize(av); i++) 
     if(ufind(vindex(av[i])) != ufind(vindex(av[0])))
       return false;
     
@@ -475,12 +475,12 @@ void ensureConnected() {
 
   verifyConnected();
   
-  for(int i=0; i<size(av); i++) swap(av[i], av[hrand(i+1)]);
+  for(int i=0; i<isize(av); i++) swap(av[i], av[hrand(i+1)]);
   
-  for(int i=1; i<size(av); i++) 
+  for(int i=1; i<isize(av); i++) 
     if(ufind(vindex(av[i])) != ufind(vindex(av[0]))) {
       int r;
-      do { r = hrand(size(av)); } while(vindex(av[r]) != vindex(av[0]));
+      do { r = hrand(isize(av)); } while(vindex(av[r]) != vindex(av[0]));
       int l = len(av[i] - av[r]) * 2;
       
       vec2 dif = pickMinus(av[i], av[r]);
@@ -1421,7 +1421,7 @@ int shuford(hydra *h) {
   }
 
 void bloodshuffle() {
-  int sh = size(hydras);
+  int sh = isize(hydras);
   int i = 0;
   while(i < sh) {
     if(i && shuford(hydras[i]) < shuford(hydras[i-1])) { 
@@ -1487,7 +1487,7 @@ void generateLevel() {
     
   if(P.curlevel < GLEVELS) {
   
-    for(int i=0; i<size(toput[P.curlevel]); i++) toput[P.curlevel][i]->put();
+    for(int i=0; i<isize(toput[P.curlevel]); i++) toput[P.curlevel][i]->put();
     toput[P.curlevel].clear();
     }
   
@@ -1595,7 +1595,7 @@ void generateNormalGame() {
     
     // make some hydras dirty
     if(i == 10 || i == dirtylev) {
-      hydra *H = (hydra*) toput[i][size(toput[i])-1-hrand(10)];
+      hydra *H = (hydra*) toput[i][isize(toput[i])-1-hrand(10)];
       H->dirty = 2*IS_DIRTY-1;
       H->heal += 5;
       }
@@ -1734,7 +1734,7 @@ void generateNormalGame() {
   toput[LEVELS-1].push_back(new weapon(dcolors[9], 2, WT_ROOT));
   
   // store level info for weapons
-  for(int u=0; u<LEVELS; u++) for(int v=0; v<size(toput[u]); v++) {
+  for(int u=0; u<LEVELS; u++) for(int v=0; v<isize(toput[u]); v++) {
     weapon* w = toput[u][v]->asWpn();
     if(w) w->level = u+1;
     }
@@ -2318,7 +2318,7 @@ void generateChallengeGame() {
   conscheck += hrand(1000000000);
 
   // store level info for weapons
-  for(int u=0; u<CLEVELS; u++) for(int v=0; v<size(toput[u]); v++) {
+  for(int u=0; u<CLEVELS; u++) for(int v=0; v<isize(toput[u]); v++) {
     weapon* w = toput[u][v]->asWpn();
     if(w) w->level = u+1;
     }
@@ -2359,7 +2359,7 @@ void listChallenge() {
   printf("\n");
 
   for(int j=0; j<GLEVELS; j++) {
-    for(int k=0; k<size(toput[j]); k++) {
+    for(int k=0; k<isize(toput[j]); k++) {
       string s = fullname(toput[j][k]);
       printf("%3d %s\n", j, s.c_str());
       }
