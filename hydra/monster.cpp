@@ -106,6 +106,13 @@ int shieldinfo::dampost(int q) {
   return d;
   }
 
+int shieldinfo::dampost_true(int q) {
+  if(reduce == -3) return ehcntx(q);
+  int d = powerf(ehcntx(q));
+  d -= reduce;
+  return d;
+  }
+
 int shieldinfo::usize(int siz) {
   if(siz < size(shused)) return shused[siz];
   return maxss;

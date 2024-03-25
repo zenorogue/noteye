@@ -729,6 +729,7 @@ struct shieldinfo {
   int ehcntx(int q);
   int dampre(int q);
   int dampost(int q);
+  int dampost_true(int q);
   int usize(int size);
   };
 
