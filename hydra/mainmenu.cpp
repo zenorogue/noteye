@@ -629,6 +629,9 @@ void viewHall(bool current) {
     if(tosync) halfdelay(1); else cbreak();
     int c = ghch(IC_HALL);
     if(tosync) cbreak();
+
+    if(c >= 'A' && c <= 'Z') c |= 32;
+
     switch(c) {
       case 'w': case 'c': case 'b': case 'u': case 'h': case 'm': case 'e':
         sorttype = c;
@@ -647,11 +650,11 @@ void viewHall(bool current) {
         startat += 10;
         break;
       
-      case 'a':
+      case 'a': case 'A':
         viewAchievements(pi, global);
         break;
       
-      case 'o':
+      case 'o': case 'O':
         startat ++;
         break;
       
