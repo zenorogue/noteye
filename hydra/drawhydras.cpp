@@ -473,6 +473,8 @@ void drawMapLua(lua_State *L, int x, int y, int mode) {
       noteye_table_setInt(L, "hcolor", getVGAcolorX(c.h->gcolor()));
       noteye_table_setInt(L, "hicon", c.h->icon());
       noteye_table_setInt(L, "hid", c.h->uid);
+      if(c.h->color == HC_MONKEY)
+        noteye_table_setInt(L, "monkey", c.h->ewpn ? 2 : 1);
       if(c.h->sheads)
         noteye_table_setInt(L, "stun", 1 + 6 * c.h->sheads / c.h->heads);
 
