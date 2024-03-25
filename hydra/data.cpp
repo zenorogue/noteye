@@ -722,7 +722,7 @@ const char* helpinfo[HELPLEN] = {
 //"See more at http://roguebard.eptalys.net\n"
 "\biThanks to Ancient, Xecutor, JLC, sbluen, cephalopid, Legend, "
 "CommentLurker, tricosahedron, zulmetefza, Ryan Dorkoski, #16, "
-"Bloodysetsail, and vo3435 "
+"Bloodysetsail, vo3435, Patashu, Nick, and tehora "
 "for their bug reports, suggestions, and other help!\n\n"
 "\boAnd thanks to you for playing!"
 };
