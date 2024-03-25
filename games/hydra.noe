@@ -456,7 +456,7 @@ function xtile(C,x,y)
   global_y = y
   
   if inhex and (mode == modeFPP or mode == modeTPP) then
-    if (x+y)%2 == 1-inhexr then return 0 end
+    if (x+y)%2 == 1-inhexr then return nil end
     local M = hydramap(x,y,mode)
     local R0 = 
       oldhydra and xhex(C) or yhex(M)
