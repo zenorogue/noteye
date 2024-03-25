@@ -116,7 +116,7 @@ function createmainscr()
   
   setmainwindowtitle(fullversion()) 
 
-  scrfill(IMG, 0, 0, 80, 25, 0)
+  scrfill(IMG, 0, 0, 80, 25, nil)
   
   local Col = vgaget(10)
 

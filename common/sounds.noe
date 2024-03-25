@@ -207,7 +207,7 @@ function playsoundfromfile(filename, relvol)
   local s = Sounds[filename]
   if not s then
     s = loadsound(filename)
-    if s > 0 then Sounds[filename] = s 
+    if s ~= nil then Sounds[filename] = s 
     else
       logprint2("warning: sound file could not be loaded: "..filename)
       return
