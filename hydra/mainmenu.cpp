@@ -1209,7 +1209,7 @@ void randomChallengeMenu() {
         break;
       
       case 't': 
-        move(17, 0); col(15); addstr("Start the random challenge in Debug mode? (y/n)");
+        move(23, 0); col(15); addstr("Start the random challenge in Debug mode? (y/n)");
         if(!yesno(IC_MYESNO)) continue;
         if(selectRace(true)) {
           P.flags = dfChallenge | dfDebug;
@@ -1229,11 +1229,13 @@ bool selectRace(bool rchal) {
   
     move(1, 2); col(15); addstr("Select your race: ");
 
-    #ifdef ANDROID
+    /* #ifdef ANDROID
     move(1, 40);
     #else
     move(1, 30);
-    #endif
+    #endif */
+    
+    move(1, 20);
 
     for(int i=0; i<RACES; i++) if(i != R_ELF) {
       if(i) { col(8); addstr(" | "); }
