@@ -1347,12 +1347,14 @@ void giveHint(hydra *h) {
     showdam = true;
 
     col(h->gcolor());
-    if(h->invisible()) {
+    if(false && h->invisible()) {
       move(cy, 0); addstr("??? ??? ???");
       }
     else {
       move(cy, 0); addstri(its(hd)); 
-      move(cy, 4); addstri(its(hd - sh));
+      if(hd <= AMAX) {
+        move(cy, 4); addstri(its(hd - sh));
+        }
       move(cy, 8); addstri(its(wnd[spos]));
       }
     move(cy, 12);
