@@ -492,6 +492,7 @@ struct weapon : sclass {
       if(type == WT_BLUNT) return 'i';
       }
     if(type == WT_BLADE && size == 2) return 'a';
+    if(type == WT_BLADE && size > 0 && !(size % 7)) return 'j';
     if(type == WT_BLADE && size == 1) return 'b';
     if(type == WT_DIV   && size == 0) return 'c';
     if(type == WT_VORP  && size >= 0) return 'd';
