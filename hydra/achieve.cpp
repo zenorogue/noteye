@@ -308,13 +308,13 @@ void viewAchievements(const vector<playerinfo>& pi, bool global) {
       move(i+2, 10); addstri(its(ach[y].score));
       
       if(descr) {
-        move(i+2, 13); col(15); addstr(ach[y].desc);
+        move(i+2, 13); col(15); addstri(string(ach[y].desc).substr(0, 65));
         }
       else {
         move(i+2, 13); col(15);
         addstr(ach[y].hname);
         move(i+2, 37); col(7);
-        addstr(ach[y].desc);
+        addstri(string(ach[y].desc).substr(0, 43));
         }
       }
 
