@@ -128,9 +128,9 @@ function ttf_getAtSize(F, sx, sy)
     return t
     -- return fget(bfont, x) 
     end
-  
+
   F2.font = newdynamicfont(dfontfun)
-    
+
   for a=32,127 do fgetav(F2.font, a) end
   
   pre = true

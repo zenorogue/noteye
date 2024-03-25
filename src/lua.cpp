@@ -294,7 +294,7 @@ void initLua() {
   noteye_globalfun("enablekeyrepeat", lh_enablekeyrepeat);
 
   noteye_globalfun("uselayer", lh_uselayer);
-  
+
   obsolete();
 
 
