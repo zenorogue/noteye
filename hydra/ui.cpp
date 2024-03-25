@@ -2178,7 +2178,7 @@ void mainloop() {
         break;
       
       case 'H': if(debugon()) {
-        addMessage("Summon what kind of hydra?"); drawScreen();
+        addMessage("Summon what kind of hydra? ('-' for weapon)"); drawScreen();
         int c = ghch(IC_CALL);
         hydra *h = NULL;
         
@@ -2225,6 +2225,19 @@ void mainloop() {
           case 'd':
             h = new hydra(HC_DRAGON | randHCol(), headask(), 1, 20);
             break;
+          case '-': {
+            addMessage("Summon what kind of weapon?"); drawScreen();
+            int c = ghch(IC_CALL);
+            weapon*& w  = wpn[P.cArm];
+            if(w) delete w;
+            w = new weapon(0, 0, 0);
+            w->size = headask();
+            w->type = c;
+            w->level = 0;
+            w->osize = w->size;
+            selectTransmuteColor(true);
+            w->color = w->ocolor = atlantean_xmut_color;
+            }
           }
         if(h) {h->put(); addMessage("Summoned "+h->name()+" to a random location.");}
         else addMessage("No such thing.");
