@@ -652,7 +652,7 @@ void movedir(int dir) {
     playSound("../hydra-old/rune", headsToVolume(c.mushrooms), 0);
     if(c.h->color == HC_ALIEN)
       addMessage("The "+c.h->name()+" turns into an otherworldly mushroom!");
-    if(c.h->color != HC_VAMPIRE) 
+    else if(c.h->color != HC_VAMPIRE)
       addMessage("The "+c.h->name()+" turns into a mushroom!");
     if(c.h->color == HC_VAMPIRE) {
       stats.unhonor++;
