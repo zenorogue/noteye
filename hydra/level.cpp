@@ -1187,6 +1187,15 @@ void generateExtraItems() {
   if(onein(6)) (new item(IT_RFUNG))->put();
   if(onein(6)) (new item(IT_RNECR))->put();
   
+  // some extra tools against the more frequest special hydras in 18.0
+  if(onein(18)) (new item(IT_RSTUN))->put();
+  if(onein(18)) (new item(IT_RDEAD))->put();
+  if(onein(18)) (new item(IT_RGROW))->put();
+  if(onein(18)) (new item(IT_RFUNG))->put();
+  if(onein(10)) (new item(IT_RCANC))->put();
+  if(onein(15)) (new item(IT_PFAST))->put();
+  if(onein(12)) (new item(IT_PCHRG))->put();
+  
   for(int u=0; u<2; u++) if(onein(2)) (new item(IT_SGROW))->put(); // big weapons are fun!
   if(onein(2)) (new item(IT_SXMUT))->put();
 
@@ -1289,7 +1298,7 @@ void generateDeepItems() {
     make(randHCol(), hrand(2) ? 3 : 5, WT_QUI);
   
   // extra golden sectors
-  if(onein(100) && P.curlevel >= 50)
+  if(onein(200) && P.curlevel >= 50)
     make(9, 1, WT_GOLD);
 
   // extra Syracuse blades
