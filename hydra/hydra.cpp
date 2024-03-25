@@ -1094,7 +1094,7 @@ bool useup(int ii, weapon *orb) {
       break;
 
     case IT_PARMS:
-      P.arms++;
+      if(P.arms <= 10) P.arms++;
       addMessage(P.arms & 1 ? "You suddenly grow a new right arm!" : "You suddenly grow a new left arm!");
       
       {int ig = P.inv[IT_PARMS] - (P.race == R_TROLL ? 0 : 1);      
