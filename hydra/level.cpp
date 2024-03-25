@@ -1752,6 +1752,8 @@ void putat(int lev, sclass *o) {
     toput[lev].push_back(o);
   }
 
+int challenge_version;
+
 int cheadcount[CLEVELS];
 int cgrowlimit[CLEVELS];
 
@@ -1800,7 +1802,7 @@ weapon *finhelper() {
   }
 
 weapon *antibig(int q) {
-  switch(hrand(P.race == R_NAGA ? 4 : 8)) {
+  switch(hrand(P.race == R_NAGA ? 4 : (challenge_version >= 1800 ? 9 : 8))) {
     case 0: return new weapon(randHCol(), 3 + hrand(q?6:12), WT_DIV);
     case 1: return new weapon(HC_OBSID, 2 + hrand(q?3:6), WT_DIV);
     case 2: return new weapon(onein(5) ? HC_OBSID : randHCol(), onein(5) ? 3 : 2, WT_ROOT);
@@ -1956,8 +1958,17 @@ string geometryName(int g) {
   return "unknown geometry";
   }
 
+#define ALPHA1800 1750
+
 void generateChallengeGame() {
 
+  if((P.flags & dfDaily) && P.gameseed < 290) 
+    challenge_version = 1720;
+  else
+    challenge_version = 1800;
+  if(P.oldversion && challenge_version > P.oldversion)
+    challenge_version = P.oldversion;
+  
   int conscheck = 0;
 
   gameExists = true;
@@ -2038,24 +2049,35 @@ void generateChallengeGame() {
     }
   
   conscheck += hrand(1000000000);
+  
+  int hspec0 = -1;
 
   // special hydras
-  for(int i=0; i<CLEVELS-1; i++) {
+  for(int i=0; i<CLEVELS-1; i++) for(int j=0; j<2; j++) {
     hydra *h = NULL;
     
-    switch(hrand(7)) {
+    if(j == 1 && challenge_version < ALPHA1800) continue;
+
+    
+    int hspec = hrand(challenge_version >= ALPHA1800 ? 8 : 7);
+    if(j==0) hspec0 = hspec;
+    if(j == 1 && hspec0 == hspec) continue;
+    
+    printf("i=%d j=%d hspec0=%d hspec=%d\n", i, j, hspec0, hspec);
+    
+    switch(hspec) {
       case 0:
         h = new hydra(HC_ETTIN, 1, 1, 0);
         h->heads = 2;
         switch(hrand(3)) {
           case 0:
-            h->ewpn = new weapon(randHCol(), 5 * (1+P.curlevel/3), WT_BLADE);
+            h->ewpn = new weapon(randHCol(), 5 * (1+i/3), WT_BLADE);
             break;
           case 1:
-            h->ewpn = new weapon(randSCol(), P.curlevel*3+4, WT_BLUNT);
+            h->ewpn = new weapon(randSCol(), i*3+4, WT_BLUNT);
             break;
           case 2:
-            h->ewpn = new weapon(randHCol(), P.curlevel*2+2-hrand(5), WT_AXE);
+            h->ewpn = new weapon(randHCol(), i*2+2-hrand(5), WT_AXE);
             break;
           }
         break;
@@ -2088,9 +2110,19 @@ void generateChallengeGame() {
         if(cheadcount[i] >= 100)
           h = new hydra(HC_SHADOW, cheadcount[i] + hrand(cheadcount[i]), 1, 50 + 15 * i);
         break;
+      
+      case 7:
+        h = new hydra(HC_EVOLVE, cheadcount[i] - hrand(cheadcount[i]/3), cgrowlimit[i], 30 + 10 * i);
+        break;
       }
     
-    putat(i, h);
+    if(j == 0) 
+      putat(i, h);
+    
+    if(j == 1 && h) {
+      int c = hrand(10);
+      swap(*hydratab[i][c], *h);
+      }
     }
 
   conscheck += hrand(1000000000);
