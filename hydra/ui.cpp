@@ -714,6 +714,85 @@ void showResistances(hydra *h, int cy) {
     }
   }
 
+void viewWoundTable(hydra *h) {
+  vector<int> minhead;
+  
+  minhead.push_back(1);
+  
+  bool foundus = false;
+
+  SI.prepare(COLLAPSE+20, h);
+  while(true) {
+    if(size(minhead) == 0) break;
+    int headhere = minhead[size(minhead)-1];
+    int atx = 0;
+    
+    erase();
+    move(0, 0); col(15); addstri("Wounds caused by "+h->name()+":");
+    col(h->gcolor()); 
+    
+    bool haddots = false;
+
+    while(headhere < COLLAPSE) {
+      int digleft = digitcount(headhere + 20);
+      int digright = 0;
+      
+      int compare_dp;
+      bool alleq;
+      
+      for(int i=0; i<20; i++) {
+        int dp = SI.dampost_true(headhere+i);
+        if(i == 0) compare_dp = dp, alleq = true;
+        else if(dp != compare_dp) alleq = false;
+        digright = max(digright, digitcount(dp));
+        }
+      
+      if(alleq) {
+        if(atx >= 80) break;
+        if(!haddots) {
+          for(int i=0; i<20; i++) {
+            move(i+2, atx); addch('.');
+            }
+          haddots = true;
+          atx += 2;
+          }
+        headhere += 20;
+        continue;
+        }
+      haddots = false;
+      
+      if(atx + digleft + digright + 1 > 80) break;
+    
+      char buf[20];
+      for(int i=0; i<20; i++) {
+        sprintf(buf, "%*d:%*d", digleft, headhere+i, digright, SI.dampost_true(headhere+i));
+        move(i+2, atx); addstr(buf);
+        }
+      
+      atx += 2 + digleft + digright;
+      headhere += 20;
+      }
+    
+    if(!foundus) {
+      if(headhere < h->heads) { 
+        minhead.push_back(headhere);
+        continue;
+        }
+      else foundus = true;
+      }
+    
+    int ch = ghch(IC_WOUNDS);
+    
+    if(ch == D_PGDN || ch == D_RIGHT || ch == D_END || ch == '+')
+      minhead.push_back(headhere);
+
+    else if(ch == D_PGUP || ch == D_LEFT || ch == D_HOME || ch == '-')
+      minhead.pop_back();
+    
+    else break;
+    }
+  }
+
 void viewDescription(sclass *x) {
 
   if(useKnowledgeOn(x))
@@ -733,6 +812,7 @@ void viewDescription(sclass *x) {
     cy++; move(cy,0); 
     addstr("Resistances against weapon colors:");
     if(P.race == R_TROLL) addstr(" (press 'i' for inventory)");
+    else addstr(" (press 'w' for wounds table)");
     cy+=2; showResistances(h, cy);
     }
   
@@ -740,6 +820,9 @@ void viewDescription(sclass *x) {
   
   if(h && P.race == R_TROLL && (ch == 'i' || ch == 'I')) 
     viewTrollInventory(h);
+
+  if(h && (ch == 'w' || ch == 'W'))
+    viewWoundTable(h);
   }
 
 void showMenuOption(int cy, char letter, bool selected, int cx = 0) {
