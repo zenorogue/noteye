@@ -33,7 +33,7 @@ addtomenu(graphmenu, "D", writechoicef(
 map = rectXY(0,2,80,22)
 minipos = V(1, 0.1)
 
-setwindowtitle("LUSAMPLE")
+setwindowtitle(Gfx, "LUSAMPLE")
 defaultmodep(modeASCII, 1)
 
 function lgput(v, chr, fore, back)

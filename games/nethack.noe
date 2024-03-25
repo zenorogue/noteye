@@ -84,6 +84,6 @@ function xminimap(C)
   return tilefill(b)
   end
   
-setwindowtitle("NetHack")
+setwindowtitle(Gfx, "NetHack")
 defaultmodep(modeTiles, 3)
 rungame(caller3("NetHack", "nethack"))

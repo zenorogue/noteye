@@ -27,6 +27,6 @@ disablemusic()
 dirkeys = keytabs.arrow
 
 defaultmodep(modeFPP, 7)
-setwindowtitle("Doom: the Roguelike")
+setwindowtitle(Gfx, "Doom: the Roguelike")
 rungame(caller3("DoomRL", "doomrl"))
 

@@ -78,7 +78,7 @@ function xminimap(C)
 
 mapregion = {x0=0, y0=2, x1=80, y1=22}
 
-setwindowtitle("Drakefire Chasm")
+setwindowtitle(Gfx, "Drakefire Chasm")
 defaultmodep(modeTiles, 3)
 rungame(0)
 

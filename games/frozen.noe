@@ -32,7 +32,7 @@ end
 
 dofile(commondir.."generic-tile.noe")
 defaultmodep(modeTiles, 1)
-setwindowtitle("Frozen Depths")
+setwindowtitle(Gfx, "Frozen Depths")
 rungame(caller3("Frozen Depths", "fdepths"))
 
 -- we restore the original VGA palette
