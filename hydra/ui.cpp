@@ -1654,7 +1654,6 @@ void mainloop() {
 
     wasDead = isDead;
     isDead = P.curHP <= 0;
-    if(isDead) printf("isDead!\n");
     if(isDead && !wasDead && !sceneid) {
       return;
       }
