@@ -947,8 +947,10 @@ void moveHydras() {
   for(int i=0; i<size(traps); i++) {
     weapon *t = traps[i]->trapped();
     if(!t) continue;
-    if(trapHits(traps[i])) 
+    if(trapHits(traps[i])) {
       traps[i]->attack(t, t->size, t);
+      t->addStat(WS_USE, 1, 0);
+      }
     else {
       addMessage("The "+t->fullname()+" misses the "+traps[i]->h->name()+"!");
       playSound("weapons/miss", 100, 0);
