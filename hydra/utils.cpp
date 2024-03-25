@@ -51,15 +51,15 @@ void refresh(int context) { refresh(); }
 #include <memory.h>
 #include <math.h>
 #include <time.h>
+#include <random>
 
 //#include <io.h>
 
 // randomness
 
-#include "mtrand.cpp"
 #define HRANDMAX 0x7FFFFFFF
 
-MTRand_int32 randgen, *currand = &randgen;
+std::mt19937 randgen, *currand = &randgen;
 
 int hrandpos() { return (*currand)() & HRANDMAX; }
 
@@ -70,8 +70,8 @@ int hrand(int i) {
 int onein(int i) { return hrand(i) == 0; }
 
 struct tmprand {
-  MTRand_int32 what;
-  MTRand_int32 *last;
+  std::mt19937 what;
+  std::mt19937 *last;
   tmprand(int i): what(i) { last = currand; currand = &what; what(); what(); what(); }
   ~tmprand() { currand = last; }
   };
