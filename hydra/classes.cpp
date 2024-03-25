@@ -331,6 +331,7 @@ void twinswap();
 #define WT_RAND  '?'
 #define WT_QUI   ':'
 #define WT_ORB   'i'
+#define WT_COLL  'c'
 
 #define WS_USE   0
 #define WS_HHEAD 1
@@ -340,7 +341,7 @@ void twinswap();
 #define WS_MKILL 5
 #define WS_HSTUN 6
 
-#define MOT 31
+#define MOT 32
 #define MOT_BLADE  0
 #define MOT_OBSID  1
 #define MOT_BLUNT  2
@@ -372,6 +373,7 @@ void twinswap();
 #define MOT_TIME   28
 #define MOT_RAIN   29
 #define MOT_TRAP   30
+#define MOT_COLL   31
 
 string typenames[MOT] = { 
   "normal blade", "meteorite blade", "blunt weapon", "divisor", "eradicator", "missile", "shield",
@@ -379,7 +381,7 @@ string typenames[MOT] = {
   "decomposer", "logblade", "pickaxe", "primeslayer", "bow", "vorpal", 
   "axe", "stone", "blade disk", "spear", "phasewall",
   "golden sector", "silver sector", "sub-divisor",
-  "Mersenne twister", "timeblade", "rainbow blade", "trap"
+  "Mersenne twister", "timeblade", "rainbow blade", "trap", "Sword of Collatz"
   };
 
 #define wfTrap 1
@@ -428,6 +430,7 @@ struct weapon : sclass {
     else if(type == WT_PHASE) return MOT_PHASE;
     else if(type == WT_GOLD && color == 9) return MOT_GOLD;
     else if(type == WT_GOLD) return MOT_SILVER;
+    else if(type == WT_COLL) return MOT_COLL;
     else if(type == WT_SUBD) return MOT_SUBDIV;
     else if(type == WT_QUI) return MOT_SUBDIV;
     else if(type == WT_RAND) return MOT_RANDOM;
@@ -465,6 +468,7 @@ struct weapon : sclass {
     else if(type == WT_DECO) return ('\\');
     else if(type == WT_SUBD) return ('\\');
     else if(type == WT_GOLD) return ('\\');
+    else if(type == WT_COLL) return ('\\');
     else if(type == WT_PSLAY) return ('\\');
     else if(type == WT_QUAKE) return ('&');
     else if(type == WT_RAND) return ('&');
@@ -490,7 +494,7 @@ struct weapon : sclass {
     if(type == WT_DIV   && size == 0) return 'c';
     if(type == WT_VORP  && size >= 0) return 'd';
     if(type == WT_BLADE && size >= 100) return 'e';
-    if(type == WT_GOLD) return 'f';
+    if(type == WT_GOLD || type == WT_COLL) return 'f';
     return icon();
     }
   
@@ -539,7 +543,7 @@ struct weapon : sclass {
   bool polewpn() { return type == WT_SPEAR; }
   
   bool ambivalid() {
-    if(type == WT_RAND || type == WT_TIME) return false;
+    if(type == WT_RAND || type == WT_TIME || type == WT_COLL) return false;
     if(msl() || type == WT_QUAKE || type == WT_DECO) return false;
     if(xcuts() && type != WT_DIV && type != WT_ROOT) return false;
     if(xcuts() && size == 0) return false;

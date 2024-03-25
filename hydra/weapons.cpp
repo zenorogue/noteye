@@ -320,6 +320,11 @@ string weapon::name() {
     if(size>1) name = "+" + its(size)+" "+name;
     return name;
     }
+  else if(type == WT_COLL) {
+    name = "Syracuse Blade";
+    if(size>0) name = "+" + its(size)+" "+name;
+    return name;
+    }
   else if(type == WT_QUAKE) {
     name = "titanic club";
     }
@@ -521,7 +526,7 @@ void playAttackSound(weapon *w, hydra *who, bool tiny = false, int delay = 0) {
     else
       playSound("weapons/axeAttack-heavy", vol, delay);
     }
-  else if(w->cuts() || w->xcuts() || w->axe()) {
+  else if(w->cuts() || w->xcuts() || w->axe() || w->type == WT_COLL) {
     if(w->size < 2 + hrand(4)) 
       playSound("weapons/swordAttack-small", vol, delay);
     else if(w->size < 6 + hrand(6)) 
@@ -1295,7 +1300,7 @@ void weapon::grow() {
       addMessage("The "+lname+" twists itself!");
       break;
     
-    case WT_GOLD:
+    case WT_GOLD: case WT_COLL:
       addMessage("The "+lname+" looks even more impressive now!");
       break;
     
@@ -2552,6 +2557,24 @@ string weapon::describe() {
       "the distribution will be. Does not work against very large hydras.";
     }
   
+  if(type == WT_COLL) {
+    s =
+      "This weird "+info().wname+" blade is a "
+      "yet another approach to a weapon which could kill any hydra effectively. "
+      "The smiths who created it were not sure whether they have succeeded, though...\n"
+      "Against even-headed hydras, it "
+      "works as a standard Bisector, "
+      "not causing any heads to regrow. It is also able to kill all 1-headed "
+      "hydras. Against other odd-headed "
+      "hydras (but not zombies and mushrooms), "
+      "it works by multiplying their head count by three, and growing "
+      "one extra head.\n"
+
+      "This blade may be overenchanted. One attack with a +3 blade will work as "
+      "two attacks with the standard version, +7 blade will work as "
+      "three, and +27 blade will work as four.\n";
+    }
+
   if(type == WT_SUBD) {
     s =
       "A strange divisor sword which ignores one head on its target for some "
@@ -2687,6 +2710,59 @@ bool chooseAutoAttack(hydra *h) {
 
   addMessage("Solve this yourself, would you?");
   return false;
+  }
+
+void collatz(weapon *w, hydra *h) {
+  long long hc = h->heads;
+  long long sh = h->heads - h->sheads;
+  string s = its(hc);
+  bool next = false;
+
+  int qty =
+    w->size < 3 ? 1 :
+    w->size < 7 ? 2 :
+    w->size < 27 ? 3 :
+    4;
+
+  while(qty--) {
+    if(hc == 1) { hc = 0, s += next ? "; kill" : " kill"; break; }
+
+    if(next) s += "; ";
+
+    if(hc&1) {
+      if(h->color == HC_MUSH) { s += " (mushroom ignores)"; break; }
+      if(h->zombie) { s += " (zombie ignores)"; break; }
+      else hc = 3 * hc + 1, s += "*3+1=" + its(hc);
+      }
+    else hc /= 2, s += "/2=" + its(hc);
+    if(!sh) sh = 0; else if(sh&1) sh = 3 * sh + 1; else sh /= 2;
+    next = true;
+    }
+  addMessage("You slice the "+h->name()+"! " + s);
+  if(hc >= COLLAPSE) {
+    w->addStat(WS_HKILL, 1, 0);
+    if(h->color != HC_MUSH)
+    collapse(h, NULL);
+    }
+  else if(hc == 0) {
+    w->addStat(WS_HKILL, 1, 0);
+    if(h->color != HC_MUSH)
+      M[h->pos].hydraDead(NULL);
+    else
+      h->heads = 0;
+    }
+  else {
+    if(sh > hc) sh = hc;
+    if(hc > h->heads)
+      w->addStat(WS_GROW, hc-h->heads, 0);
+    else if(hc < h->heads)
+      w->addStat(WS_HHEAD, h->heads-hc, 0);
+    h->heads = hc;
+    h->sheads = hc - sh;
+    }
+
+  w->addStat(WS_USE, 1, 0);
+  cancelspeed();
   }
 
 void mersenneTwist(weapon *w, hydra *h) {

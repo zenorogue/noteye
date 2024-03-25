@@ -1355,6 +1355,7 @@ void initCharacter() {
     pinfo.trollwpn.push_back(new weapon(4, 1, WT_TIME));
     pinfo.trollwpn.push_back(new weapon(5, 10, WT_RAIN));
     pinfo.trollwpn.push_back(new weapon(1, 1, WT_RAND));
+    pinfo.trollwpn.push_back(new weapon(12, 0, WT_COLL));
     pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_PFAST), 60, WT_ORB));
     pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_RCONF), 61, WT_ORB));
     pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_RGROW), 62, WT_ORB));

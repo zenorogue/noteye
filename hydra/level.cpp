@@ -1067,6 +1067,7 @@ void generateUniqueItems() {
   if(onlev(14, 80))   make(randHCol(), 3, WT_SUBD);
   if(onlev(14, 80))   make(randHCol(), 5, WT_QUI);
   if(onlev(20, 85))   make(9, 1, WT_GOLD);
+  if(onlev(20, 85))   make(12, 0, WT_COLL);
   if(onlev(15, 17))   make(randHCol(), 0, WT_DIV);
   if(onlev(15, 100))  make(1, 1, WT_RAND);
   if(onlev(12, 150))  generateOrb(50 + hrand(150))->put();
@@ -1212,6 +1213,10 @@ void generateDeepItems() {
   // extra golden sectors
   if(onein(100) && P.curlevel >= 50)
     make(9, 1, WT_GOLD);
+
+  // extra Syracuse blades
+  if(onein(200) && P.curlevel >= 50)
+    make(12, 0, WT_COLL);
   
   // extra timedaggers
   if(onein(40) && P.curlevel >= LEVELS)
@@ -1683,6 +1688,9 @@ weapon *antibig(int q) {
     case 5: return new weapon(onein(5) ? HC_OBSID : randHCol(), 1, WT_VORP);
     case 6: return new weapon(9, hrand(6), WT_GOLD);
     case 7: return new weapon(randHCol(), 3 + hrand(3), WT_SUBD);
+    case 8: 
+      int hr = hrand(100);
+      return new weapon(12, hr < 5 ? 27 : hr < 10 ? 7 :hr < 20 ? 3 : 0, WT_COLL);
     }
   return NULL;
   }
