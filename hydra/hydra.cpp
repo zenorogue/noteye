@@ -985,6 +985,7 @@ bool useup(int ii, weapon *orb) {
           else if(wpn[i]->size > bigsize) bigsize = wpn[i]->size, bigat = i;
           }
         if(bigat >= 0 && wpn[bigat]->type == WT_ORB) error = true;
+        if(bigat >= 0 && wpn[bigat]->type == WT_QUAKE) error = true;
         if(!error)
           for(int i=0; i<P.arms; i++) if(havebit(P.ambiArm, i)) if(i != bigat) {
             if(wpn[i]->size & 1) error = true;
