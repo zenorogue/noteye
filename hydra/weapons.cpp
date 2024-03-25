@@ -1019,7 +1019,7 @@ int ambiAttack(cell *c, int virt) {
     return 1;
     }
   
-  if(target) for(int b=0; b<COLORS; b++) 
+  if(!virt) if(target) for(int b=0; b<COLORS; b++)
     if(have[b] || haveaxe[b] || hvdiv[b]>1 || hvera[b])
       target->dirty &= ~(1<<b);
 
@@ -1077,7 +1077,7 @@ int ambiAttack(cell *c, int virt) {
   
   if(!virt) stats.ws[MOT_AMBI].sc[WS_GROW] += hgrow+hsgrow;
   
-  if(!target) {
+  if(!target && !virt) {
     c->mushrooms = nheads;
     return true;
     }
