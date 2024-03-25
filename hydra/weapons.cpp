@@ -559,6 +559,13 @@ void playSwitchSound(weapon *w) {
 
 void addAnimation(cell *c, int headid, int cutcount, int color);
 
+void collapse(hydra *h, hydra *whoh) {
+  stats.owncrush++;
+  addMessage("The "+h->name()+" collapses under the weight of its own heads!");
+  achievement("COLLAPSE");
+  M[h->pos].hydraDead(whoh);
+  }
+
 void cell::attack(weapon *w, int power, sclass *who) {
 
   hydra *whoh = who ? who->asHydra() : NULL;
@@ -811,12 +818,7 @@ void cell::attack(weapon *w, int power, sclass *who) {
     hydraDead(whoh);
     }
 
-  else if(h->heads >= COLLAPSE) {
-    stats.owncrush++;
-    addMessage("The "+h->name()+" collapses under the weight of its own heads!");
-    achievement("COLLAPSE");
-    hydraDead(whoh);
-    }
+  else if(h->heads >= COLLAPSE)  collapse(h, whoh);
 
   }
 
@@ -1097,12 +1099,7 @@ int ambiAttack(cell *c, int virt) {
     M[target->pos].hydraDead(NULL);
     }
 
-  else if(target->heads >= COLLAPSE) {
-    stats.owncrush++;
-    addMessage("The "+target->name()+" collapses under the weight of its own heads!");
-    achievement("COLLAPSE");
-    M[target->pos].hydraDead(NULL);
-    }
+  else if(target->heads >= COLLAPSE) collapse(target, NULL);
 
   return true;
   }
