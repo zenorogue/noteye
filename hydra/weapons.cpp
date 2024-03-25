@@ -1639,7 +1639,7 @@ struct hydraAnalyzer {
     goal[code] = gol; 
     usew[code] = wpn;
     }
-  
+
   void buildGraph() {
     for(int y=0; y<CODES; y++) for(int w=-2; w<P.arms; w++) if(w < 0 || wpn[w]) {
       int hd, sh;
