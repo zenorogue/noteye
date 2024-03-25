@@ -745,6 +745,10 @@ void movedir(int dir) {
       if(c.h) {
         res = c.h->res[W->color];
         if(res < 0) res = -res * W->size;
+        if(c.h->color == HC_EVOLVE) {
+          if(res > 0) res--;
+          else res = XMUT_INVALID;
+          }
         hc = c.h->heads - c.h->sheads;
         }
       if(c.mushrooms > 10)
@@ -755,6 +759,7 @@ void movedir(int dir) {
         ATTACK_ANIMATION;
         c.attack(W, W->size, NULL);
         W->addStat(WS_USE, 1, 0);
+        // if(c.h->color == HC_EVOLVE) c.h->res[W->color]--;
         cancelspeed();
         }
       }

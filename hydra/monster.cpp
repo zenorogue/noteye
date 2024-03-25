@@ -165,6 +165,7 @@ void cell::hydraDead(hydra *killer) {
   if(h->color == HC_GROW) stats.ivykill++;
   if(h->color == HC_ALIEN) stats.alienkill++;
   if(h->color == HC_WIZARD) stats.wizardkill++;
+  if(h->color == HC_EVOLVE) stats.evolkill++;
   if(h->color == HC_SHADOW) stats.shadowkill++;
   if(h->color == HC_VAMPIRE) stats.vampikill++;
   if(h->color & HC_DRAGON) stats.dragonkill++;

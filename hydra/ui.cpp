@@ -2195,6 +2195,7 @@ void mainloop() {
           }
         else switch(c) {
           case 'v': h = new hydra(HC_VAMPIRE, headask(), 10, 20); break;
+          case 'E': h = new hydra(HC_EVOLVE, headask(), 10, 20); break;
           case 'a': 
             h = new hydra(HC_ALIEN, headask(), 1, 20);
             for(int i=0; i<COLORS; i++) h->res[i] = i == HC_OBSID ? -2 : 0;

@@ -153,7 +153,8 @@ struct statstruct {
   
   int32_t waitturns;     // turns of rest
 
-  int32_t reserve[27];   // space reserved for new stats in new versions of Hydra Slayer
+  int32_t evolkill;      // kills of evolving Hydras
+  int32_t reserve[26];   // space reserved for new stats in new versions of Hydra Slayer
   };
 
 struct pstruct {

@@ -169,6 +169,7 @@ void createLog(bool saved) {
   STATI(ettinwnd, " wounds from armed attacks\n");
   STAT(ivykill,   " ivy hydras were killed\n");
   STAT(wizardkill," arch-hydras were killed\n");
+  STAT(evolkill," evolving hydras were killed\n");
   STAT(wiztimes,   " times Arch-Hydras aided other hydras\n");
   STAT(alienkill, " alien hydras have been killed\n");
   STAT(dragonkill," dragons were killed\n");

@@ -729,6 +729,13 @@ void cell::attack(weapon *w, int power, sclass *who) {
   
   int grow = h->res[w->color];
 
+  if(h->color == HC_EVOLVE) {
+    if(w->type == WT_TIME)
+      h->res[w->color]--, grow--;
+    else
+      h->res[w->color]++;
+    }
+
   if(!w->stuns() && h->heads && grow) {
     if(grow < 0) {
       grow = -grow*cutcount;
@@ -1037,6 +1044,10 @@ int ambiAttack(cell *c, int virt) {
   
   if(!virt) stats.ws[MOT_AMBI].sc[WS_USE] ++;
   
+  if(target && target->color == HC_EVOLVE && !virt) for(int b=0; b<COLORS; b++)
+    if(have[b] || haveaxe[b] || hvdiv[b]>1 || hvera[b]) 
+      target->res[b]++;
+
   if(nheads == 0 && hdub == 0) {
     if(virt == 2) {
       target->heads = 0;

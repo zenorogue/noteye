@@ -28,6 +28,7 @@ const char *hydraver = VER;
 
 int getVGAcolorX(int a) { 
   if(a == 18) return 0x2004000;
+  if(a == 20) return 0x4000000 + 0x764e7c*2;
   if(a == 21) return 0x5FF8000;
   return getVGAcolor(a);
   }

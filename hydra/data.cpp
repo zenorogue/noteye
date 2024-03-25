@@ -308,7 +308,7 @@ colorInfo cinf[COLORS] = {
     } */
   };
 
-#define HYDRAS 20
+#define HYDRAS 21
 
 #define HC_ALIEN   10
 #define HC_VAMPIRE 11
@@ -320,17 +320,19 @@ colorInfo cinf[COLORS] = {
 #define HC_TWIN_R  17
 #define HC_SHADOW  18
 #define HC_MUSH    19 // mushrooms produce fake hydras when using RGROW
+#define HC_EVOLVE  20
 #define HC_TWIN    32
+#define HC_50      33 // just for generation!
 #define HC_DRAGON  64
 #define HC_DRMASK  63
 
-#define ANIM_PLUS 20
-#define ANIM_HAMMER 21
-#define ANIM_DUST 22
-#define ANIM_ZIG 23
-#define ANIM_CANCEL 24
+#define ANIM_PLUS 21
+#define ANIM_HAMMER 22
+#define ANIM_DUST 23
+#define ANIM_ZIG 24
+#define ANIM_CANCEL 25
 
-#define ANIM_MAX 25
+#define ANIM_MAX 26
 
 struct hydraInfo {
   string hname;
@@ -493,7 +495,16 @@ hydraInfo hyinf[HYDRAS] = {
   "you have to cut them before you proceed. They also have many uses, "
   "though. They block the way of hydras, and also provide additional "
   "\"heads\" which are useful with some of the special abilities, or "
-  "for testing your weapons.\n" }
+  "for testing your weapons.\n" },
+
+  { "evolving ", 14, 20, 10, 11, -1, "bites", "spits at",
+    "This hydra rapidly evolves. "
+    "Whenever you hit it with a weapon, it improves its resistance against it. "
+    "Your further attacks with a weapon of the same material will cause it "
+    "to regrow one head more. Even meteorite weapons are affected.\n\n"
+    "Potion of Knowledge and Rune of Growth won't work reliably on evolving "
+    "hydras, because they won't take the improving resistance into account."
+    },
   };
 
 #define MAXARMS    10
