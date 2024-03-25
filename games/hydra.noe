@@ -57,7 +57,7 @@ function ytilefloor(M)
 
 function xtilefloor(C)
 
-  if gp2(C) < 0 then return 0 end
+  if gp2(C) == nil then return nil end
 
   local ch = gch(C)
   local co = gco(C)
@@ -340,7 +340,7 @@ function bloody(x)
   
 function xtileobj(C)
 
-  -- if gp2(C) < 0 then return nil end
+  if gp2(C) == nil then return nil end
   
   local ch = gch(C)
   local co = gco(C)
@@ -526,7 +526,7 @@ function xminimap(C)
   local co = gco(C)
   al = alnum(ch)
   
-  if gp2(C) < 0 or ch == (" ") or (ch == (".") and co == vgaget(12)) then b=0x181810
+  if gp2(C) == nil or ch == (" ") or (ch == (".") and co == vgaget(12)) then b=0x181810
   elseif ch == (".") or ch == (":") then b = 0x8404040
   elseif ch == ("#") then b = 0xC0C0C0
   elseif ch == ("%") then b = 0x8604040
