@@ -232,6 +232,7 @@ function ytileobj(M,x,y)
   elseif M.iicon == av("g") then mergeoutit(BladeTrap)
   elseif M.iicon == av("h") then mergeoutit(DivTrap)
   elseif M.iicon == av("i") then mergeoutit(RockTrap)
+  elseif M.iicon == av("j") then mergeoutit(Scythe)
   end
   
   -- monsters etc
@@ -272,11 +273,18 @@ function ytileobj(M,x,y)
   elseif M.hicon == av("@") and M.hcolor == vgaget(14) then mergeout(shz(SlayerNaga))
   elseif M.hicon == av("@") and M.hcolor == vgaget(12) then mergeout(shz(SlayerCentaur))
   elseif M.hicon == av("@") and M.hcolor == vgaget(11) then mergeout(shz(SlayerTitan))
+  elseif M.hicon == av("@") and M.hcolor == vgaget(10) then mergeout(shz(SlayerAtlantean))
   elseif M.hicon == av("@") and M.hcolor == vgaget(13) then 
     mergeout(shz(Twin, "twin"))
   elseif M.hicon == av(" ") then mergeout(tilerecolor(Hydra[7], 0))
   elseif al and al>0 then
     if co == vgaget(8) then mergeout(shn(Mushroom[math.min(al,9)]))
+    elseif M.monkey then 
+      local m = Monkey[math.min(al,3)]
+      if M.monkey == 2 then m = tilemerge(m, MonkeyWpn) end
+      mergeout(shz(m, M.hid))
+    elseif co == vgaget(1) and al >= 5 then 
+      mergeout(shz(Ettin[4], M.hid))
     elseif co == vgaget(1) then 
       mergeout(shz(Ettin[math.min(al,3)], M.hid))
     else 
@@ -893,6 +901,34 @@ function mousesendstext(t, msg)
   mousemsg = msg
   end
 
+function playerpos_center()
+  if inhex and (mode == modeMini or mode == modeMed) then return playerpos + V(1,0.5)
+  elseif inhex and mode == modeTiles then return playerpos + V(1.5,0.5)
+  else return playerpos + 0.5
+  end
+  end
+
+do local lvectodir = vectodir
+function vectodir(v, mzero)
+  if inhex and math.abs(v.x) < math.abs(v.y) then
+    local ay = math.abs(v.y)
+    return lvectodir(V(v.x > 0 and ay or v.x < 0 and -ay or 0, v.y), mzero) 
+  else
+    return lvectodir(v, mzero)
+    end
+  end
+end
+
+do local lpixeltodir = pixeltodir
+function pixeltodir(v)
+  if inhex and mode ~= modeFPP and mode ~= modeTPP and hexround(pixeltoprocess(v)) == playerpos then
+    return -1
+  else
+    return lpixeltodir(v)
+    end
+  end
+end
+
 function checkmouse(ev)
   local d
   
@@ -937,6 +973,26 @@ function checkmouse(ev)
       local ch = gch(scrget(S, 0, my))
       if ch ~= "V" and ch ~= " " then
         mousesendstext(ch, "click for information")
+        end
+      return
+      end
+
+    if string.find(getline(0), "the material") then
+      mousesendstext(" ", "")
+      local ch = gch(scrget(S, 0, my))
+      if ch ~= "S" and ch ~= " " then
+        mousesendstext(ch, "click to select")
+        end
+      return
+      end
+
+    if string.find(getline(0), "Wounds caused by") then
+      mousesendstext(" ", "click here to exit this screen")
+      if mx < 20 then
+        mousesendstext("-", "click for less heads")
+        end
+      if mx > 60 then
+        mousesendstext("+", "click for more heads")
         end
       return
       end
@@ -1132,17 +1188,16 @@ function checkmouse(ev)
         nsendkey(eva)
       elseif eva.button > 1 and hydrainfo then
         evb = hexround(pixeltoprocess(eva))
-        print("ptp = "..tostring(evb))
         hydrainfo(evb.x, evb.y)
       else
         evb = hexround(pixeltoprocess(eva))
-        print("ev = "..tostring(evb))
-        hydraqueuetarget(evb.x, evb.y)
+        if hsmousepath then hydraqueuetarget(evb.x, evb.y) end
         nsendkey2(k, evKeyBothText)
         end
       end
     if mode ~= modeFPP then
       local dirnames = {"E ", "NE", "N ", "NW", "W ", "SW", "S ", "SE"}
+      ptp2 = hexround(ptp)
       mousemsg = "L = move or attack "..dirnames[d+1]..(hydrainfo and " R = info: "..
         hydralook(ptp.x, ptp.y) or "")
     else
@@ -1493,6 +1548,8 @@ function getminipos(size)
     end
   end
 
+noteye_config_variable("hsmousepath", true, "pathfinding with mouse in Hydra Slayer")
+
 noteye_config_variable("hsmousecfg", 2, "Hydra Slayer mouse tooltips", {options = gridoptions})
 
 addtomenu(mainmenu, "x", writechoicef(
@@ -1509,6 +1566,13 @@ addtomenu(mainmenu, "x", writechoicef(
     end
   )
 
+addtomenu(keysmenu, "p", writechoicef(
+  function() return "pathfinding with mouse in Hydra Slayer: \ve"..boolonoff(hsmousepath) end),
+  function()
+    pickbool("hsmousepath", not hsmousepath)
+    return true
+    end
+  )
 
 function mousetooltips()
   -- do return end
@@ -1638,10 +1702,16 @@ if hydramain and not externalhydra then function rungamex(cmdline)
 local lpixeltoprocess = pixeltoprocess
 
 function hexround(v)
+  local rx = v.x
+  if mode == modeTiles then rx = rx-.5 end
   if not v then return v end
-  v = V(math.floor(v.x), math.floor(v.y))
+  v = V(math.floor(rx), math.floor(v.y))
   if v and inhex and (v.x+v.y+inhexr)%2 > 0.01 and not norounding then 
-    v.x = v.x-1
+    if mode == modeASCII then
+      if rx - v.x < .5 then v.x = v.x-1 else v.x = v.x+1 end
+    else
+      v.x = v.x-1
+      end
     end
   return v
   end
@@ -1929,7 +1999,7 @@ function handlespecialkeys(ev)
     return true
     end
 
-  if iskey(ev, KEYS.F8) and ev.type == evKeyDown then
+  if false and iskey(ev, KEYS.F8) and ev.type == evKeyDown then
     TileFullmap = V.renewscreen(TileFullmap, realmapsize)
     V.scrcopy(MAP, V(0,0), TileFullmap, 0, realmapsize, xtile)
     Img = newimage(tilesize.x * realmapsize.x, tilesize.y * realmapsize.y)
@@ -1940,7 +2010,7 @@ function handlespecialkeys(ev)
     print("saving the map")
     end
 
-  if iskey(ev, KEYS.F7) and ev.type == evKeyDown then
+  if false and iskey(ev, KEYS.F7) and ev.type == evKeyDown then
     TileFullmap = V.renewscreen(TileFullmap, V(60,45))
     Img = newimage(1920, 1440)
     for y=0,44 do for x=0,59 do 
@@ -1953,7 +2023,7 @@ function handlespecialkeys(ev)
     print("saving the empty map")
     end
   
-  if iskey(ev, KEYS.F6) and ev.type == evKeyDown then
+  if false and iskey(ev, KEYS.F6) and ev.type == evKeyDown then
     invoke_trailer()
     return
     end
