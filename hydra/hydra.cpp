@@ -348,53 +348,6 @@ void movedir(int dir) {
       addMessage("You see "+c.it->getname()+" here.");
     }
 
-  else if(W && W->type == WT_QUAKE && (c.type == CT_WALL || hc)) {
-    weapon *w = W;
-    if(w->size == 0) {
-      addMessage("Club need recharging. Need Scroll of Big Stick.");
-      checkShadow(*shc);
-      return;
-      }
-    w->size--;
-    string exclamation = "!";
-    int i = w->color; while(i != HC_ALIEN) exclamation += "!", i--;
-    if(c.type == CT_WALL)
-      addMessage("The level shakes as you hit the wall"+exclamation);
-    else if(c.h)
-      addMessage("As you hit the "+c.h->name()+", a huge shockwave is released"+exclamation);
-    else
-      addMessage("The poor mushroom shakes and the ground trembles"+exclamation);
-    playSound("../hydra-old/quake", 100, 0);
-    for(int i=0; i<size(hydras); i++) {
-      hydra *h (hydras[i]);
-      h->sheads = h->heads;
-      if(h->lowhead())
-        h->stunforce += h->heads * (w->info().stunturns + 5) / 10;
-      else {
-        h->stunforce += quakefun(h->heads, w->color);
-        }
-      w->sc.sc[WS_HKILL] ++;
-      w->sc.sc[WS_HHEAD] += h->heads;
-      }
-    if(!w->sc.sc[WS_USE]) shareBe("using the " + w->name());
-    w->sc.sc[WS_USE] ++;
-    achievement("HYDRAQUAKES");
-    }
-  
-  else if(W && W->type == WT_RAND && c.h) {
-    ATTACK_ANIMATION;
-    playAttackSound(W, NULL, false, 0);
-    mersenneTwist(W, c.h);
-    }
-  
-  else if(W && W->type == WT_RAND && hc) {
-    playAttackSound(W, NULL, false, 0);
-    ATTACK_ANIMATION;
-    hydra h(HC_MUSH, c.mushrooms, 1, 0);
-    mersenneTwist(W, &h);
-    c.mushrooms = h.heads;
-    }
-  
   else if(W && W->wand() && (c.type == CT_WALL || hc)) {
     if(c.type != CT_WALL) {
       if(!checkShadow(*shc)) 
@@ -729,6 +682,72 @@ void movedir(int dir) {
     cancelspeed();
     // int orig = c.h->heads;
     achievement("ZERO");
+    }
+  
+  else if(W && W->type == WT_QUAKE && (c.type == CT_WALL || hc)) {
+    weapon *w = W;
+    if(w->size == 0) {
+      addMessage("Club need recharging. Need Scroll of Big Stick.");
+      checkShadow(*shc);
+      return;
+      }
+    w->size--;
+    string exclamation = "!";
+    int i = w->color; while(i != HC_ALIEN) exclamation += "!", i--;
+    if(c.type == CT_WALL)
+      addMessage("The level shakes as you hit the wall"+exclamation);
+    else if(c.h)
+      addMessage("As you hit the "+c.h->name()+", a huge shockwave is released"+exclamation);
+    else
+      addMessage("The poor mushroom shakes and the ground trembles"+exclamation);
+    playSound("../hydra-old/quake", 100, 0);
+    for(int i=0; i<size(hydras); i++) {
+      hydra *h (hydras[i]);
+      h->sheads = h->heads;
+      if(h->lowhead())
+        h->stunforce += h->heads * (w->info().stunturns + 5) / 10;
+      else {
+        h->stunforce += quakefun(h->heads, w->color);
+        }
+      w->sc.sc[WS_HKILL] ++;
+      w->sc.sc[WS_HHEAD] += h->heads;
+      }
+    if(!w->sc.sc[WS_USE]) shareBe("using the " + w->name());
+    w->sc.sc[WS_USE] ++;
+    achievement("HYDRAQUAKES");
+    }
+  
+  else if(W && W->type == WT_RAND && c.h) {
+    ATTACK_ANIMATION;
+    playAttackSound(W, NULL, false, 0);
+    mersenneTwist(W, c.h);
+    }
+  
+  else if(W && W->type == WT_COLL && c.h) {
+    ATTACK_ANIMATION;
+    playAttackSound(W, NULL, false, 0);
+    collatz(W, c.h);
+    }
+  
+  else if(W && W->type == WT_RAND && hc) {
+    playAttackSound(W, NULL, false, 0);
+    ATTACK_ANIMATION;
+    hydra h(HC_MUSH, c.mushrooms, 1, 0);
+    mersenneTwist(W, &h);
+    c.mushrooms = h.heads;
+    }
+
+  else if(W && W->type == WT_COLL && hc) {
+    playAttackSound(W, NULL, false, 0);
+    ATTACK_ANIMATION;
+    hydra h(HC_MUSH, c.mushrooms, 1, 0);
+    h.zombie = true;
+    collatz(W, &h);
+    c.mushrooms = h.heads;
+    }
+
+  else if(W && W->type == WT_COLL && hc) {
+    addMessage("Your "+W->name()+" cannot be used on mushrooms and zombies.");
     }
   
   else if(hc) {
