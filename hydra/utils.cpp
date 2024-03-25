@@ -91,6 +91,12 @@ string itsf(int i, int spc) {
   return buf;
   }
 
+int digitcount(int x) {
+  if(x<0) return 1 + digitcount(-x);
+  else if(x<10) return 1;
+  else return digitcount(x/10) + 1;
+  }
+
 int bitcount(int x) { return x ? (x&1) + bitcount(x>>1) : 0; }
 
 bool havebit(int set, int bit) { return (set>>bit)&1; }
