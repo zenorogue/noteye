@@ -493,6 +493,8 @@ void showResistanceHydraWeapon(hydra *h, weapon *w) {
 
     else if(w->stuns() || w->doubles() || (w->type == WT_PSLAY && w->size))
       addstri(its(w->info().stunturns));
+    
+    else if(w->protectAgainst(h)) addstri(" +1");
 
     else if(w->axe()) {
       int grow = h->res[w->color];
