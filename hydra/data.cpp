@@ -473,7 +473,7 @@ hydraInfo hyinf[HYDRAS] = {
     "attack only vulnerable targets.\n"
     },
   { "twin",      14, 13, -1, -1, -1,
-    "<copied>"
+    "hugs", "smiles at", "<copied>"
     },
   { "shadow", 14, 8, -1, -1, -1, "touches", "wails at",
     "While shadow hydras have no natural instant regeneration ability, "
