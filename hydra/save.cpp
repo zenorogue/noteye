@@ -111,7 +111,7 @@ void saveGame(string sav = savename) {
 
 sclass *loadS() {
   sclass *ret;
-  typeof(ret->sct()) i = 0;
+  decltype(ret->sct()) i = 0;
   load(i);
   
   if(i == 0) {
