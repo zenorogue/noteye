@@ -591,11 +591,11 @@ void movedir(int dir) {
     if(c.h->color == HC_ALIEN) {
       addMessage("The "+c.h->name()+" is not affected!");
     } else if(c.h->isAncient()) {
-      for(int i=0; i<HCOLORS; i++) c.h->res[i] /= 2;
+      for(int i=0; i<COLORS; i++) c.h->res[i] /= 2;
       addMessage("The "+c.h->name()+" partially resists your spell!");
       }
     else {
-      for(int i=0; i<HCOLORS; i++) c.h->res[i] = 0;
+      for(int i=0; i<COLORS; i++) c.h->res[i] = 0;
       addMessage("The "+c.h->name()+" looks somehow normal now!");
       c.h->clearswnd(); 
       }
