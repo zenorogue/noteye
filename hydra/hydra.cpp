@@ -922,6 +922,30 @@ bool useKnowledgeOn(sclass *x) {
       } */
   }
 
+int checkValidColor(weapon *wpn, int c) {
+  if(wpn->cuts() || wpn->xcuts() || wpn->type == WT_TIME) {
+    if(c < HCOLORS) return 0;
+    if(c == COLORS-1) return 7;
+    return XMUT_INVALID;
+    }
+  if(wpn->doubles()) {
+    if(c < HCOLORS) return XMUT_INVALID;
+    if(c == COLORS-1) return 15;
+    return 0;
+    }
+  if(wpn->type == WT_SHLD) {
+    if(c < HCOLORS) return 0;
+    else if(c < COLORS-1) return 5;
+    else return 25;
+    }
+  if(wpn->stuns()) {
+    if(c < HCOLORS) return XMUT_INVALID;
+    else if(c < COLORS-1) return 0;
+    else return 20;
+    }
+  return XMUT_INVALID;
+  }
+
 bool useup(int ii, weapon *orb) {
   /* if(ii < IT_SXMUT && P.race == R_ELF) {
     ii = IT_SXMUT;

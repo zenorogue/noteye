@@ -910,6 +910,122 @@ bool viewHelpForItem(int ii) {
   return yesno(IC_MYESNO);
   }
 
+// for Atlanteans
+bool selectTransmuteColor(bool cheating = false) {
+  int validcolorfrom[COLORS];
+  for(int i=0; i<COLORS; i++) 
+    validcolorfrom[i] = 0;
+  
+  int count_other = 0, count_normal = 0;
+
+  for(int i=0; i<P.arms; i++) if(P.ambifresh ? havebit(P.ambiArm, i) : i == P.cArm) {
+    if(!wpn[i])
+      count_other ++;
+    else if(wpn[i]->type == WT_ORB)
+      count_other ++;
+    else if(wpn[i]->type == WT_GOLD) {
+      count_other ++;
+      }
+    else {
+      count_normal++;
+      for(int c=0; c<COLORS; c++) {
+        int vc = cheating ? 0 : checkValidColor(wpn[i], c);
+        if(vc > validcolorfrom[c]) 
+          validcolorfrom[c] = vc;
+        }
+      }
+    }
+  
+  if(count_normal == 0) return true;
+  
+  int selection = 0;
+
+  while(true) {
+    erase();
+    
+    move(0, 0); col(15); addstri("Select the material...");
+    
+    move(2, 2); addstri("name");
+    move(2, 30); addstri("stun/weak hydras/*strong hydras");
+    move(2, 65); addstri("validity");
+    
+    for(int y=0; y<COLORS; y++) {
+      showMenuOption(y+4, 'a'+y, selection == y);
+      col(cinf[y].color);
+      
+      if(wpn[P.cArm]) {
+        int col = wpn[P.cArm]->color;
+        wpn[P.cArm]->color = y;
+        addstri(wpn[P.cArm]->name());
+        wpn[P.cArm]->color = col;
+        }
+      else addstri(cinf[y].wname);
+
+      move(y+4, 30);
+
+      if(wpn[P.cArm]->doubles() || wpn[P.cArm]->stuns())      
+        addstri("(S" + its(cinf[y].stunturns)+") ");
+
+      if(wpn[P.cArm]->type == WT_SHLD) {
+        for(int hy=0; hy<HYDRAS; hy++) {
+          col(hyinf[hy].color);
+          if(hyinf[hy].weakness == y || hyinf[hy].suscept == y)
+            addstri(hyinf[hy].hname);
+          else if(hyinf[hy].weakness == y)
+            addstri("(" + hyinf[hy].hname+"weak) ");
+          else if(hyinf[hy].suscept == y)
+            addstri("(" + hyinf[hy].hname+"suscept) ");
+          }
+        }
+
+      if(wpn[P.cArm]->cuts() || wpn[P.cArm]->xcuts()) {
+        if(y < HCOLORS) {
+          for(int hy=0; hy<HYDRAS; hy++) {
+            col(hyinf[hy].color);
+            if(hyinf[hy].suscept == y)
+              addstri(hyinf[hy].hname);
+            }
+          for(int hy=0; hy<HYDRAS; hy++) {
+            col(hyinf[hy].color);
+            if(hyinf[hy].strength == y)
+              addstri(" *" + hyinf[hy].hname);
+            }
+          }
+        else if(y == COLORS-1) {
+          addstri("all except ");
+          col(hyinf[HC_ALIEN].color);
+          addstri("alien");
+          }
+        }
+      
+
+      move(y+4, 65);
+
+      col(cinf[y].color);
+      if(validcolorfrom[y] == XMUT_INVALID) 
+        addstr("(invalid)");
+
+      else if(validcolorfrom[y] > P.curlevel) 
+        addstri("(from Lv " + its(validcolorfrom[y]+1)+")");
+      
+      }
+
+    int ch = ghch(IC_XMUT);
+    
+    if(ch == 10 || ch == 13)
+      ch = 'a' + selection;
+  
+    if(ch >= 'a' && ch < 'a'+COLORS) {
+      selection = ch - 'a';
+      if(validcolorfrom[selection] <= P.curlevel) {
+        atlantean_xmut_color = selection;
+        return true;
+        }
+      }
+    else if(!changeSelection(ch, selection, COLORS)) return false;
+    }
+  }
+
 int viewInventory() {
   
   int mapp[24];
@@ -1910,7 +2026,10 @@ void mainloop() {
           }
         else {
           ii = viewInventory();
-          if(ii < 0) break;
+
+          if(ii == IT_SXMUT && P.race == R_ATLANTEAAN && !selectTransmuteColor(false))
+            break;
+          else if(ii < 0) break;
           else if(P.curHP <= 0) 
             addMessage("It seems you are not yet used to being dead...");
           else if(useup(ii)) {

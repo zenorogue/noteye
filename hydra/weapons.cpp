@@ -1390,6 +1390,13 @@ bool transmute(weapon *w) {
     return false;
     }
   string lname = w->name();
+
+  if(P.race == R_ATLANTEAAN && w->type != WT_ORB && w->type != WT_GOLD) {
+    w->color = atlantean_xmut_color;
+    addMessage("You now got a "+w->name()+"!");
+    return true;
+    }
+
   wpnset++;
   if(w->type == WT_GOLD) {
     addMessage("The "+lname+" glows blindingly and changes both its color and shape!");
