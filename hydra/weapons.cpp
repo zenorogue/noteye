@@ -103,6 +103,9 @@ void vorpalCredit() {
 void vorpalRegenerate() {
   int l = P.curlevel+1; if(l>99) l = 99;
   P.vorpalc = (P.vorpalc * l) / 100;
+  
+  int l2 = P.curlevel+1; if(l>399) l = 399;
+  P.timemushlimit = (P.timemushlimit * l2) / 400;
   }
 
 string addAdj(string name, int id) {

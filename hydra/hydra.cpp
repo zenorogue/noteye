@@ -751,11 +751,14 @@ void movedir(int dir) {
           }
         hc = c.h->heads - c.h->sheads;
         }
-      if(c.mushrooms > 10)
+      if(res == XMUT_INVALID)
+        addMessage("That does not seem to work...");
+      else if(c.mushrooms && P.timemushlimit >= TIME_MUSH_LIMIT)
         addMessage("Hey, stop this! This is just boring.");
       else if(hc < res || (hc == res && !c.h->sheads))
         addMessage("Not enough active heads here...");
       else {
+        if(c.mushrooms) P.timemushlimit++;
         ATTACK_ANIMATION;
         c.attack(W, W->size, NULL);
         W->addStat(WS_USE, 1, 0);

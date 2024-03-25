@@ -201,7 +201,8 @@ struct pstruct {
   char orbcharge, res1, res2, res3; // how many times an Orb has been partially charged
 
   int32_t oldversion;  // version when the game was started
-  int32_t reserve[6];  // reserved for future
+  int32_t timemushlimit; // limit on the usage of time-blade against mushrooms
+  int32_t reserve[5];  // reserved for future
   };
 #pragma pack(pop)
 
@@ -580,6 +581,8 @@ weapon* wpn[MAXARMS];
 #define CODES (AMAXS+AMAX*AMAX)
 
 #define COLLAPSE 1000000
+
+#define TIME_MUSH_LIMIT 10
 
 int usew[CODES], goal[CODES], wnd[CODES], wtime[CODES];
 
