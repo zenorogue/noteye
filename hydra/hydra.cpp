@@ -1402,7 +1402,7 @@ void initCharacter() {
     addMessage("Welcome to the Tutorial!");
   
   else
-    addMessage("Welcome to Hydra Slayer v"VER"!");
+    addMessage("Welcome to Hydra Slayer v" VER "!");
   }
 
 void initGame() {
