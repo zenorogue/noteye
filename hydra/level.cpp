@@ -87,7 +87,7 @@ vec2 wrap(vec2 v) {
   }
 
 int neighborDir(vec2 v, vec2 w) {
-  w = wrap(w); v = wrap(v);
+  w = wrap(w);
   for(int i=0; i<DIRS; i++) if(wrap(v+dirs[i]) == w) return i;
   return -1;
   }
