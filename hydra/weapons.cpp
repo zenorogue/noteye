@@ -2843,7 +2843,7 @@ void mersenneTwist(weapon *w, hydra *h) {
   int bsm = WMAX + 10, bbi = WMAX + 10, vsm = 0, vbi = 0, spos;
 
   int vul = drainpower(h);
-  if((P.phase+1) & ((1<<P.active[IT_PFAST])-1))=
+  if((P.phase+1) & ((1<<P.active[IT_PFAST])-1))
     vul = 0;
 
   SI.prepare(h->heads*2+1, h);
