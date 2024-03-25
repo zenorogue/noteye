@@ -1501,13 +1501,23 @@ void generateNormalGame() {
   for(int i=0; i<HCOLORS; i++) dcolors[i] = i;
   for(int i=0; i<HCOLORS; i++) swap(dcolors[i], dcolors[hrand(i+1)]);
   sclass *extras[LEVELS];
+
+  if(P.race == R_ATLANTEAAN) {
+    for(int i=0; i<10; i++) if(dcolors[i] == 0)
+      swap(dcolors[i], dcolors[0]);
+    }
   
   // original weapons and extras...
   
   if(!stats.savecount) {
-    wpn[0] = new weapon(dcolors[0], 1, WT_BLADE);
-    wpn[1] = new weapon(dcolors[1], 2, WT_BLADE);
-    wpn[0]->level = wpn[1]->level = 0;
+    if(P.race == R_ATLANTEAAN) {
+      wpn[0] = new weapon(dcolors[0], 7, WT_BLADE);
+      }
+    else {
+      wpn[0] = new weapon(dcolors[0], 1, WT_BLADE);
+      wpn[1] = new weapon(dcolors[1], 2, WT_BLADE);
+      wpn[0]->level = wpn[1]->level = 0;
+      }
     }
     
   int artdie = hrand(6);
@@ -1809,6 +1819,7 @@ void generateItems() {
 int raceForSeed(int seed) {
   int r = seed % 5;
   if(r == R_ELF) r = R_CENTAUR;
+  if(seed % 7 == 0) r = R_ATLANTEAAN;
   return r;
   }
 

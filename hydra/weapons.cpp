@@ -1005,7 +1005,14 @@ int ambiAttack(cell *c, int virt) {
       addstr("KILL");
     else if(mystery)
       addstr("???");
-    else addstri("="+its(nheads-hcut-hacut+hgrow+hsgrow+hdub));
+    else {
+      int q = nheads-hcut-hacut+hgrow+hsgrow+hdub;
+      addstri("="+its(q));
+      int q2 = nheads-nsheads-hcut-hacut-hstun;
+      if(q2<0) q2 = 0;
+      q2 += hgrow;
+      if(drainpower(c->h)) displayDrain(c->h, q2);
+      }
     //addMessage("nh "+its(nheads)+" c "+its(hcut)+" ac "+its(hacut)+" g "+its(hgrow)+" sg "+its(hsgrow)+ " d"+its(hdub));
     return 1;
     }
@@ -1765,7 +1772,7 @@ struct hydraAnalyzer {
     if(P.active[IT_PAMBI]) buildAmbiGraph();
 
     // update the damager array for vampires
-    if(h->color == HC_VAMPIRE)  vampireUpdate();
+    if(drainpower(h))  vampireUpdate();
     
     for(int wc=0; wc<WMAX; wc++) {
       int wap = wwnd[wc];     

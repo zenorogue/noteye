@@ -912,5 +912,16 @@ bool quitgame = false;  // should we quit
 #define IC_CHEATMENU 27 // cheat menu
 #define IC_VIEWACH   28 // view achievements
 #define IC_CHALLENGE 29 // challenge menu
+#define IC_XMUT      30 // Atlantean transmutation
+#define IC_WOUNDS    31 // wounds table
 
 bool gameExists;        // has the game been generated?
+
+int drainpower(hydra *h);
+
+#define XMUT_INVALID 1000000
+int atlantean_xmut_color; // atlantean "transmute-to" color
+
+// vulture growth multiplier (1 for vultures OR atlanteans, 2 for both at once)
+void displayDrain(hydra *h, int hd);
+bool invalidGame(playerinfo& pi = pinfo);

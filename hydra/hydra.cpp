@@ -1323,6 +1323,8 @@ void initCharacter() {
     P.inv[IT_RSTUN]++;
     P.inv[IT_RDEAD]++;        
     P.inv[it3[hrand(3)]]++;
+    if(P.race == R_ATLANTEAAN)
+      P.inv[IT_SXMUT]++;
     }
 
   else {

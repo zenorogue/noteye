@@ -1,6 +1,13 @@
 // Hydra Slayer: math puzzle roguelike
 // Copyright (C) 2010-2011 Zeno Rogue, see 'hydra.cpp' for details
 
+int drainpower(hydra *h) {
+  int b = 0;
+  if(h->color == HC_VAMPIRE) b++;
+  if(P.race == R_ATLANTEAAN && !h->lowhead()) b++;
+  return b;
+  }
+
 bool hydra::aware() { return visible() ? M[pos].seen : (P.flags & dfShadowAware); }
 
 void takeWounds(int thc) {
@@ -140,6 +147,16 @@ void cell::hydraDead(hydra *killer) {
   if(P.race == R_NAGA && h->heal >= 4) P.curHP--;
   if(P.race == R_NAGA && h->heal >= 6) P.curHP--;
   
+  // Atlanteans heal a bit more!
+  if(P.race == R_ATLANTEAAN) {
+    if(P.curlevel <= 0)
+      P.curHP += 5;
+    else if(P.curlevel < 12)
+      P.curHP += 2;
+    else if(P.curlevel < 50)
+      P.curHP ++;
+    }
+
   // stop waiting if a hydra dies
   if(h->visible()) inWaitMode = false;
 
@@ -322,6 +339,25 @@ void cell::hydraDead(hydra *killer) {
     
     if(P.curlevel == 0) achievement("BEGINNER");
     if(P.curlevel == 0 && stats.wounds == 0) achievement("BEGINNERPERFECT");
+    if(P.curlevel == 0 && P.race == R_ATLANTEAAN) {
+      bool valid = true;
+      for(int i=0; i<ITEMS; i++) if(stats.usedup[i]) valid = false;
+
+      weapon *w =
+        wpn[0]->size == 7 ? wpn[0] :
+        wpn[1]->size == 7 ? wpn[1] :
+        NULL;
+
+      if(!w || stats.ws[MOT_BLADE].sc[WS_USE] != w->sc.sc[WS_USE])
+        valid = false;
+
+      for(int i=1; i<MOT; i++)
+        if(i != MOT_BARE)
+          if(stats.ws[i].sc[WS_USE]) valid = false;
+
+      if(valid)
+        achievement("PERFECTATLAS");
+      }
     if(P.curlevel == 4) achievement("ADEPTSLAYER");
     if(P.curlevel == 99) achievement("DEEPEXPLORER");
     if(P.curlevel == 149) achievement("VDEEPEXPLORER");
@@ -376,10 +412,12 @@ void hydraAttackPlayer(hydra* H, bool brother) {
     takeWounds(wnd);
     stats.shadowwounds+= wnd;
     P.flags |= dfShadowAware;
-    printf("playAttackSound called\n");
     playAttackSound(NULL, H);
     if(shadowwarning) shadowwarning = 0;
     else shadowwarning = 10;
+
+    int b = drainpower(H);
+    H->heads += b*wnd, stats.vampire += b*wnd;
     }
   
   else if(true) {
@@ -462,8 +500,9 @@ void hydraAttackPlayer(hydra* H, bool brother) {
       else
         stats.ancientwnd2 += dam;
       }
-    if(H->color == HC_VAMPIRE && dam >= 0)
-      H->heads += dam, stats.vampire += dam;
+
+    int b = drainpower(H);
+    H->heads += b*dam, stats.vampire += b*dam;
       
     if(P.curHP <= 0) shareBe("killed by the "+H->name()+" after killing "+its(stats.hydrakill)+ " hydras");
     }
@@ -485,6 +524,8 @@ void repelEttin(hydra *H, int by) {
 
   if(P.race == R_HUMAN || P.race == R_CENTAUR) return;
   
+  if(P.race == R_ATLANTEAAN && H->color == HC_MONKEY) return;
+
   if(P.race == R_ELF && !haveMushrooms) return;
   
   if(P.race == R_NAGA && nagavulnerable) return;
@@ -1061,6 +1102,8 @@ string hydra::describe() {
       t = "are not afraid of Humans";
     if(P.race == R_CENTAUR)
       t = "are not afraid of Centaurs";
+    if(P.race == R_ATLANTEAAN)
+      t = "attack Atlanteans only when accompanied by a Hydra (but monkeys are not afraid)";
     s += "\nGiants "+ t + ".";
     }
   if(color & HC_DRAGON) {

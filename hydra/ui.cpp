@@ -448,8 +448,18 @@ void cursorOnPlayer() {
 
 #define SDIV (MSX+1)
 
+void displayDrain(hydra *h, int hd) {
+  if(hd < 0) hd = 0;
+  SI.prepare(hd, h);
+  col(5);
+  addstri(" V"+its(drainpower(h) * SI.dampost(hd)));
+  }
+
 void showResistanceHydraWeapon(hydra *h, weapon *w) {
-  if(!w) return;
+  if(!w) {
+    if(drainpower(h)) displayDrain(h, h->heads - h->sheads);
+    return;
+    }
 
   col(w->gcolor());
   
@@ -473,10 +483,18 @@ void showResistanceHydraWeapon(hydra *h, weapon *w) {
   
     if(w->type == WT_BOW)
       addstri(its(bowpower(w) / min(w->size, h->heads) / 2));
+
+    else if(drainpower(h)) {
+      int hd = h->heads;
+      int sh = h->sheads;
+      if(calcWeaponEffect(w, h, hd, sh)) 
+        displayDrain(h, hd-sh);
+      }
+
     else if(w->stuns() || w->doubles() || (w->type == WT_PSLAY && w->size))
       addstri(its(w->info().stunturns));
 
-    if(w->axe()) {
+    else if(w->axe()) {
       int grow = h->res[w->color];
       if(grow < 0) grow = 2 * w->size;
       if(grow) addstri(its(w->info().stunturns * (grow + w->size) / grow));
@@ -1165,10 +1183,13 @@ void giveHint(hydra *h) {
       if(hr > 0) addstri(" +" + its(hr)); else if(hr < 0) addstri(" x" + its(-hr));
       }
     
-    if(h->color == HC_VAMPIRE && showdam && spos) {
+    int vammul = drainpower(h);
+
+    if(vammul && showdam && spos) {
       showdam = false;
-      int wn = wnd[ospos] - wnd[spos];
-      col(12); addstri(" W" + its(wn)); col(h->gcolor()); addstri(" +"+its(wn));
+      int qwnd = (wnd[ospos] - wnd[spos]);
+      int wn = vammul * qwnd;
+      col(12); addstri(" W" + its(qwnd)); col(h->gcolor()); addstri(" +"+its(wn));
       }
     
     cy++;

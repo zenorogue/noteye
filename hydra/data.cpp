@@ -509,13 +509,14 @@ hydraInfo hyinf[HYDRAS] = {
 
 #define MAXARMS    10
 
-#define RACES   6
+#define RACES   7
 #define R_HUMAN 0
 #define R_ELF   1
 #define R_NAGA  2
 #define R_TROLL 3
 #define R_TWIN  4
 #define R_CENTAUR  5
+#define R_ATLANTEAAN   6
 
 struct raceInfo {
   string rname;
@@ -604,6 +605,21 @@ raceInfo rinf[RACES] = {
     "around, and thus they are not able to "
     "use the Potion of Power Swipe to attack several enemies around them "
     "at once.\n"
+    },
+  { "Atlantean", 'a', '@', 10,
+    "People from the island of Atlantis have been cursed by the gods. "
+    "Will you be able to turn your curse into an advantage?\n"
+
+    "All hydras will behave as vulture hydras, that is, "
+    "after causing you a number of wounds, they will grow that many heads "
+    "(double the number for vulture hydras).\n"
+
+    "On the good side, Atlanteans are able to heal much better from hydra blood, "
+    "and much more skilled at transmutations -- they "
+    "can choose the material to transmute their items into, "
+    "and eventually they even learn to create "
+    "special materials.\n"
+    "Atlanteans start with a single mighty weapon."
     }
   };
 

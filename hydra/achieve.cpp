@@ -4,7 +4,7 @@
 // achievements (achieve.cpp)
 //============================================
 
-#define NUMACH 53
+#define NUMACH 57
 
 struct achievementdata {
   const char *textcode;
@@ -67,6 +67,10 @@ struct achievementdata ach[NUMACH] = {
   {"NOJUICE", "Power is for the Weak", "Reached and killed the first boss without drinking the first Power Juice you pick up", 10},
   {"TRAPPER", "Trapper", "Killed a hydra with a trap", 5},
   {"NOJUICE3", "Innate Power", "Reached and killed the first boss without drinking the first three Power Juices you find", 10},
+  {"BRONZEATLAS", "Atlantean Bronze Medal", "Defeat the first boss with an Atlantean.", 10},
+  {"SILVERATLAS", "Atlantean Silver Medal", "Defeat the second boss with an Atlantean.", 10},
+  {"GOLDATLAS", "Atlantean Gold Medal", "Defeat the second boss with an Atlantean, using at most one Potion of Life.", 10},
+  {"PERFECTATLAS", "Scythe Mastery", "Clear the first level using no items or weapons except the ash scythe.", 10},
   };
 
 void setmax(int& a, int b) { if(b>a) a=b; }

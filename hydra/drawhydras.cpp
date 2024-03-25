@@ -449,7 +449,9 @@ void drawMapLua(lua_State *L, int x, int y, int mode) {
   if(wrap(v) == wrap(playerpos)) {
     noteye_table_setInt(L, "hicon", '@');
     int col = P.race == R_NAGA ? 14 : P.race == R_CENTAUR ? 12 : 
-      P.race == R_TROLL ? 11 : 15;
+      P.race == R_TROLL ? 11 :
+      P.race == R_ATLANTEAAN ? 10 :
+      15;
     noteye_table_setInt(L, "hcolor", getVGAcolor(col));
     }
   
