@@ -303,12 +303,7 @@ void initLua() {
   noteye_globalfun("SDL_GetScancodeFromKey", lh_SDL_GetScancodeFromKey);
   noteye_globalfun("SDL_ShowCursor", lh_SDL_ShowCursor);
   
-#ifdef NOCONSOUT
-  noteye_globalint("NOCONSOUT", 1);
-#else
   noteye_globalfun("openconsole", lh_openconsole);
-  noteye_globalfun("refreshconsole", lh_refreshconsole);
-#endif
   
 #ifndef INTERNALONLY
   noteye_globalfun("newprocess", lh_newProcess);
@@ -340,6 +335,7 @@ void initLua() {
   noteye_globalfun("logopen", lh_logopen);
 
   noteye_globalfun("fpp", lh_fpp);
+  noteye_globalfun("refreshconsole", lh_refreshconsole);
 
   noteye_globalfun("isoparam", lh_isoparam);
   noteye_globalfun("isosizes", lh_isosizes);
