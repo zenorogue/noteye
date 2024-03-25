@@ -37,6 +37,7 @@ setwindowtitle(Gfx, "LUSAMPLE")
 defaultmodep(modeASCII, 1)
 
 function lgput(v, chr, fore, back)
+  jit.off(true, true)
   scrset(S, v.x, v.y, tilemerge(tilefill(back), tilerecolor(fget(Font, chr), fore)))
   end
 
