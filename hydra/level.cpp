@@ -817,6 +817,59 @@ weapon *newTrap(int col, int size, char type) {
   return w;
   }
 
+hydra *createSpecial(int special, int hydrasize, int growpow, int healing) {
+  hydra *h = NULL;
+  switch(special) {
+    case HC_ETTIN: case HC_50:
+      h = new hydra(HC_ETTIN, 1, 1, 0);
+      h->heads = 2;
+      if(special == 7) h->heads = 50;
+      switch(hrand(3)) {
+        case 0:
+          h->ewpn = new weapon(randHCol(), 5 * (P.curlevel/5), WT_BLADE);
+          break;
+        case 1:
+          h->ewpn = new weapon(randSCol(), P.curlevel+4, WT_BLUNT);
+          break;
+        case 2:
+          h->ewpn = new weapon(randHCol(), P.curlevel+2-hrand(5), WT_AXE);
+          break;
+        }
+      break;
+    
+    case HC_VAMPIRE:
+      h = new hydra(HC_VAMPIRE, hydrasize - hrand(hydrasize/3), growpow, healing/5);
+      break;
+
+    case HC_ALIEN:
+      h = new hydra(HC_ALIEN, hydrasize * 2 + hrand(60), growpow, healing/7);
+      for(int i=0; i<COLORS; i++) h->res[i] = i == HC_OBSID ? -2 : 0;
+      break;
+    
+    case HC_GROW:
+      h = new hydra(HC_GROW, hydrasize + hrand(100), 1, healing/4);
+      break;
+
+    case HC_WIZARD:
+      h = new hydra(HC_WIZARD, P.curlevel + hrand(P.curlevel), growpow+2, healing/4);
+      break;
+    
+    case HC_MONKEY:
+      h = new hydra(HC_MONKEY, 1, 1, 5);
+      h->heads = 3;
+      break;
+    
+    case HC_SHADOW:
+      h = new hydra(HC_SHADOW, hydrasize + hrand(100), 1, healing/4);
+      break;
+    
+    case HC_EVOLVE:
+      h = new hydra(HC_EVOLVE, hydrasize + hrand(100), 1, healing/2);
+      break;
+    }
+  return h;
+  }
+
 void generateExtraMonsters() {
   int growpow = 13 + (P.curlevel - 13) / 5;
   int hydrasize = 200 + 5 * P.curlevel;
@@ -868,11 +921,39 @@ void generateExtraMonsters() {
   if(dirtycolor != -1 && onein(2))
     dirtycolor2 = randHCol();
   
+  int missingcolor = -1;
+  if(onein(4)) do {
+    missingcolor = randHCol();
+    } while(missingcolor == dirtycolor || missingcolor == dragoncolor || missingcolor == dirtycolor2);
+  
+  int stdcolor = -1;
+  
+  // special hydra level
+  bool shlev = hrand(100) < 15;
+  if(shlev) {
+    if(hrand(P.curlevel) >= dragonmin)
+      dragoncolor = randHCol();
+    dirtycolor = randHCol();
+    dirtycolor2 = randHCol();
+    stdcolor = randHCol();
+    missingcolor = -1;
+    }
+  
+  int hydracount = 0;
+  
   // Hydras
   if(P.curlevel != 49) for(int c=0; c<HCOLORS; c++) {
+
+    if(shlev && (c != dragoncolor && c != dirtycolor && c != dirtycolor2 && c != stdcolor))
+      continue;
+    
+    if(c == missingcolor) continue;
+    
+    hydracount++;
+
     hydra *H = new hydra(c, hrand(hydrasize) + 1, growpow, healing / 10);
     if(c == dragoncolor) H->color |= HC_DRAGON, H->heal = healing / 8;
-
+    
     if(!(P.flags & dfBackups)) {    
       if(c == dirtycolor) H->dirty = 2*IS_DIRTY-1, H->heal += healing / 10;
       if(c == dirtycolor2 && c != dirtycolor) H->dirty = 2*IS_DIRTY-1, H->heal += healing / 8;
@@ -882,7 +963,11 @@ void generateExtraMonsters() {
 
     H->put();
     }
+  
+  bool hadspec[128];
+  for(int i=0; i<128; i++) hadspec[i] = false;
 
+  // special hydras
   if(P.curlevel == 49) {
     int hc = 900000 + hrand(50000);
     while(primediv(hc) != -1) hc++;
@@ -890,78 +975,71 @@ void generateExtraMonsters() {
     adragon->dirty = IS_DIRTY-1; // do not know susceptibilities
     adragon->put();
     }
+  else if(shlev) {
+    int healing2 = healing;
+#define SPEC(id, lev, prob) \
+    if(P.curlevel >= lev && hydracount < 11 && !hadspec[id] && hrand(100) < prob) \
+      hadspec[id] = true, hydracount++, createSpecial(id, hydrasize, growpow, healing2)->put();
+
+    for(int i=0; i<50; i++) {
+      SPEC(HC_VAMPIRE, 0, 10)
+      SPEC(HC_ETTIN, 0, 10) 
+      SPEC(HC_ALIEN, 0, 10) 
+      SPEC(HC_MONKEY, 0, 10)
+      SPEC(HC_SHADOW, 0, 10) 
+      SPEC(HC_GROW, 20, 10) 
+      SPEC(HC_EVOLVE, 25, 10) 
+      SPEC(HC_WIZARD, 30, 10)
+      SPEC(HC_50, 75, 1)
+      }
+    }
   else {
-    int special = hrand(5);
+    int spectab[9] = { HC_VAMPIRE, HC_ETTIN, HC_ALIEN, HC_GROW, HC_WIZARD,
+      HC_MONKEY, HC_SHADOW, HC_50, HC_EVOLVE };
+    int special = spectab[hrand(5)];
     
     // Wizards are picked only after Level 30
-    if(P.curlevel < 30)
-      special = hrand(4);
+    if(P.curlevel < 30) special = spectab[hrand(4)];
   
     // Growing hydras only after Level 20 (otherwise it's free)
-    if(P.curlevel < 20 && special == 3)
-      return;
+    if(P.curlevel < 20 && special == HC_GROW)
+      special = -1;
       
-    if(onein(6)) // monkeys each 7 levels
-      special = 5;
+    if(onein(6)) // monkeys each 8 levels
+      special = HC_MONKEY;
     
-    if(onein(7)) // shadows each 7 levels
-      special = 6;
+    if(onein(7)) // shadows each 8 levels
+      special = HC_SHADOW;
+    
+    if(onein(8) && P.curlevel >= 25) // evolvers each 8 levels (after Level 25)
+      special = HC_EVOLVE;
     
     if(P.curlevel == levseed[5] % 23 + 25) 
-      special = 7;
+      special = HC_50;
     
     if(P.curlevel >= 75 && hrand(20) == 0)
-      special = 7;
-
+      special = HC_50;
     
-    hydra *h = NULL;
-      
-    switch(special) {
-      case 0: case 7:
-        h = new hydra(HC_ETTIN, 1, 1, 0);
-        h->heads = 2;
-        if(special == 7) h->heads = 50;
-        switch(hrand(3)) {
-          case 0:
-            h->ewpn = new weapon(randHCol(), 5 * (P.curlevel/5), WT_BLADE);
-            break;
-          case 1:
-            h->ewpn = new weapon(randSCol(), P.curlevel+4, WT_BLUNT);
-            break;
-          case 2:
-            h->ewpn = new weapon(randHCol(), P.curlevel+2-hrand(5), WT_AXE);
-            break;
-          }
-        break;
-      
-      case 1:
-        h = new hydra(HC_VAMPIRE, hydrasize - hrand(hydrasize/3), growpow, healing/5);
-        break;
-  
-      case 2:
-        h = new hydra(HC_ALIEN, hydrasize * 2 + hrand(60), growpow, healing/7);
-        for(int i=0; i<COLORS; i++) h->res[i] = i == HC_OBSID ? -2 : 0;
-        break;
-      
-      case 3:
-        h = new hydra(HC_GROW, hydrasize + hrand(100), 1, healing/4);
-        break;
-  
-      case 4:
-        h = new hydra(HC_WIZARD, P.curlevel + hrand(P.curlevel), growpow+2, healing/4);
-        break;
-      
-      case 5:
-        h = new hydra(HC_MONKEY, 1, 1, 5);
-        h->heads = 3;
-        break;
-      
-      case 6:
-        h = new hydra(HC_SHADOW, hydrasize + hrand(100), 1, healing/4);
-        break;
+    hydra *h = createSpecial(special, hydrasize, growpow, healing);
+    
+    if(h) h->put();
+
+    if(missingcolor >= 0) while(true) {
+      int special2 = spectab[hrand(9)];
+      if(special == special2) continue;
+      if(special2 == HC_50 && hrand(100) < (P.curlevel < 90 ? 0 : 10))
+        continue;
+      if(special2 == HC_GROW && P.curlevel < 25)
+        continue;
+      if(special2 == HC_EVOLVE && P.curlevel < 30)
+        continue;
+      if(special2 == HC_WIZARD && P.curlevel < 35)
+        continue;
+      hydra *h2 = createSpecial(special2, hydrasize*2/3, growpow, healing);
+      if(h2) h2->put();
+      break;
       }
   
-    if(h) h->put();
     }
 
   // traps
@@ -1478,9 +1556,33 @@ void generateNormalGame() {
     if(r >= 2)
       toput[i].push_back(new item(IT_SGROW));
     
+    int numtry = 0;
+
+    genhydraagain:
+    numtry++;
+    
+    hydra *hydraofcol[HCOLORS];
+    for(int c=0; c<HCOLORS; c++) 
+       hydraofcol[c] = new hydra(c, hrand(linf[i].maxheads) + 1, linf[i].growlimit, linf[i].heal);
+    
+    if(i == 0 && P.race == R_ATLANTEAAN) {
+      // were-hydra not allowed to be of size 3
+      if(hydraofcol[0]->heads == 3) goto genhydraagain;
+      int q[4];
+      for(int a=0; a<4; a++) q[a] = 0;
+      for(int c=1; c<HCOLORS; c++)
+        if(hydraofcol[c]->heads == 3)
+          q[hydraofcol[c]->res[0]]++;
+      if(q[0] != 1) goto genhydraagain;
+      if(q[1] != 1) goto genhydraagain;
+      if(q[2] != 1) goto genhydraagain;
+      }
+    
+    // printf("numtry = %d\n", numtry);
+    
     // one hydra of each color
     for(int c=0; c<HCOLORS; c++)
-      toput[i].push_back(new hydra(c, hrand(linf[i].maxheads) + 1, linf[i].growlimit, linf[i].heal));
+      toput[i].push_back(hydraofcol[c]);
     
     // make some hydras dirty
     if(i == 10 || i == dirtylev) {
