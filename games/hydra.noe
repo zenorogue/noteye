@@ -1,5 +1,5 @@
 -- which version of NotEye is this noe-file compatible with
-gamenoteyever = 0x750
+gamenoteyever = 0x900
 
 -- set the official Hydra Slayer colors
 setpalette(palettes.hydra, 7)
