@@ -798,7 +798,8 @@ struct cell {
       else delete it;
       it = NULL;
       }
-    if(h) delete h; h = NULL;
+    if(h) delete h;
+    h = NULL;
     explored = false; seen = false;
     }
   int headsAt(weapon *w) { 

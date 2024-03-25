@@ -239,7 +239,8 @@ void loadGame(string sav = savename) {
     }
 
   loadStats(stats, P.saveformat);
-  if(P.geometry == 0) P.geometry = 8; setDirs();
+  if(P.geometry == 0) P.geometry = 8;
+  setDirs();
   load(playerpos); load(topx); load(topy);
   pinfo.charname = loadString();
   pinfo.username = loadString();  

@@ -230,7 +230,8 @@ void viewMultiLine(string s, int& cy, int narrow) {
 vec2 playerposScreen, stunnedHydraPosScreen;
 
 void adddig(int n, int d) {
-  while(d--) n /= 10; addch('0'+n%10);
+  while(d--) n /= 10;
+  addch('0'+n%10);
   }
 
 void drawMap() {
