@@ -516,7 +516,7 @@ function xtile(C,x,y)
   ytf = tilemerge(ytf, shadtable[bAND(M.shadow, 15)])
   ytf = tilemerge(ytf, ytileobj(M,x,y))
   if M.cacheid then hydracache(M.cacheid, noteye_assign_handle(ytf)) end
-  if M.animation then ytf = tilemerge(ytf, M.animation) end
+  if M.animation then ytf = tilemerge(ytf, noteye_by_handle( M.animation )) end
   return ytf
   end
 
