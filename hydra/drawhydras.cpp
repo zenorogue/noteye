@@ -305,12 +305,12 @@ void addAnimation(cell *c, int headid, int cutcount, int color = 0) {
   }
 
 Image *headimage;
-int headtile[ANIM_MAX];
+Tile *headtile[ANIM_MAX];
 
 double r64(double z) { return floor(z * 64 + .5) / 64; }
 
-int getAnimation(cell *c) {
-  int res = 0;
+Tile *getAnimation(cell *c) {
+  Tile *res = nullptr;
   int d = 0;
   int t = SDL_GetTicks();
   for(; d<size(c->animations); d++) {
@@ -331,7 +331,7 @@ int getAnimation(cell *c) {
       // printf("headtile %d = %d\n", ai.headid, headtile[ai.headid]);
       }
     
-    int h = headtile[ai.headid];
+    auto h = headtile[ai.headid];
     h = addLayer(h, 1);
     if(ai.color) h = addRecolor(h, getVGAcolor(ai.color), recDefault);
     h = addTransform(h, r64(ai.dx*tt), r64(ai.dy*tt), 1, 1, 0, 0);
@@ -420,7 +420,7 @@ void drawMapLua(lua_State *L, int x, int y, int mode) {
   bool hvis =
     (c.h && (c.h->visible() ? c.seen : seeallmode()));
     
-  int anim = getAnimation(&c);
+  Tile *anim = getAnimation(&c);
 
   if(!onplayer && !hvis && !anim && !(mode == 8 && (c.mushrooms || c.it || c.dead))) {
     long long cacheid = shadow&15;
@@ -465,7 +465,7 @@ void drawMapLua(lua_State *L, int x, int y, int mode) {
     noteye_table_setInt(L, "target", 1);
   
   if(anim)
-    noteye_table_setInt(L, "animation", anim);
+    noteye_table_setInt(L, "animation", noteye_get_handle(anim));
 
   if(c.explored) {
   

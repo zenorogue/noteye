@@ -329,8 +329,7 @@ int squareRootSign() {
   Font* F = P ? P->f : NULL;
   // Unicode square root sign for dynamic fonts
   if(dynamic_cast<DynamicFont*>(F)) return 8730;
-  int i = F ? F->gettile(64) : 0;
-  TileImage *ti = dynamic_cast<TileImage*> (noteye_getobj(i));
+  TileImage *ti = F ? dynamic_cast<TileImage*> (F->gettile(64)) : nullptr;
   if(ti && ti->i && ti->i->title.find("cp437") != string::npos) return 251;
   if(ti && ti->i && ti->i->title.find("fantasy") != string::npos) return 251;  
   if(ti && ti->i && ti->i->title.find("ttf") != string::npos) return 8730;
