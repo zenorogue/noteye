@@ -263,8 +263,6 @@ void sendSwapEvent();
 void sendAttackEvent(int hid, vec2 from, vec2 to);
 void playSound(const char *fname, int vol = 100, int msToWait = 0);
 
-bool invalidGame();
-
 int getOrbForItem(int i);
 void takeWounds(int thc);
 void removeWounds(int thc);

@@ -40,7 +40,7 @@ void achievement(const char *buf);
 void shareClose() { }
 void shareUpdate() { }
 
-void highscore(const char *what, int val, int highisgood) { }
+void highscore(const char *what, int val, int highisgood, struct playerinfo&) { }
 void share(const string& s) { }
 
 void shform(const string& s, const string& am , const string& is, const string& are) {}

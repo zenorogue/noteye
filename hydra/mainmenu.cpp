@@ -354,8 +354,8 @@ void editString(string& s, string title = "Enter the name: ") {
     }
   }
 
-bool invalidGame() {
-  return P.flags & dfsInvalid;
+bool invalidGame(playerinfo& pi) {
+  return pi.player.flags & dfsInvalid;
   }
 
 bool validChallengeGame() {
@@ -421,17 +421,36 @@ bool eqstr(const string& s1, const string& s2) {
   return true;
   }
 
+void updateHighscores(playerinfo &Pi) {
+  highscore("hydras killed", Pi.stats.hydrakill, 1, Pi);
+  if(!stats.usedup[IT_PLIFE])
+    highscore("hydras killed/no life", Pi.stats.hydrakill, 1, Pi);
+  if(Pi.stats.endtype >= 3)
+  if(Pi.stats.woundwin || Pi.stats.treasure || Pi.stats.armscore) {
+    highscore("wounds to win/partial", Pi.stats.woundwin, -1, Pi);
+    highscore("value of items used/partial", Pi.stats.treasure, -1, Pi);
+    highscore("mutation score/partial", Pi.stats.armscore, -1, Pi);
+    }
+  if(Pi.stats.endtype >= 6)
+  if(Pi.stats.woundwin2 || Pi.stats.treasure2 || Pi.stats.armscore2) {
+    highscore("wounds to win/full", Pi.stats.woundwin2, -1, Pi);
+    highscore("value of items used/full", Pi.stats.treasure2, -1, Pi);
+    highscore("mutation score/full", Pi.stats.armscore2, -1, Pi);
+    }
+  }
+
 void viewHall(bool current) {
   bool inChallenge = P.flags & dfChallenge;
   savefile = fopen((inChallenge?challname:scorename).c_str(), "rb");
   pi.clear();
+  if(!inChallenge) updateHighscores(pinfo);
   if(savefile) {
     error = false;
     
     while(not(feof(savefile))) {
       playerinfo Pi;
       load(Pi.player);
-      printf("error encountered: %d\n", error);
+      if(error) printf("error encountered: %d\n", error);
       if(error) break;
       loadStats(Pi.stats, Pi.player.saveformat);
       Pi.charname = loadString();
@@ -440,6 +459,9 @@ void viewHall(bool current) {
       if(inChallenge) load(Pi.cdata);
       if(inChallenge && Pi.player.gameseed != P.gameseed) continue;
       pi.push_back(Pi);
+      if(!inChallenge) {
+        updateHighscores(Pi);
+        }
       }
     fclose(savefile);
     }
@@ -832,7 +854,10 @@ void mainmenu() {
         break;
     
       case 5:
-        addstr("You have won the battle, but not the war! Do you want to go home anyway?");
+        if(P.flags & dfChallenge)
+          addstr("You have won the Challenge!");
+        else
+          addstr("You have won the battle, but not the war! Do you want to go home anyway?");
         break;
 
       case 6:

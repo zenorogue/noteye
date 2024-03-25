@@ -180,8 +180,8 @@ void cell::hydraDead(hydra *killer) {
   else if(h->color == HC_MONKEY) stats.monkeykill++;
   else if(h->color != HC_TWIN) {
     stats.hydrakill++;
-    highscore("hydras killed", stats.hydrakill, 1);
-    if(!stats.usedup[IT_PLIFE]) highscore("hydras killed/no life", stats.hydrakill, 1);
+    highscore("hydras killed", stats.hydrakill, 1, pinfo);
+    if(!stats.usedup[IT_PLIFE]) highscore("hydras killed/no life", stats.hydrakill, 1, pinfo);
     if(P.flags & dfDaily) highscoreDaily();
     if(P.curlevel < GLEVELS) stats.armscore += P.arms - 2;
     if(P.curlevel < LEVELS2) stats.armscore2 += P.arms - 2;
@@ -248,9 +248,9 @@ void cell::hydraDead(hydra *killer) {
       for(int i=0; i<ITEMS; i++) if(stats.usedb[i]) usedNone = false;
       if(usedNone) achievement("TOUGHFIGHTER");
 
-      highscore("wounds to win/partial", stats.woundwin, -1);
-      highscore("value of items used/partial", stats.treasure, -1);
-      highscore("mutation score/partial", stats.armscore, -1);
+      highscore("wounds to win/partial", stats.woundwin, -1, pinfo);
+      highscore("value of items used/partial", stats.treasure, -1, pinfo);
+      highscore("mutation score/partial", stats.armscore, -1, pinfo);
       string s = " the Ancient Hydra taking only "+its(stats.woundwin)+" wounds";
       if(usedNone) s += " without using any items";
       if(P.arms < 6) s += " with just "+its(P.arms)+" arms";
@@ -288,9 +288,9 @@ void cell::hydraDead(hydra *killer) {
       
       if(stats.usedup[IT_PLIFE] == 0) achievement("PLATINUM");
 
-      highscore("wounds to win/full", stats.woundwin, -1);
-      highscore("value of items used/full", stats.treasure2, -1);
-      highscore("mutation score/full", stats.armscore2, -1);
+      highscore("wounds to win/full", stats.woundwin, -1, pinfo);
+      highscore("value of items used/full", stats.treasure2, -1, pinfo);
+      highscore("mutation score/full", stats.armscore2, -1, pinfo);
 
       string s = " the Ancient Dragon taking only "+its(stats.woundwin2)+" wounds";
       if(P.inv[IT_PLIFE]) s += " without using "+its(P.inv[IT_PLIFE])+" Potions of Life";
