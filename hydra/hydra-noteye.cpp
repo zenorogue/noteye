@@ -15,6 +15,8 @@ extern int hydranoteyeflag;
 
 extern int lh_getSounds(lua_State *L);
 
+#define luaO(x,t) dynamic_cast<t*> (noteye_by_handle(luaInt(x)))
+
 int lh_hydramain(lua_State *L) {
   checkArg(L, 2, "hydramain");
 

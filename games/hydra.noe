@@ -139,7 +139,7 @@ function ytileobj(M,x,y)
   
   local function hycolor(x) return tilerecolor(x, M.hcolor) end
   
-  local out = 0
+  local out = nil
   local function mergeout(x)
     out = tilemerge(out, x)
     end
@@ -307,7 +307,7 @@ GoldenStar = tilerecolor(TinyStar, vgaget(14))
 for st=1,7 do
   stunanim[st] = {}
   for tu=0,99 do
-    local frame = 0
+    local frame = nil
     for u=1,st do
       local t = math.pi*2*(u/st + tu/100)
       frame = tilemerge(frame, tilexf(GoldenStar, 
@@ -330,6 +330,8 @@ function xinventory(C)
   else return C end
   end
 
+tm_inventory = newmapping(xinventory)
+
 function bloody(x)
   if violencelevel >= 75 then return tilemerge(Blood, x)
   elseif violencelevel >= 25 then return x
@@ -338,7 +340,7 @@ function bloody(x)
   
 function xtileobj(C)
 
-  if gp2(C) < 0 then return 0 end
+  -- if gp2(C) < 0 then return nil end
   
   local ch = gch(C)
   local co = gco(C)
@@ -440,7 +442,7 @@ til = addtile(til, 0, 0, 32, 32, transAlpha)
 shadtable = {}
 
 for shad=0,15 do
-  local ytf = 0
+  local ytf = nil
   if bAND(shad, 1) > 0 then ytf = tilemerge(ytf, ShadowE) end
   if bAND(shad, 2) > 0 then ytf = tilemerge(ytf, ShadowW) end
   if bAND(shad, 4) > 0 then ytf = tilemerge(ytf, ShadowS) end
@@ -487,7 +489,7 @@ function xtile(C,x,y)
     return OutOfMap
     end
   if M.cached then 
-    return M.cached 
+    return noteye_by_handle(M.cached)
     end
   local ytf = ytilefloor(M)
   local uu = M.uu
@@ -513,7 +515,7 @@ function xtile(C,x,y)
   --if bAND(M.shadow, 8) > 0 then ytf = tilemerge(ytf, ShadowN) end
   ytf = tilemerge(ytf, shadtable[bAND(M.shadow, 15)])
   ytf = tilemerge(ytf, ytileobj(M,x,y))
-  if M.cacheid then hydracache(M.cacheid, ytf) end
+  if M.cacheid then hydracache(M.cacheid, noteye_assign_handle(ytf)) end
   if M.animation then ytf = tilemerge(ytf, M.animation) end
   return ytf
   end
@@ -632,7 +634,7 @@ function copymap()
 
     -- change to icons
     if ininv and mode ~= modeASCII then
-      scrcopy(IMG, 53, 5, IMG, 53, 5, 1, 19, xinventory)
+      scrcopy(IMG, 53, 5, IMG, 53, 5, 1, 19, tm_inventory)
       end
     
     -- move hydra stats to the top left corner
@@ -1675,7 +1677,7 @@ function mousetooltips()
 
   if not trailer and hsmousecfg ~= 0 then
     Mouseline = renewscreen(Mouseline, 80, 1)
-    scrfill(Mouseline, 0, 0, 80, 1, 0)
+    scrfill(Mouseline, 0, 0, 80, 1, nil)
     scrwrite(Mouseline, 0, 0, mousemsg, Font, vgaget(0))
     drawscreen(D.output, Mouseline, screen.top.x, Y1-fontsize.y, fontsize.x, fontsize.y)
     end
@@ -1694,8 +1696,9 @@ function readgmessages()
 
 if hydramain and not externalhydra then function rungamex(cmdline)
   P = internal(S, Font, cmdline)
+  Ph = noteye_assign_handle(P)
   hydrauserdir(userdir)
-  hydramain(P, mainloopcyc)
+  hydramain(Ph, mainloopcyc)
   end
   end
 
@@ -1748,7 +1751,7 @@ if sethydrabox and not hydrabox then
   local s = imggetsize(hydraheads)
   hydraheads2 = newimage(s.x, s.y)
   hydraheadskey = getpixel(hydraheads, 0, 0)
-  sethydrabox(hydrabox, hydraheads, hydraheads2)
+  sethydrabox(noteye_assign_handle(hydrabox), noteye_assign_handle(hydraheads), noteye_assign_handle(hydraheads2))
   animatedhydras = {}
   for u=0,63 do
     animatedhydras[u] = 
@@ -1924,7 +1927,7 @@ IsoParam = isoparam(32, 24, 32, 32)
 --  end
 mapextent = 1
 
-setwindowtitle("Hydra Slayer "..(hydraver or ""))
+setwindowtitle(Gfx, "Hydra Slayer "..(hydraver or ""))
 cmdline = caller3("Hydra Slayer", "hydra")
 defaultmodep(modeTiles, 3)
 
