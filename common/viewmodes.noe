@@ -1034,7 +1034,7 @@ function drawAscii(ax)
     end
 
   if cursor and cursor.size and cursor.size > 0 and not
-    ((mode == modeMini or mode == modeMed) and D.map and inrect(cursor, D.map)) then
+    ((mode == modeMini or mode == modeMed or mode == modeTiles or mode == modeISO) and D.map and inrect(cursor, D.map)) then
     undercursor = scrget(IMG, cursor.x, cursor.y)
     -- print("undercursor = "..undercursor)
     scrset(IMG, cursor.x, cursor.y, addcursor(undercursor, cursor.size))
