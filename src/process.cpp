@@ -48,6 +48,16 @@ void sendtext(Process *P, const char *s) {
   P->sendText(s);
   }
 
+int lh_sendclick(lua_State *L) {
+  checkArg(L, 4, "sendclick");
+  Process *P = luaO(1, Process);
+  int x = luaInt(2);
+  int y = luaInt(3);
+  int button = luaInt(4);
+  P->sendClick(x, y, button);
+  return 0;
+  }
+
 bool processActive(Process *P) {
   return P->active();
   }

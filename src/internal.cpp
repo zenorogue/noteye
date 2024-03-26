@@ -93,6 +93,15 @@ void noteye_halfdelayms(int i) { halfdelaymode = i; }
 void noteye_cbreak() { halfdelaymode = -1; }
 void noteye_curs_set(int i) { if(i==2) i=100; cursorsize = i; }
 void noteye_curs_setx(int i) { cursorsize = i; }
+void noteye_getclick(int &x, int &y, int &button) {
+  if (P) {
+    x = P->mouse.x;
+    y = P->mouse.y;
+    button = P->mouse.button;
+    }
+  else
+    x = y = button = 0;
+  }
 
 SDL_Event *noteye_getevent() {
   if(P->lastevent) delete P->lastevent;
@@ -108,9 +117,24 @@ int noteye_eventtokey(SDL_Event *ev) {
   SDL_KeyboardEvent& kev(ev->key);
   int mod = kev.keysym.mod;
 
-  if(ev->type == SDL_TEXTINPUT)
-    return kev.keysym.sym;
-  
+  switch(ev->type) {
+    case SDL_TEXTINPUT:
+      return kev.keysym.sym;
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+      break;
+    case SDL_MOUSEBUTTONDOWN:
+    case SDL_MOUSEBUTTONUP: {
+      SDL_MouseButtonEvent& mev(ev->button);
+      P->mouse.x = mev.x;
+      P->mouse.y = mev.y;
+      P->mouse.button = mev.button;
+      return KEY_MOUSE;
+      }
+    default:
+      return 0;
+    }
+
   bool down = ev->type == SDL_KEYDOWN;
 
   int retkey = 0;
@@ -363,7 +387,6 @@ void InternalProcess::sendText(const string& s) {
   }
 
 void InternalProcess::sendKey(int scancode, int keycode, int mod, bool down) {
-
   int neve = (eve + 1) % EVENTBUFFER;
   if(neve != evs) {
     SDL_Event *ev = new SDL_Event;
@@ -383,6 +406,21 @@ void InternalProcess::sendKey(int scancode, int keycode, int mod, bool down) {
     // we should probably do something in this case!
     }
 
+  }
+
+void InternalProcess::sendClick(int x, int y, int button) {
+  int neve = (eve + 1) % EVENTBUFFER;
+  if(neve != evs) {
+    SDL_Event *ev = new SDL_Event;
+    ev->type = SDL_MOUSEBUTTONDOWN;
+    SDL_MouseButtonEvent& mev(ev->button);
+    mev.button = button;
+    mev.state = SDL_PRESSED;
+    mev.x = x;
+    mev.y = y;
+    evbuf[eve] = ev;
+    eve = neve;
+    }
   }
 
 bool InternalProcess::checkEvent(lua_State *L) {

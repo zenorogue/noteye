@@ -81,7 +81,9 @@ void initMode() {
   SDL_EnableUNICODE(1);
 #endif
 
+#ifndef ANDROID
   SDL_StartTextInput();
+#endif
 
   exsurface=SDL_CreateRGBSurface(SDL_SWSURFACE,16,16,32,0,0,0,0);
   if(exsurface == NULL) {
@@ -529,6 +531,19 @@ bool checkEventSDL(lua_State *L, int timeout) {
       noteye_table_setInt(L, "ball", mev.ball);
       noteye_table_setInt(L, "xrel", mev.xrel);
       noteye_table_setInt(L, "yrel", mev.yrel);
+      return true;
+      }
+
+    if(ev.type == SDL_MULTIGESTURE) {
+      SDL_MultiGestureEvent& mev(ev.mgesture);
+      lua_newtable(L);
+      noteye_table_setInt(L, "type", evMultiGesture);
+      noteye_table_setInt(L, "touchId", mev.touchId);
+      noteye_table_setNum(L, "dTheta", mev.dTheta);
+      noteye_table_setNum(L, "dDist", mev.dDist);
+      noteye_table_setNum(L, "x", mev.x);
+      noteye_table_setNum(L, "y", mev.y);
+      noteye_table_setInt(L, "numFingers", mev.numFingers);
       return true;
       }
 
