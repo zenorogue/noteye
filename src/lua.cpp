@@ -281,7 +281,11 @@ void initLua() {
   noteye_globalfun("logprint", lh_logprint);
   noteye_globalfun("logopen", lh_logopen);
 
+  #ifdef NOCONSOUT
+  noteye_globalint("NOCONSOUT", 1);
+  #else
   noteye_globalfun("refreshconsole", lh_refreshconsole);
+  #endif
 
   noteye_globalfun("uicreate", lh_uicreate);
   noteye_globalfun("uisleep", lh_uisleep);

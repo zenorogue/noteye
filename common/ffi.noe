@@ -78,8 +78,6 @@ ffi.cdef[[
   void saveimage(Image *i, const char *fname);
   Tile *scrget(Screen *scr, int x, int y);
   void scrset(Screen *scr, int x, int y, Tile *val);
-  void setdirectansi(int val);
-  void setconsolewindowtitle(const char *s);
 
   int utf8_numbytes(const char *s, int pos);
   int utf8_decode(const char *s, int pos);
@@ -256,8 +254,6 @@ ffi.cdef[[
   
   int getobjectinfo(Object *o, int i);
   
-  MainScreen *openconsole();
-  
   typedef uint32_t Uint32;
 
   void imagetitle(Image *o, const char *title);
@@ -272,6 +268,17 @@ ffi.cdef[[
   bool SDL_HasScreenKeyboardSupport();
   bool SDL_IsScreenKeyboardShown(Window*);
   ]]
+
+if NOCONSOUT then
+  setconsolewindowtitle = function(s) end
+  setdirectansi = function(x) end
+else ffi.cdef[[
+  void setdirectansi(int val);
+  void setconsolewindowtitle(const char *s);
+  MainScreen *openconsole();
+  ]]
+end
+
 end
 
 local noteyelib = ffi.os == "Windows" and ffi.load("noteye") or ffi.C
@@ -365,7 +372,6 @@ freeformparam = protected16(noteyelib.freeformparam)
 freeformparamflags = noteyelib.freeformparamflags
 
 addtile = protected6(noteyelib.addTile)
-setconsolewindowtitle = noteyelib.setconsolewindowtitle
 
 gchv = noteyelib.getChar
 gba = noteyelib.getBak
@@ -376,7 +382,6 @@ gimg = noteyelib.getImage
 scrget = protected3(noteyelib.scrget)
 scrset = noteyelib.scrset
 saveimage = noteyelib.saveimage
-setdirectansi = noteyelib.setdirectansi
 
 loadimage = protected1(noteyelib.loadimage, "loadimage")
 saveimage = noteyelib.saveimage
