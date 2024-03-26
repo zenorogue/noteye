@@ -387,7 +387,7 @@ string helpAbout(int x, int y, bool lng) {
   if(topy != TBAR) v.y += playerpos.y - center.y;
   cell& c(M[v]);
   
-  if(c.it && c.explored) {
+  if(c.it && c.explored && !c.seen) {
     if(lng) view_descr(c.it);
     else return c.it->fullname();
     }
