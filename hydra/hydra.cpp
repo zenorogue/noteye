@@ -1655,3 +1655,8 @@ int main(int argc, char **argv) {
   return 0;
   }
 #endif
+
+#ifdef EMS
+#include "ems-main.cpp"
+#endif
+

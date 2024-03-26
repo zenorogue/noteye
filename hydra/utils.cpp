@@ -33,18 +33,26 @@ typedef std::function<void(int)> key_continuation;
 typedef std::function<void()> continuation, void_continuation;
 typedef std::function<void(void_continuation)> cont_continuation;
 
-
+#if !EMS
+// take a function that is implemented in continuation style, and turn it into a loop
+// cannot work in EMS
 void loop_until_continued(const cont_continuation& f) {
   bool looping = true;
   while(looping) { f( [&] { looping = false; }); }
   }
+#endif
 
+#ifdef EMS
+#define NOCURSES
+#include "emscurses.cpp"
+#else
 #define NOEMS(x) x
 #define ONEMS(x)
 #define KH(c,x) for(int kh_dummy: {0}) if(int c = ghch(x))
 void line_webkey(const std::string& s) {}
 void set_value(const std::string& a, const std::string& b) {}
 void websync() {}
+#endif
 
 #ifndef ANDROID
 #include <string>
