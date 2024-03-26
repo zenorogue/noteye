@@ -870,23 +870,6 @@ void giveHint(hydra *h);
 // saves
 void emSaveGame();
 
-#ifndef DBASE
-#define DBASE (512*6)
-
-#define D_RIGHT DBASE+0
-#define D_UP    DBASE+2
-#define D_LEFT  DBASE+4
-#define D_DOWN  DBASE+6
-#define D_PGUP  DBASE+1
-#define D_PGDN  DBASE+7
-#define D_HOME  DBASE+3
-#define D_END   DBASE+5 
-#define D_CTR   DBASE+8
-#endif
-
-#define ESC     27
-#define PANIC   -3
-
 #define INDB   (512*7) // for internal use: INDB+x is direction x
 
 
