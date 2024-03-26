@@ -861,11 +861,13 @@ vec2 exploreDestination;     // .. and this destination
 vector<string> msgs;
 void addMessage(string s);
 void viewMultiLine(string s, int& cy, int narrow = 0);
-void viewHelp();
+void viewHelp(void_continuation vcon, int page = 0);
+#ifndef EMS
 int ghch(int context);
-bool yesno(int context);
+#endif
+void yesno(int context, bool_continuation bcon);
+void giveHint(hydra *h, void_continuation vcon);
 void drawScreen();
-void giveHint(hydra *h);
 
 // saves
 void emSaveGame();

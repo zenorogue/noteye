@@ -25,6 +25,27 @@
 #define NOCURSES
 #endif
 
+#include <functional>
+#include <string>
+typedef std::function<void(bool)> bool_continuation;
+typedef std::function<void(int)> int_continuation;
+typedef std::function<void(int)> key_continuation;
+typedef std::function<void()> continuation, void_continuation;
+typedef std::function<void(void_continuation)> cont_continuation;
+
+
+void loop_until_continued(const cont_continuation& f) {
+  bool looping = true;
+  while(looping) { f( [&] { looping = false; }); }
+  }
+
+#define NOEMS(x) x
+#define ONEMS(x)
+#define KH(c,x) for(int kh_dummy: {0}) if(int c = ghch(x))
+void line_webkey(const std::string& s) {}
+void set_value(const std::string& a, const std::string& b) {}
+void websync() {}
+
 #ifndef ANDROID
 #include <string>
 #include <vector>

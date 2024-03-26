@@ -336,21 +336,30 @@ void addCurrentInfoToLog() {
   glog.push_back("Last messages:\n");
   int from = isize(msgs)-loglines;
   if(from < 0) from = 0;
-  for(int f=from; f<isize(msgs); f++) glog.push_back("  "+msgs[f]+"\n");  
+  for(int f=from; f<isize(msgs); f++) glog.push_back("  "+msgs[f]+"\n");
   }
 
-void editString(string& s, string title = "Enter the name: ") {
-  while(true) {
+void editString(string& s, void_continuation vcon, string title = "Enter the name: ") {
+  NOEMS(while(true)) {
     move(22, 0); clrtoeol();
     move(22, 0); addstri(title+s);    
-    char c = ghch(IC_EDIT);
-    if(c == '\r' || c == '\n' || c == PANIC) return;
-    else if(c == 1 || c == 27 || c == '\t')
-      s = "";
-    else if(c == '\b' || c == 7 || c == 8) {
-      if(s != "") s = s.substr(0, s.size()-1);
-      }
-    else s = s + c;
+
+#if EMS
+    INIC(IC_EDIT); keyhandler = [=, &s] (char c)
+#else
+    char c = ghch(IC_EDIT); if(1)
+#endif 
+  {
+      if(c == '\r' || c == '\n' || c == PANIC) { vcon(); return; }
+      else if(c == 1 || c == 27 || c == '\t') {
+        s = "";
+        }
+      else if(c == '\b' || c == 7 || c == 8) {
+        if(s != "") s = s.substr(0, s.size()-1);
+        }
+      else s = s + c;
+      ONEMS( editString(s, vcon, title); )
+      };
     }
   }
 
@@ -439,7 +448,7 @@ void updateHighscores(playerinfo &Pi) {
     }
   }
 
-void viewHall(bool current) {
+void viewHall(bool current, void_continuation vcon) {
   bool inChallenge = P.flags & dfChallenge;
   savefile = fopen((inChallenge?challname:scorename).c_str(), "rb");
   pi.clear();
@@ -463,7 +472,7 @@ void viewHall(bool current) {
         updateHighscores(Pi);
         }
       }
-    fclose(savefile);
+    fclose(savefile); websync();
     }
   if(current) {
     pinfo.curgame = true; pi.push_back(pinfo);
@@ -472,14 +481,14 @@ void viewHall(bool current) {
   int tosync = (P.flags & dfDaily) ? 1 : 0;
   sorttype = 'h'; stable_sort(pi.begin(), pi.end(), pisort);
   
-  int startat = 0;
-  bool global = true;
+  static int startat = 0;
+  static bool global = true;
   
-  int crace = -1;
+  static int crace = -1;
   
   static int cfamemode = 0;
 
-  while(true) {
+  NOEMS(while(true)) {
     
     erase();
     
@@ -626,9 +635,18 @@ void viewHall(bool current) {
       addstri("WCBUHME-sort, Q-menu, F-"+filter+", A-achievements, P-"+isfull+" R-"+racename);
       }
 
+    #if NOEMS
     if(tosync) halfdelay(1); else cbreak();
     int c = ghch(IC_HALL);
     if(tosync) cbreak();
+
+    if(1)
+    #else
+    auto back = [=] { viewHall(current, vcon); };
+
+    KH(c, IC_HALL)
+    #endif
+    {
 
     if(c >= 'A' && c <= 'Z') c |= 32;
 
@@ -651,8 +669,8 @@ void viewHall(bool current) {
         break;
       
       case 'a': case 'A':
-        viewAchievements(pi, global);
-        break;
+        viewAchievements(pi, global, back);
+        return;
       
       case 'o': case 'O':
         startat ++;
@@ -671,6 +689,7 @@ void viewHall(bool current) {
         break;
       
       case 'q': case ' ': case '\r': case '\n': case ESC: case PANIC:
+        vcon();
         return;
       
       default:
@@ -684,8 +703,12 @@ void viewHall(bool current) {
         if(startat < 0) startat = 0;
         break;
       }
+    ONEMS( back(); )
+    };
     }
   }
+
+void viewHall_f(void_continuation vcon) { viewHall(false, vcon); }
 
 void clearGame() {
   // if(!gameExists) return;
@@ -736,7 +759,7 @@ void clearGame() {
   P.geometry = sdirs;
   }
 
-void cheatMenu() {
+void cheatMenu(void_continuation vcon) {
   erase();
 
   move(0, 0); col(12); addstri("Cheats available");
@@ -771,24 +794,31 @@ void cheatMenu() {
   
   viewMultiLine(cheats, cy); move(23, 79);
   
-  int c = ghch(IC_CHEATMENU);
+  KH(c, IC_CHEATMENU) {
   
-  if(c >= 'A' && c <= 'Z') c += 32;
-  
-  if(c == 'a' || c == 'b') {
-
-    addstr("Are you sure you want to activate this cheat? (y/n)");
-    if(!yesno(IC_MYESNO)) return;
+    if(c >= 'A' && c <= 'Z') c += 32;
     
-    if(c == 'a') P.flags |= dfAutoAttack | dfAutoON;
-    if(c == 'b') { P.flags |= dfBackups; stats.backupsaves++; saveGame(backname); }
-    }
+    if(c == 'a' || c == 'b') {
+  
+      addstr("Are you sure you want to activate this cheat? (y/n)");
+      yesno(IC_MYESNO, [=] (bool b) {
+        if(!b) { vcon(); return; }
+      
+        if(c == 'a') P.flags |= dfAutoAttack | dfAutoON;
+        if(c == 'b') { P.flags |= dfBackups; stats.backupsaves++; saveGame(backname); }
+        vcon();
+        });
+      }
+    
+    vcon();
+    };
+      
   }
 
-void mainloop();
+void mainloop(continuation vcon);
 void initGame();
-bool selectRace(bool rchal);
-void randomChallengeMenu();
+void selectRace(bool rchal, bool_continuation bcon);
+void randomChallengeMenu(void_continuation vcon);
 
 void calcEndtype() {
   if(P.curHP <= 0 || (P.race == R_TWIN && !twinAlive()))
@@ -801,9 +831,9 @@ void calcEndtype() {
   if(stats.solved >= 50) stats.endtype += 3;
   }
   
-void mainmenu() {
+void mainmenu(void_continuation vcon) {
 
-  while(!quitgame) {
+  NOEMS(while(!quitgame)) {
   
     bool saveerror = false;
 
@@ -954,45 +984,49 @@ void mainmenu() {
       }    
     
     move(0, 79); cbreak();
-    int c = ghch(IC_QUIT);
-    
+
+    auto back = [=] { mainmenu(vcon); };
+    KH(c, IC_QUIT) {
+
     switch(c) {
+      case ' ': case '\n': case '\r': case ESC: case 'z': case 'Z':
+        if(gameExists) { mainloop(back); return; }
+        break;
+
       case 't': case 'T':
-        if(gameExists)
+        if(gameExists) {
           P.twinsNamed = !P.twinsNamed;
+          return mainloop(back);
+          }
         else {
           P.race = R_HUMAN;
           P.flags = dfTutorial;
           P.geometry = 4;
           initGame();
-          mainloop();
+          return mainloop(back);
           }
-        break;
       
       case '1':
-        if(P.twinsNamed) editString(pinfo.twin[0]);
+        if(P.twinsNamed) { editString(pinfo.twin[0], back); return; }
         break;
         
       case '2':
-        if(P.twinsNamed) editString(pinfo.twin[1]);
+        if(P.twinsNamed) { editString(pinfo.twin[1], back); return; }
         break;
         
       case 'c':
-        editString(pinfo.charname);
-        break;
+        editString(pinfo.charname, back);
+        return;
         
       case 'p':
-        editString(pinfo.username);
-        break;
+        editString(pinfo.username, back);
+        return;
 
-      case ' ': case '\n': case '\r': case ESC: case 'z': case 'Z':
-        if(gameExists) mainloop();
-        break;
-      
       case 'h': case 'H': case KEY_F0+1: case '?': case '/':
-        viewHelp();
-        break;
-      
+        viewHelp(back);
+        return;
+
+#ifndef EMS
       case 'l': {
         string ud = userdir;
 
@@ -1007,106 +1041,128 @@ void mainmenu() {
 #endif
         break;
         }
+#endif
       
       case 'a': case 'A':
-        viewHall(gameExists);
-        break;
+        viewHall(gameExists, back);
+        return;
       
       case 'n': case 'N':
         if(gameExists) break;
-        if(selectRace(false)) {
-          initGame();
-          mainloop();
-          }
-        break;
+        selectRace(false, [back] (bool b) { if(b) { initGame(); mainloop(back); } else back(); });
+        return;
       
       case 'd': case 'D':
         if(gameExists) {
-          if((P.flags & (dfChallenge | dfDebug)) == dfChallenge) continue;
-          cheatMenu();
+          if((P.flags & (dfChallenge | dfDebug)) == dfChallenge) { back(); return; }
+          cheatMenu(back);
           }
         else {
           move(17, 0); col(15); addstr("Start the game in Debug mode? (y/n)");
-          if(!yesno(IC_MYESNO)) continue;
-          if(selectRace(false)) {
-            P.flags = dfDebug;
-            initGame(); mainloop();
-            }
+          yesno(IC_MYESNO, [=] (bool b) {
+            if(!b) { back(); return; }
+            selectRace(false, [back] (bool b) {
+              if(b) {
+                P.flags = dfDebug;
+                initGame(); mainloop(back);
+                }
+              else back();
+              });
+            });
           }
-        break;
+        return;
 
       case 'w':
         if(gameExists) break;
-        randomChallengeMenu();
+        randomChallengeMenu(back);
         break;
 
       case 's': case 'S': case 'q': case 'Q': case 'x': case 'X': {
-        if(!gameExists) return;
+        if(!gameExists) return vcon();
         move(17, 0); col(15); addstr("Are you sure? (y/n)");
-        if(gameExists)
-          if((c == 's' || c == 'S') ? false : !yesno(IC_MYESNO)) continue;
-        stats.tstart  = time(NULL) - stats.tstart;
-        endwin();
-        createLog(c == 's' || c == 'S');
-        addCurrentInfoToLog();
-        initScreen();
-        FILE *f = fopen(logname.c_str(), "wt");
-        if(f) {
-          for(int i=0; i<isize(glog); i++) {
-            fprintf(f, "%s", glog[i].c_str());
+        auto act = [=] {
+          stats.tstart  = time(NULL) - stats.tstart;
+          endwin();
+          createLog(c == 's' || c == 'S');
+          addCurrentInfoToLog();
+          initScreen();
+          #if EMS
+          if(1) {
+            string flog = "";
+            for(string s: glog) flog += s + "<br/>\n";
+            set_value("flog", flog);
+            }
+          #endif
+          FILE *f = fopen(logname.c_str(), "wt");
+          if(f) {
+            for(int i=0; i<isize(glog); i++) {
+              fprintf(f, "%s", glog[i].c_str());
+              #ifndef ANDROID
+              printf("%s", glog[i].c_str());
+              #endif
+              }
+            fclose(f); websync();
+            printf("Log saved to '%s'.\n", logname.c_str());
+            }
+          #ifndef ANDROID
+          else printf("Error while saving log to '%s'.\n", logname.c_str());
+          #endif
+          if(c == 's' || c == 'S') {
+            saveGame();
             #ifndef ANDROID
-            printf("%s", glog[i].c_str());
+            if(error)
+              printf("Error while saving to '%s'.\n", savename.c_str());
+            else
+              printf("Game saved to '%s'.\n", savename.c_str());
             #endif
             }
-          fclose(f);
-          printf("Log saved to '%s'.\n", logname.c_str());
-          }
-        #ifndef ANDROID
-        else printf("Error while saving log to '%s'.\n", logname.c_str());
-        #endif
-        if(c == 's' || c == 'S') {
-          saveGame();
-          #ifndef ANDROID
-          if(error)
-            printf("Error while saving to '%s'.\n", savename.c_str());
-          else
-            printf("Game saved to '%s'.\n", savename.c_str());
-          #endif
-          }
-        else deleteGame();
-        if(c == 'q' || c == 'Q') {
-          recordToHall();
-          #ifndef ANDROID
-          if(error) 
-            printf("Error while writing to '%s'.\n", scorename.c_str());
-          else if(!debugon())
-            printf("Added character to '%s'.\n", scorename.c_str());
-          #endif
-          }
-        
-        P.flags = 0;
-        clearGame();
-        if(c == 's' || c == 'S') return;
-        break;
+          else deleteGame();
+          if(c == 'q' || c == 'Q') {
+            recordToHall();
+            #ifndef ANDROID
+            if(error)
+              printf("Error while writing to '%s'.\n", scorename.c_str());
+            else if(!debugon())
+              printf("Added character to '%s'.\n", scorename.c_str());
+            #endif
+            }
+
+          P.flags = 0;
+          clearGame();
+          if(c == 's' || c == 'S')
+            vcon();
+          else back();
+          };
+        // if((c == 's' || c == 'S') ? false : !yesno(IC_MYESNO)) continue;
+        yesno(IC_MYESNO, [=] (bool b) { if(b) act(); else back(); });
+        return;
         }
 
       case 'o': case 'O': {
-        string s = savename;
+        static string s;
+        s = savename;
         saveGame(savename);
-        editString(savename);
-        if(savename == "") savename = s;
-        clearGame();
-        loadGame(savename);
-        if(gameExists) initGame();
-        if(P.flags & dfBackups) editString(backname);
+        editString(savename, [=] {
+          if(savename == "") savename = s;
+          clearGame();
+          loadGame(savename);
+          if(gameExists) initGame();
+          if(P.flags & dfBackups) {
+            editString(backname, back);
+            return;
+            }
+          back();
+          });
         break;
         }
       
       case 'r': case 'R': {
         string s = savename;
         deleteGame(savename);
-        editString(savename);
-        if(savename == "") savename = s;
+        editString(savename, [=] {
+          if(savename == "") savename = s;
+          back();
+          });
         break;
         }
       
@@ -1131,22 +1187,19 @@ void mainmenu() {
           }
         break;
       }
+      ONEMS( back(); )
+      };
     }
   }
-
-void mainloop();
 
 #define CHALLENGE_EACH 86400
 
 string cts(char x ) { string s; s += x; return s; }
 
-void randomChallengeMenu() {
-/*        move(17, 0); col(15); addstr("Start a Challenge game? (y/n)");
-        if(!yesno(IC_MYESNO)) continue;
-        P.flags = dfChallenge;
-        initGame(); mainloop(); */
+void randomChallengeMenu(void_continuation vcon) {
+#if !EMS
         
-  while(true) {
+  NOEMS(while(true)) {
     int challenge_id = time(NULL);
     challenge_id -= 1453676909;
     challenge_id += CHALLENGE_EACH * 10;
@@ -1184,47 +1237,62 @@ void randomChallengeMenu() {
     
     move(8, 2); col(15); addstr("(R) play a random challenge!");
     
-    int c = ghch(IC_CHALLENGE); 
-    
+    auto back = [=] { randomChallengeMenu(vcon); };
+
+    KH(c, IC_CHALLENGE) {
+
     if(c >= 'a' && c <= 'j') {
       fixedseed = true;
       P.gameseed = challenge_id + (c-'a')-9;
       P.flags = dfChallenge | dfDaily | dfRaceSeeded;
-      initGame(); mainloop();
-      return;
+      initGame(); mainloop([] {});
+      vcon();
       }
     
     else switch(c) {
 
       case 'q': case 27:
+        vcon();
         return;
       
-      case 'r': 
-        if(selectRace(true)) {
+      case 'r': {
+        bool res;
+        selectRace(true, [&] (bool b) { res = b; });
+        if(res) {
           P.flags = dfChallenge;
           initGame();
-          mainloop();
+          mainloop(vcon);
           return;
           }
+        back();
         break;
+        }
       
       case 't': 
         move(23, 0); col(15); addstr("Start the random challenge in Debug mode? (y/n)");
-        if(!yesno(IC_MYESNO)) continue;
-        if(selectRace(true)) {
-          P.flags = dfChallenge | dfDebug;
-          initGame();
-          mainloop();
-          return;
-          }
+        yesno(IC_MYESNO, [=] (bool b) {
+          if(!b) { back(); back(); return; }
+          selectRace(true, [=] (bool b) {
+            if(b) {
+              P.flags = dfChallenge | dfDebug;
+              initGame();
+              mainloop(vcon);
+              }
+            else back();
+            });
+          });
         break;
       }
+    };
     }
+#endif
   }
 
-bool selectRace(bool rchal) {
+void selectRace(bool rchal, bool_continuation bcon) {
 
-  while(!quitgame) {
+  auto back = [=] { selectRace(rchal, bcon); };
+
+  NOEMS(while(!quitgame)) {
     erase();
   
     move(1, 2); col(15); addstr("Select your race: ");
@@ -1240,6 +1308,7 @@ bool selectRace(bool rchal) {
     for(int i=0; i<RACES; i++) if(i != R_ELF) {
       if(i) { col(8); addstr(" | "); }
       bool light = true;
+      line_webkey(string("") + rinf[i].rkey);
       for(int l=0; l<isize(rinf[i].rname); l++) {
         char c = rinf[i].rname[l];
         if(rinf[i].rkey == tolower(c) && light) col(14), light = false;
@@ -1272,8 +1341,10 @@ bool selectRace(bool rchal) {
 
     move(23, 2); col(15); addstri("Press Enter to start playing as "+pinfo.charname+" the "+rinf[P.race].rname+"!");
 
-    move(0, 75); int c = ghch(IC_RACE); 
-    
+    move(0, 75);
+
+    KH(c, IC_RACE) {
+
     switch(c) {
 
       case '0':
@@ -1281,19 +1352,19 @@ bool selectRace(bool rchal) {
         break;
       
       case '1':
-        if(P.twinsNamed) editString(pinfo.twin[0]);
+        if(P.twinsNamed) { editString(pinfo.twin[0], back); return; }
         break;
         
       case '2':
-        if(P.twinsNamed) editString(pinfo.twin[1]);
+        if(P.twinsNamed) { editString(pinfo.twin[1], back); return; }
         break;
         
       case 'n':
-        editString(pinfo.charname);
-        break;
+        editString(pinfo.charname, back);
+        return;
         
       case 'q': case 27:
-        return false;
+        return bcon(false);
       
       case 'd': case ' ':
         if(P.geometry == 4) P.geometry = 6;
@@ -1306,19 +1377,23 @@ bool selectRace(bool rchal) {
         break;
       
       case 's': {
-        string seedstr = fixedseed ? its(P.gameseed) : "";
-        editString(seedstr, "Enter the seed (leave empty for random): ");
-        if(seedstr == "") fixedseed = false;
-        else fixedseed = true, P.gameseed = atoi(seedstr.c_str());
-        break;
+        static string seedstr;
+        seedstr = fixedseed ? its(P.gameseed) : "";
+        editString(seedstr, [=] {
+          if(seedstr == "") fixedseed = false;
+          else fixedseed = true, P.gameseed = atoi(seedstr.c_str());
+          selectRace(rchal, bcon);
+          },
+          "Enter the seed (leave empty for random): ");
+        return;
         }
 
       case '^':
         P.geometry = 16;
         break;
       
-      case 'r': case 10: case 13:
-        return true;
+      case 'r': case 10: case 13:        
+        return bcon(true);
       
       default:
         if(c >= DBASE && c <= DBASE+7) {
@@ -1334,6 +1409,7 @@ bool selectRace(bool rchal) {
     for(int i=0; i<RACES; i++) if(rinf[i].rkey == c) {
       P.race = i;
       }
+    ONEMS( selectRace(rchal, bcon); )
+    };
     }
-  return false;
   }

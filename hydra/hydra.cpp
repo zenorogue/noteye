@@ -893,20 +893,20 @@ void movedir(int dir) {
     }
   }
 
-bool useKnowledgeOn(sclass *x) {
-  if(!P.active[IT_PKNOW]) return false;
-  if(x->sct() != SCT_HYDRA) return false;
+void useKnowledgeOn(sclass *x, bool_continuation vcon) {
+  if(!P.active[IT_PKNOW]) { vcon(false); return; }
+  if(x->sct() != SCT_HYDRA) { vcon(false); return; }
   hydra *h = (hydra*) x;
   P.active[IT_PKNOW]--;
   if(h->aware() && h->dirty) {
     h->dirty = 0;
     addMessage("You recognize the " + h->name()+" under the blood.");
     playSound("potion/potion-knowledge", 100);
-    return true;
+    vcon(true);
+    return;
     }
   playSound("potion/potion-knowledge", 100);
-  giveHint(h);
-  return true;
+  giveHint(h, [=] { vcon(true); });
 /*  case IT_PKNOW: {
       for(int i=0; i<size(hydras); i++) if(hydras[i]->aware() && hydras[i]->dirty) {
         hydras[i]->dirty = 0;
@@ -1479,6 +1479,7 @@ char *readArg(char **argv, int& i, int argc) {
   return argv[i]+1;
   }
 
+#ifndef EMS
 void runTests() {
   initScreen();
   P.arms = 6;
@@ -1488,8 +1489,10 @@ void runTests() {
   wpn[0] = new weapon(7, 95, WT_AXE);
   wpn[1] = new weapon(8, 19, WT_AXE);
   hydra *h = new hydra(HC_VAMPIRE, 100, 1, 9);
+  auto gh = [&] (const void_continuation& vcon) { giveHint(h, vcon); };
+
   h->res[7] = 5; h->sheads = 90;
-  giveHint(h);
+  loop_until_continued(gh);
 
   // TEST 1: ambidexterity
   wpn[0] = new weapon(HC_OBSID, 1, WT_PREC);
@@ -1502,23 +1505,26 @@ void runTests() {
   P.active[IT_PAMBI] = 1;
 
   h->pos = vec2(5,5); M[h->pos].h = h; // we need this to avoid segfault
-  giveHint(h);  
+
+  loop_until_continued(gh);
 
   P.active[IT_PAMBI] = 0; h->heal = 54;
-  giveHint(h);  
+  loop_until_continued(gh);
   
   h->color = HC_GROW; h->heal = 75;
-  giveHint(h); 
+  loop_until_continued(gh);
   
   h->color = HC_GROW; h->heal = 77; h->heads = 619;
-  giveHint(h); 
+  loop_until_continued(gh);
 
   h->color = HC_WIZARD; h->heal = 15; h->heads = 123;
-  giveHint(h);
+  loop_until_continued(gh);
   
   endwin();
   }
+#endif
 
+#ifndef EMS
 int main(int argc, char **argv) {
 
   P.curlevel = 0; 
@@ -1606,7 +1612,7 @@ int main(int argc, char **argv) {
     
     case 'v':
       initScreen();
-      viewHall(false);
+      loop_until_continued(viewHall_f);
       endwin();
       return 0;
     
@@ -1634,9 +1640,12 @@ int main(int argc, char **argv) {
   
   initScreen();
   loadGame();
-  if(gameExists) initGame(), mainloop();
+  if(gameExists) {
+    initGame();
+    loop_until_continued(mainloop);
+    }
   else clearGame();
-  mainmenu();
+  loop_until_continued(mainmenu);
   clearGame();
   quitgame = false;
   endwin();
@@ -1645,3 +1654,4 @@ int main(int argc, char **argv) {
 
   return 0;
   }
+#endif

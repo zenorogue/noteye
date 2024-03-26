@@ -465,7 +465,7 @@ void drawMapLua(lua_State *L, int x, int y, int mode) {
     noteye_table_setInt(L, "target", 1);
   
   if(anim)
-    noteye_table_setInt(L, "animation", noteye_assign_handle(anim));
+    noteye_table_setInt(L, "animation", anim);
 
   if(c.explored) {
   

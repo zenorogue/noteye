@@ -67,15 +67,15 @@ struct achievementdata ach[NUMACH] = {
   {"NOJUICE", "Power is for the Weak", "Reached and killed the first boss without drinking the first Power Juice you pick up", 10},
   {"TRAPPER", "Trapper", "Killed a hydra with a trap", 5},
   {"NOJUICE3", "Innate Power", "Reached and killed the first boss without drinking the first three Power Juices you find", 10},
-  {"BRONZEATLAS", "Atlantean Bronze Medal", "Defeat the first boss with an Atlantean.", 10},
-  {"SILVERATLAS", "Atlantean Silver Medal", "Defeat the second boss with an Atlantean.", 10},
+  {"BRONZEATLAS", "Atlantean Bronze Medal", "Defeat the first boss with an Atlantean.", 10}, 
+  {"SILVERATLAS", "Atlantean Silver Medal", "Defeat the second boss with an Atlantean.", 10}, 
   {"GOLDATLAS", "Atlantean Gold Medal", "Defeat the second boss with an Atlantean, using at most one Potion of Life.", 10},
-  {"PERFECTATLAS", "Scythe Mastery", "Clear the first level using no items or weapons except the ash scythe.", 10},
+  {"PERFECTATLAS", "Scythe Mastery", "Clear the first level using no items or weapons except the ash scythe.", 10}, 
   };
 
 void setmax(int& a, int b) { if(b>a) a=b; }
 
-void viewNumAchievements(const vector<playerinfo>& pi, bool global) {
+void viewNumAchievements(const vector<playerinfo>& pi, bool global, void_continuation vcon) {
 
   bool gamewon = false;
   bool gamewon2= false;
@@ -195,7 +195,7 @@ void viewNumAchievements(const vector<playerinfo>& pi, bool global) {
   if(maxchrg > 1)
     addstri("You managed to kill "+its(maxchrg)+" Hydras with one power charge!\n");
   
-  ghch(IC_VIEWDESC);
+  KH(c, IC_VIEWDESC) { vcon(); };
   }
 
 long long getAchievementId(const char* s) {
@@ -240,9 +240,9 @@ void addAchievementsToLog() {
     }
   }
 
-void viewAchievements(const vector<playerinfo>& pi, bool global) {
+void viewAchievements(const vector<playerinfo>& pi, bool global, void_continuation vcon) {
 
-  int basey = 0;
+  static int basey = 0;
   
   replay:
   
@@ -261,7 +261,7 @@ void viewAchievements(const vector<playerinfo>& pi, bool global) {
       }
     }
 
-  bool descr = false;
+  static bool descr = false;
   
   int newscore = 0;
   int myscore = 0;
@@ -276,7 +276,7 @@ void viewAchievements(const vector<playerinfo>& pi, bool global) {
     if(inmy && !intot) newscore += sco;
     }
   
-  while(true) {
+  NOEMS(while(true)) {
     erase();
     move(0, 0); col(11); addstr("Your achievements:  ");
     col(10); 
@@ -322,14 +322,15 @@ void viewAchievements(const vector<playerinfo>& pi, bool global) {
         }
       }
 
-    int c = ghch(IC_VIEWACH);
+    bool gl = global;
+    KH(c, IC_VIEWACH) { bool global = gl;
     switch(c) {
       case 'g': case 'f':
-        global = !global; goto replay;
+        global = !global; break; // goto replay;
       
       case 'n':
-        viewNumAchievements(pi, global);
-        break;
+        viewNumAchievements(pi, global, [=] { viewAchievements(pi, global, vcon); });
+        return;
       
       case 'd': case D_RIGHT: case D_LEFT: case 'h': case 'l':
         descr = !descr;
@@ -360,8 +361,11 @@ void viewAchievements(const vector<playerinfo>& pi, bool global) {
         break;
       
       default:
+        vcon();
         return;
       }
+    ONEMS( viewAchievements(pi, global, vcon); )
+    };
     }
   
   }

@@ -8,12 +8,12 @@
 
 void addMessage(string s) { msgs.push_back(s); }
 
-bool yesno(int context) {
-  while(true) {
-    char ch = ghch(context); 
-    if(ch == 'y' || ch == '\n' || ch == '\r') return true;
-    if(ch == 'n' || ch == ' ' || ch == ESC || ch == PANIC) return false;
-    }
+void yesno(int context, bool_continuation bcon) {
+  KH(ch, context) {
+    if(ch == 'y' || ch == '\n' || ch == '\r') { bcon(true); return; }
+    else if(ch == 'n' || ch == ' ' || ch == ESC || ch == PANIC) { bcon(false); return; }
+    else yesno(context, bcon);
+    };
   }
 
 #ifndef NOCURSES
@@ -339,7 +339,7 @@ int squareRootSign() {
   }
 
 
-void viewDescription(sclass*);
+void viewDescription(sclass*, void_continuation vcon);
 void drawScreen();
 
 sclass *things[30];
@@ -685,7 +685,7 @@ void drawStar(vec2 pos, int color) {
   col(color); move(pos.y, pos.x); addch('*');
   }
 
-bool viewTrollInventory(hydra *resistancesOf = NULL);
+void viewTrollInventory(hydra *resistancesOf, bool_continuation bcon);
 
 void showResistances(hydra *h, int cy) {
   col(h->gcolor());
@@ -714,10 +714,7 @@ void showResistances(hydra *h, int cy) {
     }
   }
 
-void viewWoundTable(hydra *h) {
-  vector<int> minhead;
-  
-  minhead.push_back(1);
+void viewWoundTable(hydra *h, void_continuation vcon, vector<int> minhead = {1}) {
   
   bool foundus = false;
 
@@ -780,23 +777,30 @@ void viewWoundTable(hydra *h) {
         }
       else foundus = true;
       }
-    
-    int ch = ghch(IC_WOUNDS);
-    
-    if(ch == D_PGDN || ch == D_RIGHT || ch == D_END || ch == '+')
-      minhead.push_back(headhere);
 
-    else if(ch == D_PGUP || ch == D_LEFT || ch == D_HOME || ch == '-')
-      minhead.pop_back();
-    
-    else break;
+    KH(ch, IC_WOUNDS) {
+      if(ch == D_PGDN || ch == D_RIGHT || ch == D_END || ch == '+') {
+        auto mh = minhead;
+        mh.push_back(headhere);
+        viewWoundTable(h, vcon, mh);
+        }
+
+      else if(ch == D_PGUP || ch == D_LEFT || ch == D_HOME || ch == '-') {
+        auto mh = minhead;
+        mh.pop_back();
+        viewWoundTable(h, vcon, mh);
+        }
+
+      else vcon();
+      };
+    break;
     }
   }
 
-void viewDescription(sclass *x) {
+void viewDescription(sclass *x, void_continuation vcon) {
 
-  if(useKnowledgeOn(x))
-    return;
+  useKnowledgeOn(x, [=] (bool b) {
+    if(b) { vcon(); return; }
     
   int cy = 2;
   erase();
@@ -816,13 +820,16 @@ void viewDescription(sclass *x) {
     cy+=2; showResistances(h, cy);
     }
   
-  char ch = ghch(IC_VIEWDESC);
-  
-  if(h && P.race == R_TROLL && (ch == 'i' || ch == 'I')) 
-    viewTrollInventory(h);
+  KH (ch, IC_VIEWDESC) {
+    if(h && P.race == R_TROLL && (ch == 'i' || ch == 'I'))
+      viewTrollInventory(h, [vcon] (bool b) { vcon(); });
 
-  if(h && (ch == 'w' || ch == 'W'))
-    viewWoundTable(h);
+    else if(h && (ch == 'w' || ch == 'W'))
+      viewWoundTable(h, vcon);
+
+    else vcon();
+    };
+  });
   }
 
 void showMenuOption(int cy, char letter, bool selected, int cx = 0) {
@@ -846,11 +853,11 @@ bool changeSelection(int dir, int& sel, int qty) {
 #define MAXINF 100
 #define MAXINFSCR 20
 
-void fullHydraInfo() {
+void fullHydraInfo(void_continuation vcon) {
   int selection = 0;
   int scrollval = 0;
   
-  while(true) {
+  NOEMS(while(true)) {
   
   erase();
   
@@ -911,15 +918,19 @@ void fullHydraInfo() {
     return;
     }
   
-  int ch = ghch(IC_FULLINFO);
+  int sele = selection;
+  KH(ch, IC_FULLINFO) {
+    int selection = sele;
 
-  if(ch >= 'a' && ch < 'a'+cy) {
-    selection = ch - 'a';
-    viewDescription(infos[selection]);
-    }
-  else if(ch == 10 || ch == 13)
-    viewDescription(infos[selection]);
-  else if(!changeSelection(ch, selection, cy)) return;
+    if(ch >= 'a' && ch < 'a'+cy) {
+      selection = ch - 'a';
+      viewDescription(infos[selection], [=] { fullHydraInfo(vcon); });
+      }
+    else if(ch == 10 || ch == 13)
+      viewDescription(infos[selection], [=] { fullHydraInfo(vcon); });
+    else if(!changeSelection(ch, selection, cy)) vcon();
+    ONEMS( else fullHydraInfo(vcon); )
+    };
   }
   }
 
@@ -960,7 +971,7 @@ void showReduceTable(int &cy) {
 
 bool onscreenconf = false;
 
-bool viewHelpForItem(int ii) {
+void viewHelpForItem(int ii, bool_continuation bcon) {
   erase();
   move(0,0); col(iinf[ii].color);
   addch(iinf[ii].icon); addch(' '); addstri("About the "+iinf[ii].name+"...");
@@ -987,16 +998,16 @@ bool viewHelpForItem(int ii) {
   else if((ii == IT_PKNOW || ii == IT_RGROW) && P.active[IT_PAMBI] && P.arms > 4)
     addMessage("Warning: might take a "+adjs[P.arms-5]+" time to compute! (y/n)");
   else 
-    if(P.quickmode) return true;
+    if(P.quickmode) { return bcon(true); }
   else 
     addMessage("Use the "+iinf[ii].name+"? (y/n)");
   
   col(15); move(23, 0); addstri(msgs[isize(msgs)-1]);
-  return yesno(IC_MYESNO);
+  yesno(IC_MYESNO, bcon);
   }
 
 // for Atlanteans
-bool selectTransmuteColor(bool cheating = false) {
+void selectTransmuteColor(bool_continuation vcon, bool cheating = false, int selection = 0) {
   int validcolorfrom[COLORS];
   for(int i=0; i<COLORS; i++) 
     validcolorfrom[i] = 0;
@@ -1021,10 +1032,8 @@ bool selectTransmuteColor(bool cheating = false) {
       }
     }
   
-  if(count_normal == 0) return true;
+  if(count_normal == 0) return vcon(true);
   
-  int selection = 0;
-
   while(true) {
     erase();
     
@@ -1095,23 +1104,29 @@ bool selectTransmuteColor(bool cheating = false) {
       
       }
 
-    int ch = ghch(IC_XMUT);
+    KH(ch, IC_XMUT) {
     
-    if(ch == 10 || ch == 13)
-      ch = 'a' + selection;
-  
-    if(ch >= 'a' && ch < 'a'+COLORS) {
-      selection = ch - 'a';
-      if(validcolorfrom[selection] <= P.curlevel) {
-        atlantean_xmut_color = selection;
-        return true;
+      if(ch == 10 || ch == 13)
+        ch = 'a' + selection;
+    
+      if(ch >= 'a' && ch < 'a'+COLORS) {
+        int sel = ch - 'a';
+        if(validcolorfrom[selection] <= P.curlevel) {
+          atlantean_xmut_color = sel;
+          vcon(true);
+          }
+        else selectTransmuteColor(vcon, cheating, sel);
         }
-      }
-    else if(!changeSelection(ch, selection, COLORS)) return false;
+      else {
+        int sel = selection;
+        if(!changeSelection(ch, sel, COLORS)) vcon(false);
+        else selectTransmuteColor(vcon, cheating, sel);
+        }
+      };
     }
   }
 
-int viewInventory() {
+void viewInventory(int_continuation icon, int selection = 2) {
   
   int mapp[24];
   int kinds = 2;
@@ -1120,12 +1135,11 @@ int viewInventory() {
 
   if(kinds == 2) {
     addMessage("Your inventory is empty!");
-    return -1;
+    icon(-1);
+    return;
     }
   
-  int selection = 2;
-  
-  while(true) {
+  NOEMS(while(true)) {
     drawScreen();
     
     for(int x=SX; x<80; x++)
@@ -1149,7 +1163,10 @@ int viewInventory() {
       if(P.inv[ii] > 1) addstri(" (x" + its(P.inv[ii]) + ")");
       }
     
-    int ch = ghch(IC_INV);
+    int sele = selection;
+
+    KH(ch, IC_INV) {
+      int selection = sele;
   
     for(int i=2; i<kinds; i++)
       if(ch == iinf[mapp[i]].hotkey) { 
@@ -1159,34 +1176,41 @@ int viewInventory() {
 
     if(ch == 10 || ch == 13) {
     
-      if(selection == 0) return -1;
+      if(selection == 0) { icon(-1); return; }
       if(selection == 1) {
         P.quickmode = !P.quickmode;
-        continue;
+        viewInventory(icon, selection);
+        return;
         }
       
       int ii = mapp[selection];
 
-      if(viewHelpForItem(ii))
-        return ii;
-
-      if(onscreenconf) {
-        // remove targetting lines
-        los();
-        // add targetting circle for power swipe
-        if(ii == IT_PSWIP) for(int dir=0; dir<DIRS; dir++)
-          M[playerpos + dirs[dir]].ontarget = true;
-        // 'active' makes weapon charge's targetting lines appear
-        if(ii == IT_PCHRG) {
-          P.active[ii]++; 
-          for(int i=0; i<DIRS; i++)
-            tryLineAttack(i, true, true);
-          P.active[ii]--;
+      viewHelpForItem(ii, [=] (bool b) {
+        if(b) {
+          icon(ii);
+          return;
           }
-        drawScreen();
-        }
-      
-      addMessage("Cancelled.");
+
+        if(onscreenconf) {
+          // remove targetting lines
+          los();
+          // add targetting circle for power swipe
+          if(ii == IT_PSWIP) for(int dir=0; dir<DIRS; dir++)
+            M[playerpos + dirs[dir]].ontarget = true;
+          // 'active' makes weapon charge's targetting lines appear
+          if(ii == IT_PCHRG) {
+            P.active[ii]++; 
+            for(int i=0; i<DIRS; i++)
+              tryLineAttack(i, true, true);
+            P.active[ii]--;
+            }
+          drawScreen();
+          }
+        
+        addMessage("Cancelled.");
+        viewInventory(icon, selection);
+        });
+      return;
       }
     
 //  else if(ch == '?' || ch == 9 || ch == 'h' || ch == KEY_F0+1 || ch == '/')
@@ -1206,15 +1230,15 @@ int viewInventory() {
       selection %= kinds; if(selection<0) selection += kinds;
       }
     
-    else return -1;
+    else { icon(-1); return; }
+    ONEMS( viewInventory(icon, selection); )
+    };
     }
   }
 
-void viewHelp() {
+void viewHelp(void_continuation vcon, int page) {
 
-  int page = 0;
-  
-  while(true) {
+  NOEMS(while(true)) {
   
     page %= HELPLEN; page += HELPLEN; page %= HELPLEN;
 
@@ -1260,31 +1284,37 @@ void viewHelp() {
       }
         
     int cy = 2; viewMultiLine(pag, cy, 2);
+    
+    int op = page;
 
-    int ch = ghch(IC_HELP);
+    KH(ch, IC_HELP) {
+      int page = op;
   
-    if(ch >= 'a' && ch <= 'f') page = ch - 'a';
+      if(ch >= 'a' && ch <= 'f') page = ch - 'a';
+      
+      if(ch == 10  || ch == 13) {
+        page++; if(page == HELPLEN) { vcon(); return; };
+        }
+      
+      else if(ch == ' ' || ch == ESC || ch == PANIC) { vcon(); return; }
+      
+      else if(ch == '=') P.altkeys = !P.altkeys;
+      
+      else if(ch<0) { vcon(); return; }
+      
+      else if(ch == D_PGUP || ch == D_UP || ch == D_LEFT) page--;
+      else if(ch == D_HOME) page = 0;
+      else if(ch == D_END) page = -1;
+      else if(ch == D_PGDN || ch == D_DOWN || ch == D_RIGHT) page++;
     
-    if(ch == 10  || ch == 13) {
-      page++; if(page == HELPLEN) break;
-      }
-    
-    else if(ch == ' ' || ch == ESC || ch == PANIC) break;
-    
-    else if(ch == '=') P.altkeys = !P.altkeys;
-    
-    else if(ch<0) break;
-    
-    else if(ch == D_PGUP || ch == D_UP || ch == D_LEFT) page--;
-    else if(ch == D_HOME) page = 0;
-    else if(ch == D_END) page = -1;
-    else if(ch == D_PGDN || ch == D_DOWN || ch == D_RIGHT) page++;
+      ONEMS( viewHelp(vcon, page); )
+      };
     }
   }
 
 char wpnnotochar(int id) { return "1234567890"[id]; }
 
-void giveHint(hydra *h) {
+void giveHint(hydra *h, void_continuation vcon) {
   erase();
   move(0,0); col(h->gcolor()); addstri(h->name());
   move(0, 66);
@@ -1301,11 +1331,14 @@ void giveHint(hydra *h) {
   int spos; encode(h->heads, h->sheads, spos);
   
   if(h->heads >= AMAXS) {
-    move(2, 2); col(15); addstri("Your magic cannot analyze this gigantic "+h->name()+" currently."); ghch(IC_VIEWDESC); return;
+    move(2, 2); col(15); addstri("Your magic cannot analyze this gigantic "+h->name()+" currently."); 
+    KH(ch, IC_VIEWDESC) {vcon(); };
+    return;
     }
   if(wnd[spos] == WMAX) {
     move(2, 2); col(12); addstri("It seems you cannot kill "+h->name()+" with only your current weapons.");
-    ghch(IC_VIEWDESC); return;
+    KH(ch, IC_VIEWDESC) { vcon(); };
+    return;
     }
   move(1, 0); col(13); addstr("HD  AC  WND weapon, growth & wounds");
   
@@ -1402,7 +1435,7 @@ void giveHint(hydra *h) {
     move(23, 0); col(7); addstr("HD = heads, AC = active heads, WND = total wounds from this moment");
     }  
   
-  ghch(IC_VIEWDESC);
+  KH(ch, IC_VIEWDESC) { vcon(); };
   }
 
 string sortorder = "tkbl";
@@ -1457,11 +1490,11 @@ bool quickGet(weapon*& w) {
   return true;
   }
 
-bool viewTrollInventory(hydra *resistancesOf) {
+void viewTrollInventory(hydra *resistancesOf, bool_continuation bcon) {
 
   int selection = -1;
 
-  while(true) {
+  NOEMS(while(true)) {
 
   erase();
   
@@ -1538,24 +1571,29 @@ bool viewTrollInventory(hydra *resistancesOf) {
       }
     }
   
-  int ch = ghch(IC_TROLL);
+  int sele = selection;
+  
+  KH(ch, IC_TROLL) {
+  int selection = sele;
   int xch = ch+96;
   
-  if(ch == PANIC) return false;
+  if(ch == PANIC) return bcon(false);
   
   if(xch == 'v') {
-    char ch = ghch(IC_TROLL);
-    for(int i=0; i<s; i++) if(pinfo.trollkey[i] == ch)
-      viewDescription(pinfo.trollwpn[i]);
-    continue;
+    KH(ch2, IC_TROLL) {
+      for(int i=0; i<s; i++) if(pinfo.trollkey[i] == ch2)
+        viewDescription(pinfo.trollwpn[i], [=] { viewTrollInventory(resistancesOf, bcon); });
+      };
+    return;
     }
   
   if(xch == 'f' || xch == 'b' || xch == 't' || xch == 'k' || xch == 'l') {
     sortorder = char(xch) + sortorder;
-    continue;
+    ONEMS( viewTrollInventory(resistancesOf, bcon); return; )
+    NOEMS( continue; )
     }
 
-  if(resistancesOf) return false;
+  if(resistancesOf) return bcon(false);
   
   if(ch == 10 || ch == 13) ch = cpick;
   
@@ -1568,8 +1606,8 @@ bool viewTrollInventory(hydra *resistancesOf) {
         pinfo.trollwpn[i] = pinfo.trollwpn[i+1], pinfo.trollkey[i] = pinfo.trollkey[i+1], i++;
       pinfo.trollwpn.resize(i);
       pinfo.trollkey.resize(i);
-      }
-    return true;
+      }    
+    return bcon(true);
     }
 
   if(ch>=DBASE && ch <= DBASE+7) { 
@@ -1580,17 +1618,19 @@ bool viewTrollInventory(hydra *resistancesOf) {
     if(ch == D_DOWN) selection++;
     if(ch == D_PGDN || ch == D_END) selection = -2;
     selection %= (s+1); selection += s+1; selection %= s+1;  
-    continue;
+    ONEMS( viewTrollInventory(resistancesOf, bcon); return; )
+    NOEMS( continue; )
     }
 
-  if(ch <= 32 || ch >= 127) return false;
+  if(ch <= 32 || ch >= 127) return bcon(false);
   
-  if(wpn[P.cArm] == NULL) return true;
+  if(wpn[P.cArm] == NULL) return bcon(true);
   cancelVorpalOn(wpn[P.cArm]);
   pinfo.trollwpn.push_back(wpn[P.cArm]);
   wpn[P.cArm] = NULL;
   pinfo.trollkey.push_back(ch);
-  return viewTrollInventory() || true; // allow to take another one
+  ONEMS( viewTrollInventory(resistancesOf, [=] (bool b) { bcon(true); }); )
+  };
   }
   }
 
@@ -1631,12 +1671,19 @@ void createTargetLines() {
     }
   }
 
-int headask() {
+void headask(int_continuation icon) {
   static string last = "50";
-  editString(last, "Size: ");
-  int i = atoi(last.c_str());
-  if(i<1) return 1;
-  return i;
+  editString(last, [=] {
+    int i = atoi(last.c_str());
+    if(i<1) icon(1);
+    else icon(i);
+    }, "Size: ");
+  }
+
+int headask() {
+  int res;
+  headask([&] (int i) { res = i; });
+  return res;
   }
 
 hydra *enemyInSight() {
@@ -1789,20 +1836,23 @@ bool wasDead, isDead;
 
 #include "trailer.cpp"
 
-void pickupItemAt(cell *c) {
+void pickupItemAt(cell *c, void_continuation vcon) {
   item* it = c->it->asItem();
   if(!it) return;
   if(it->type == IT_HINT) {
-    viewDescription(it);
+    viewDescription(it, vcon);
     return;
     }
   else if(P.race == R_TROLL) {
-    if(!viewHelpForItem(it->type)) return;
-    if(!useup(it->type)) return;
-    P.inv[it->type]++; useupItem(it->type); 
-    // Trolls get speed twice, because they use up one
-    if(it->type == IT_PFAST)
-      P.active[IT_PFAST]++;
+    viewHelpForItem(it->type, [=] (bool b) {
+      if(!b) { vcon(); return; }
+      if(!useup(it->type)) { vcon(); return; }
+      P.inv[it->type]++; useupItem(it->type); 
+      // Trolls get speed twice, because they use up one
+      if(it->type == IT_PFAST)
+        P.active[IT_PFAST]++;
+      vcon();
+      });
     }
   else {
     P.inv[it->type]++;
@@ -1815,6 +1865,7 @@ void pickupItemAt(cell *c) {
   if(c->it == it)
     c->it = NULL;
   cancelspeed();
+  vcon();
   }
 
 bool inWaitMode;
@@ -1828,7 +1879,7 @@ void waitmode() {
       vec2 v(x,y);
       cell& c = M[v];
       if(P.race != R_TROLL && c.it && c.it->sct() == SCT_ITEM)
-        pickupItemAt(&c);
+        pickupItemAt(&c, [] {});
       if(P.race == R_TROLL && c.it && c.it->sct() == SCT_WPN)
         quickGet((weapon*&) c.it);
       
@@ -1855,14 +1906,14 @@ void waitmode() {
     addMessage("Waited for "+its(waitsteps)+" turns.");
   }
 
-void mainloop() {
+void mainloop(continuation vcon) {
 
 
 #ifdef NOTEYE
     clearMapCache();
 #endif
   wasDead = isDead = P.curHP <= 0;
-  while(!quitgame) {
+  NOEMS(while(!quitgame)) {
   
     if(P.race == R_NAGA) {
       P.ambifresh = 1;
@@ -1896,10 +1947,10 @@ void mainloop() {
       animframe++;
       }
 
+#ifndef EMS
     int ch = autoexplore();
-    
+
     if(!ch)  {
-      
       #ifdef NOCURSES
         if(stunnedHydra) halfdelay(1); else cbreak();
         ch = ghch(P.race == R_TWIN ? IC_GAMETWIN : IC_GAME);
@@ -1921,6 +1972,25 @@ void mainloop() {
       #endif
       #endif
       }
+#endif
+
+    auto back = [=] { mainloop(vcon); };
+
+    if(stunnedHydra) {
+      halfdelay(1);
+      }
+    else {
+      cbreak();
+      }
+
+    #if EMS
+    KH(ch, IC_GAME)
+    #else
+    if(!ch) ch = ghch(IC_GAME); if(1)
+    #endif
+    {
+
+        if(stunnedHydra) cbreak();
     
     if(true) {
 
@@ -1937,7 +2007,8 @@ void mainloop() {
             }
           }
         else movedir(dir);
-        continue;
+        mainloop(vcon);
+        return;
         }
   
       if(P.altkeys) {
@@ -1959,7 +2030,7 @@ void mainloop() {
         return;
         
       case 'q': case 'S': case KEY_F0+2: case KEY_F0+10: case 27:
-        return;
+        return vcon();
       
       case '[': case ']':
         wpnswitch(ch);
@@ -2043,15 +2114,17 @@ void mainloop() {
         for(int i=0; i<DIRS; i++) tryLineAttack(i, true, true);
         drawScreen();
         
-        ch = ghch(IC_ASKDIR);
-        int dir = getDir(ch);
-        if(dir >= 0) {
-          if(wpn[P.cArm]->polewpn())
-            tryPoleAttack(dir);
-          else
-            tryLineAttack(dir, true, false);
-          }
-        break;
+        KH(ch, IC_ASKDIR) {
+          int dir = getDir(ch);
+          if(dir >= 0) {
+            if(wpn[P.cArm]->polewpn())
+              tryPoleAttack(dir);
+            else
+              tryLineAttack(dir, true, false);
+            }
+          back();
+          };
+        return;
         }
         
       case 'd':
@@ -2077,18 +2150,19 @@ void mainloop() {
           int xpos = isize(msgs) + i - 24;
           if(xpos >= 0) addstr(msgs[xpos].c_str());
           }
-        ghch(IC_VIEWDESC);
-        break;
+        KH(ch, IC_VIEWDESC) { back(); };
+        return;
         }
       
       case 'f':
-        fullHydraInfo();
-        break;
+        fullHydraInfo([=] { mainloop(vcon); });
+        return;
       
       case 'v':
         if(wpn[P.cArm]) {
           shareBe("wielding the " + wpn[P.cArm]->name());
-          viewDescription(wpn[P.cArm]);
+          viewDescription(wpn[P.cArm], [=] { mainloop(vcon); });
+          return;
           }
         else
           addMessage("Your empty hand is useless against hydras.");
@@ -2097,32 +2171,48 @@ void mainloop() {
       case 'i': case 'I': {
         stunnedHydra = NULL;
         if((P.race == R_TROLL) ^ (ch == 'I' && debugon())) {
-          if(viewTrollInventory()) {
+          viewTrollInventory(nullptr, [=] (bool b) {
+#ifndef EMS
             if(P.active[IT_PAMBI] && bitcount(P.ambiArm) > 1) {              
               while(true) {
                 P.cArm++;
                 P.cArm %= P.arms;
                 if(havebit(P.ambiArm, P.cArm)) {
-                  if(!viewTrollInventory()) break;
-                  else if(P.ambifresh == P.active[IT_PAMBI]) P.ambifresh--;
+                  bool res;
+                  viewTrollInventory(nullptr, [&] (bool b1) { res = b1; });
+                  if(!res) return;
+                  if(P.ambifresh == P.active[IT_PAMBI]) P.ambifresh--;
                   }
                 }
               }
+#endif
             cancelspeed(); wpnset++;
-            }
+            back();
+            });
+          return;
           }
-        else {
-          ii = viewInventory();
+        else 
+        {
+          viewInventory([=] (int ii) {
 
-          if(ii == IT_SXMUT && P.race == R_ATLANTEAAN && !selectTransmuteColor(false))
-            break;
-          else if(ii < 0) break;
-          else if(P.curHP <= 0) 
-            addMessage("It seems you are not yet used to being dead...");
-          else if(useup(ii)) {
-            useupItem(ii);
-            if(P.race == R_NAGA) singlestep();
-            }
+            if(ii == IT_SXMUT && P.race == R_ATLANTEAAN) {
+              selectTransmuteColor([=] (bool b) { 
+                if(b && useup(ii)) useupItem(ii);
+                back();
+                });
+              return;
+              }
+            else if(ii < 0) ;
+            else if(P.curHP <= 0) 
+              addMessage("It seems you are not yet used to being dead...");
+            else if(useup(ii)) {
+              useupItem(ii);
+              if(P.race == R_NAGA) singlestep();
+              }
+
+            back();
+            });
+          return;
           }
         break;
         }
@@ -2140,12 +2230,12 @@ void mainloop() {
           
           if(P.race == R_TWIN && !twinAlive()) {
             addMessage("You cannot continue alone!");
-            continue;
+            break;
             }
             
           if(!canGoDown()) {
             addMessage("You have to slay all the Hydras here before going further!");
-            continue;
+            break;
             }
         
           for(int i=0; i<isize(hydras); i++) {
@@ -2236,16 +2326,17 @@ void mainloop() {
           #endif
           }
         else {
-          pickupItemAt(&M[playerpos]);
+          pickupItemAt(&M[playerpos], back);
           #ifdef ANDROID
           emSaveGame();
           #endif
+          return;
           }
         break;
       
       case KEY_F0+1: case '?': case '/':
-        viewHelp();
-        break;
+        viewHelp(back);
+        return;
       
       case 'a': // auto-attack
         if(P.flags & dfAutoAttack) {
@@ -2404,6 +2495,7 @@ void mainloop() {
           }
         break;
       
+#ifndef EMS
       case 'H': if(debugon()) {
         addMessage("Summon what kind of hydra? ('-' for weapon)"); drawScreen();
         int c = ghch(IC_CALL);
@@ -2412,12 +2504,17 @@ void mainloop() {
         int arr[3] = { WT_BLUNT, WT_AXE, WT_BLADE };
 
         if(c >= '0' && c <= '9') {
-          int ha = headask();
-          h = new hydra(c - '0', ha, 10, 20);
-          if(ha == 145) {
-            h->res[0] = 5;
-            h->res[1] = 6;
-            }
+          headask([&] (int ha) {
+            h = new hydra(c - '0', ha, 10, 20);
+            if(ha == 145) {
+              h->res[0] = 5;
+              h->res[1] = 6;
+              }
+            #if EMS
+            mainloop(vcon);
+            #endif
+            });
+          return;
           }
         else switch(c) {
           case 'v': h = new hydra(HC_VAMPIRE, headask(), 10, 20); break;
@@ -2462,14 +2559,16 @@ void mainloop() {
             w->type = c;
             w->level = 0;
             w->osize = w->size;
-            selectTransmuteColor(true);
-            w->color = w->ocolor = atlantean_xmut_color;
+            selectTransmuteColor([w] (bool b) {
+              w->color = w->ocolor = atlantean_xmut_color;
+              }, true);
             }
           }
         if(h) {h->put(); addMessage("Summoned "+h->name()+" to a random location.");}
         else addMessage("No such thing.");
         break;
         }
+#endif
       
       case 'c': // twin control
         if(twinAlive()) {
@@ -2495,7 +2594,7 @@ void mainloop() {
               else
                 addMessage("Twins are too far away to trade weapons.");
               }
-            continue;
+            break;
             }
           else switch(P.twinmode) {
             case 0:
@@ -2599,6 +2698,16 @@ void mainloop() {
         break;
         
       }
+    ONEMS( back(); )
+    };
+
+    #if EMS
+    if(true) {
+      int ch = autoexplore();
+      if(ch) keyhandler(ch);
+      }
+    #endif
+
     }
   }
 
