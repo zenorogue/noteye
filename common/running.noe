@@ -300,7 +300,7 @@ function uisleep2()
     -- print(addindent().."UI coroutine is resumed.")
   elseif threaded then
     -- do nothing
-  else
+  elseif from_callui then
     uireturn = true
     end
   end
@@ -529,7 +529,9 @@ function noteye_callui()
   -- print(addindent().."reentrant main loop")
   if threaded then
     threaded = false
+    from_callui = true
     local v = mainloopcyc()
+    from_callui = false
     threaded = true
     return v
     end
