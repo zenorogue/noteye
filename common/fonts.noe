@@ -108,8 +108,10 @@ function ttf_getAtSize(F, sx, sy)
   F2.alias = imagealias(P, F.name..".ttf")
   -- F2.font = fontadj.simpleA(P,1,256,Psize.x,Psize.y)
   -- local bfont = newfont(P, 1, 256, transAlpha)
-  F2.font = newdynamicfont(function(x) 
-    if x == "\n" then return 0 end
+  
+  local function dfontfun(x)
+    x = utf8.enc(x)
+    if x == "\n" then return nil end
     rendertext(F.ttfont, ts, x, hexFF0000FF, P, V(sx/2, sy*F2.nextid+sy/2), V(-.5,-.5))
     for x=0,sx-1 do for y=sy*F2.nextid,sy*F2.nextid+sy-1 do
       local c = getpixel(P,x,y)
@@ -125,7 +127,13 @@ function ttf_getAtSize(F, sx, sy)
       end
     return t
     -- return fget(bfont, x) 
-    end)
+    end
+  
+  F2.font = newdynamicfont(dfontfun)
+    
+  for a=32,127 do fgetav(F2.font, a) end
+  
+  pre = true
 
   return F2
   end
@@ -181,14 +189,6 @@ function fontadj.simple(P,fx,fy,sx,sy)
     end end
 
   return newfont(P, fx, fy, 0)
-  end
-
-function goi(x)
-  local s = x
-  for k,v in pairs(getobjectinfo(x)) do
-    s = s..":"..k..","..tostring(v)
-    end
-  return s
   end
 
 function fontadj.simpleA(P,fx,fy,sx,sy)
@@ -366,7 +366,7 @@ addscreenres("6", "1600x1200", V(1600, 1200))
 addscreenres("7", "1920x1080", V(1920, 1080))
 
 function resizewindow(x, y)
-  if x == xscreen.size.x and y == xscreen.size.y then return end
+  if xscreen and xscreen.size and x == xscreen.size.x and y == xscreen.size.y then return end
   local newsize = {s = V(x, y)}
   pickresolution(newsize)
   end
@@ -376,7 +376,7 @@ function resizewindow(x, y)
 addtomenu(fontsmenu, "m", writechoicef(
   function() 
     if fscrmode then 
-      D.reqres.sfull = V.be(origvideomode())
+      D.reqres.sfull = V.be(origvideomode(Gfx or 0))
       return "current fullscreen mode: \vekeep the original resolution ("..xxy(reqres.sfull)..")"
     else return "current fullscreen mode: \vechange to the window size"
     end

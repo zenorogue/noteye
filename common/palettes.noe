@@ -16,7 +16,7 @@ function setpalette(p, power)
   
   if S then
     ncs = scrgetsize(S)
-    scrcopy(S, 0, 0, S, 0, 0, ncs.x, ncs.y, switchpal)
+    V.scrcopy_f(S, V(0, 0), S, V(0, 0), V(ncs.x, ncs.y), switchpal)
     end
   end
 
@@ -28,15 +28,15 @@ function switchpalc(C)
   end
 
 function switchpal(T)
-  local O = getobjectinfo(T)
-  if O.type == 33 then
-    return tilecol(O.t1, switchpalc(O.color), O.mode)
+  local Otype = getobjectinfo(T, 0)
+  if Otype == 33 then
+    return tilecol(unhandle(getobjectinfo(T, 1)), switchpalc(getobjectinfo(T, 3)), getobjectinfo(T, 2))
 
-  elseif O.type == 32 then
-    return tilealpha(switchpalc(O.color), O.alpha)
+  elseif Otype == 32 then
+    return tilealpha(switchpalc(getobjectinfo(T, 1)), getobjectinfo(T, 32))
 
-  elseif O.type == 24 or O.type == 18 then
-    return (O.type == 24 and tilemergeover or tilemerge)(switchpal(O.t1), switchpal(O.t2))
+  elseif Otype == 24 or Otype == 18 then
+    return (Otype == 24 and tilemergeover or tilemerge)(switchpal(unhandle(getobjectinfo(T, 1))), switchpal(unhandle(getobjectinfo(T, 2))))
   
   else return T
     end
@@ -131,7 +131,7 @@ function palettehdr()
   scrwrite(IMG, 1, 1, "Current palette: \ve"..curpalette.desc.."\vp", Font, vgaget(10))
   
   for x = 0, 7 do
-    scrwrite(IMG, 1+3*x, 3, x, Font, vgaget(15))
+    scrwrite(IMG, 1+3*x, 3, ""..x, Font, vgaget(15))
     -- scrwrite(IMG, 1+3*x, 4, string.char(219, 219, 219), Font, vgaget(x))
     -- scrwrite(IMG, 1+3*x, 5, string.char(219, 219, 219), Font, vgaget(x+8))
     end

@@ -11,8 +11,8 @@
 
 namespace noteye {
 
-static MainScreen *mscr;
-static Screen *old;
+static smartptr<MainScreen> mscr;
+static smartptr<Screen> old;
 
 MainScreen::MainScreen() {
 #ifdef CURSESW
@@ -134,7 +134,7 @@ int lh_refreshconsole(lua_State *L) {
     }
   for(int y=0; y<mscr->sy; y++)
   for(int x=0; x<mscr->sx; x++) {
-    int ic = mscr->get(x,y);
+    Tile *ic = mscr->get(x,y);
     
     if(ic == old->get(x,y)) continue;
     old->get(x,y) = ic;
@@ -229,8 +229,9 @@ int lh_refreshconsole(lua_State *L) {
   return 0;
   }
 
-int lh_openconsole(lua_State *L) {
-  if(mscr) return noteye_retInt(L, mscr->id);
+extern "C" {
+MainScreen *openconsole() {
+  if(mscr) return mscr;
 
 #ifdef NEEDCONSOLE
   AllocConsole();
@@ -240,7 +241,8 @@ int lh_openconsole(lua_State *L) {
   std::ios::sync_with_stdio(); 
 #endif
 
-  return retObjectEv(L, new MainScreen);
+  add_event_listener(new MainScreen);
+  return mscr;
   }
 
 void setdirectansi(int val) { direct_ansi_output = val; }
@@ -250,6 +252,7 @@ void setconsolewindowtitle(const char *s) {
   printf("\x1b]0;%s\a", s);
 #endif
   }
+}
 
 #endif
 

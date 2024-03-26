@@ -185,7 +185,7 @@ function menuexecute(M, hdr, tail)
 
   drawmenubackground = dftmenubackground
 
-  scrfill(IMG, 0, 0, conssize.x, conssize.y, 0)
+  scrfill(IMG, 0, 0, conssize.x, conssize.y, EMPTYTILE)
 
   hdr()
   
@@ -312,7 +312,7 @@ function askstr(text, question, note, symbolfunction)
   text = ""..text -- it was actually a number, convert to string
   
   local function redrawmenu()
-    scrfill(IMG, 0, 0, conssize.x, conssize.y, 0)
+    scrfill(IMG, 0, 0, conssize.x, conssize.y, EMPTYTILE)
 
     local function write(y, text)
       scrwrite(IMG, 1, y, text, Font, vgaget(15))

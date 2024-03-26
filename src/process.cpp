@@ -15,48 +15,37 @@
 
 namespace noteye {
 
-#ifdef USELUA
-
 #ifndef INTERNALONLY
-int lh_newProcess(lua_State *L) {
-  checkArg(L, 3, "newprocess");
-  Process *p = startProcess(luaO(1, Screen), luaO(2, Font), luaStr(3));
-  return retObjectEv(L, p);
-  }
-#endif
 
-int lh_proccur(lua_State *L) {
-  checkArg(L, 1, "proccur");
-  Process *P = luaO(1, Process);
-  lua_newtable(L);
-  noteye_table_setInt(L, "x", P->curx);
-  noteye_table_setInt(L, "y", P->cury);
-  noteye_table_setInt(L, "size", P->getCursorSize());
-  return 1;
+extern "C" {
+Process *newProcess(Screen *s, Font *f, const char *str) {
+  Process *p = startProcess(s, f, str);
+  add_event_listener(registerObject(p));  
+  return p;
   }
 
-int lh_sendkey(lua_State *L) {
-  checkArg(L, 2, "sendkey");
-  Process *P = luaO(1, Process);
+point noteye_getcursor(Process *P) {
+  point res;
+  if(!P) { res.x = 0; res.y = 0; return res; }
+  res.x = P->curx;
+  res.y = P->cury;
+  return res;
+  }
 
-  int scancode = getfieldInt(L, "scancode");
-  int keycode = getfieldInt(L, "keycode");
-  int mod = getfieldInt(L, "mod");
-  int type = getfieldInt(L, "type");
+int noteye_getcursorsize(Process *P) {
+  return P->getCursorSize();
+  }
+
+void sendkey(Process *P, int scancode, int keycode, int mod, int type) {
   
   if(type != evKeyDown && type != evKeyUp)
     printf("WARNING: sending a key with wrong type\n");
 
   P->sendKey(scancode, keycode, mod, type == evKeyDown);
-  return 0;
   }
 
-int lh_sendtext(lua_State *L) {
-  checkArg(L, 2, "sendtext");
-  Process *P = luaO(1, Process);
-
-  P->sendText(luaStr(2));
-  return 0;
+void sendtext(Process *P, const char *s) {
+  P->sendText(s);
   }
 
 int lh_sendclick(lua_State *L) {
@@ -69,10 +58,11 @@ int lh_sendclick(lua_State *L) {
   return 0;
   }
 
-int lh_processActive(lua_State *L) {
-  checkArg(L, 1, "processactive");
-  return noteye_retInt(L, luaO(1, Process)->active());
+bool processActive(Process *P) {
+  return P->active();
   }
+
+}
 
 #endif
 

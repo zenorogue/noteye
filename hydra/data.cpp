@@ -67,25 +67,25 @@ struct itemInfo {
 itemInfo iinf[ITEMS+1] = {
   { "Powder of Stunning", '$', 9, 's', 50,
     "This powder must have been made by Hypnos himself. "
-    "Throw it at a Hydra, and it will be completely stunned!\n"
+    "Throw it at a hydra, and it will be completely stunned!\n"
     "Although this powder will affect every denizen of the Hydras Nest, "
     "larger ones are stunned for shorter time.\n"
     },
   { "Powder of Decapitation", '$', 7, 'd', 50,
-    "Some people think that killing a stunned Hydra is not honorable. What is your opinion?\n"
-    "Also known as Powder of Death or the Charon's Obol, it causes all stunned heads of a Hydra "
+    "Some people think that killing a stunned hydra is not honorable. What is your opinion?\n"
+    "Also known as Powder of Death or the Charon's Obol, it causes all stunned heads of a hydra "
     "to be instantly moved to Hades.\n"
     "Rumored not to work on very powerful beings.\n"
     },
   { "Powder of Cancellation", '$', 15, 'c', 10,
-    "These Hydras, and their heads growing back... Is there anything which can cause the heads to never grow back?\n"
-    "Yes, there is! The Powder of Cancellation removes all regenerative capabilities of a given Hydra. "
-    "Some very powerful Hydras partially resist it, though.\n"
+    "These hydras, and their heads growing back... Is there anything which can cause the heads to never grow back?\n"
+    "Yes, there is! The Powder of Cancellation removes all regenerative capabilities of a given hydra. "
+    "Some very powerful hydras partially resist it, though.\n"
     },
   { "Powder of Growth", '$', 10, 'g', 3,
-    "Made by Apollo himself, this powder gives the Hydra additional heads. Who would use that? Well, master hydra slayers "
+    "Made by Apollo himself, this powder gives the hydra additional heads. Who would use that? Well, master hydra slayers "
     "know that fewer heads is not always less trouble...\n"
-    "The number of heads grown is chosen so that it will be possible to kill the Hydra "
+    "The number of heads grown is chosen so that it will be possible to kill the hydra "
     "with current weaponry and the smallest amount of wounds possible.\n"
     "If there are several possibilities, one with the smallest number of new heads "
     "(greater than 0) is chosen. If it is impossible to slay hydra by growing heads, no heads are grown.\n"
@@ -96,15 +96,15 @@ itemInfo iinf[ITEMS+1] = {
   { "Powder of Conflict", '$', 12, 'o', 50,
     "Hydras are aggresive beasts, and Eris taught the master hydra slayers "
     "how to use this fact.\nThrow this powder at a target, and it "
-    "will fight other Hydras."
+    "will fight other hydras."
     },
   { "Powder of Fungification", '$', 3, 'f', 90,
-    "Made by Demeter herself, this powder immediately turns a Hydra into a mushroom. "
+    "Made by Demeter herself, this powder immediately turns a hydra into a mushroom. "
     "You have heard that this kind of unhonorable magic usually doesn't work on the most powerful "
     "of your enemies, and you suppose this is also the case for this powder."
     },
   { "Powder of Fungal Necromancy", '$', 8, 'n', 50,
-    "Mixes a dead Hydra and all mushrooms in sight into a friendly zombie hydra. "
+    "Mixes a dead hydra and all mushrooms in sight into a friendly zombie hydra. "
     "This zombie will join your team and attack your enemies, but it will be unable to regrow heads naturally. "
     "Works only on the corpses of regular hydras."
     },
@@ -122,8 +122,8 @@ itemInfo iinf[ITEMS+1] = {
     },
   { "Potion of Power Swipe", '!', 13, 'p', 25,
     "Allows one to attack several surrounding hydras with one swipe. For "
-    "example, you can kill a 4-headed Green Hydra and cut "
-    "off 3 heads of 6-headed Red Hydra with a single Scythe (-7) attack.\n"
+    "example, you can kill a 4-headed green hydra and cut "
+    "off 3 heads of 6-headed red hydra with a single Scythe (-7) attack.\n"
     "Hydras are attacked in an anti-clockwise direction for the weapon in the "
     "right hand (1), and clockwise for the weapon in the left hand (2). "
     "On the last hydra, unstunned heads are affected first, even when using "
@@ -133,29 +133,29 @@ itemInfo iinf[ITEMS+1] = {
     "Centaurs are usually unable to use power swipes."
     },
   { "Potion of Weapon Charge", '!', 5, 'w', 3,
-    "Allows one to attack several hydras in a straight line with a blade. For example, you can kill a 4-headed Green Hydra and cut "
-    "off 3 heads of 6-headed Red Hydra with a single Scythe (-7) attack. If the last hydra in line is not completely killed, "
+    "Allows one to attack several hydras in a straight line with a blade. For example, you can kill a 4-headed green hydra and cut "
+    "off 3 heads of 6-headed red hydra with a single Scythe (-7) attack. If the last hydra in line is not completely killed, "
     "it is stunned for a short time."
     },
   { "Potion of Extreme Speed", '!', 4, 'e', 3,
     "Created by Hermes himself, this potion gives you double speed.\n"
     "Double speed lasts as long as you are just moving and doing things that take no time. "
     "When you attack or pick up an item, the effect is gone right away, although if you "
-    "do this on your first move of two, you can still move a second time before the Hydra "
+    "do this on your first move of two, you can still move a second time before the hydra "
     "attacks you."
     },
   { "Potion of Knowledge", '!', 14, 'k', 5,
-    "Created by Athena herself, this potion gives hints about how to kill any visible Hydra most efficiently with only your weapons.\n"
+    "Created by Athena herself, this potion gives hints about how to kill any visible hydra most efficiently with only your weapons.\n"
     "An efficient kill is one that gives you as few wounds as possible. In case of a tie, usually a faster method is chosen.\n"
-    "For very large Hydras (over roughly 20000 heads) it might not work at all, or (over roughly 100 heads) not recommend stunning while it should. "
+    "For very large hydras (over roughly 20000 heads) it might not work at all, or (over roughly 100 heads) not recommend stunning while it should. "
     "It does not take your powders (including active ones) and missile weapons into account. Also assumes that "
     "stunning lasts for long enough, which is usually not true for shield bashing, and maybe even for emerald weapons.\n"
     "This potion works correctly for ambidextrous users, but might be really slow when you have a lot of choices.\n"
     },
   { "Potion of Power Juice", '!', 11, 'j', 1000,
-    "Some people believe this potion will increase your chances against the Hydras somehow.\n"
+    "Some people believe this potion will increase your chances against the hydras somehow.\n"
     "Other people believe this potion will decrease your chances of getting friends once you return to the society, "
-    "because it makes you somehow more like a Hydra.\n"
+    "because it makes you somehow more like a hydra.\n"
     "Also known as Potion of Strength."
     },
   { "Potion of Mushroom Spores", '!', 8, 'm', 2,
@@ -262,7 +262,7 @@ colorInfo cinf[COLORS] = {
   { "bone ",    7,  6, "hit", "elements/bone",
     "The ice from your %s melts and bare bone is shown!",
     "According to your knowledge, weapons made of hydra bones are good against "
-    "most Hydras and beasts with storm powers."
+    "most hydras and beasts with storm powers."
     },
 
   { "golden ",  14,  6, "hit", "elements/gold",
@@ -308,7 +308,7 @@ colorInfo cinf[COLORS] = {
     } */
   };
 
-#define HYDRAS 20
+#define HYDRAS 21
 
 #define HC_ALIEN   10
 #define HC_VAMPIRE 11
@@ -320,17 +320,19 @@ colorInfo cinf[COLORS] = {
 #define HC_TWIN_R  17
 #define HC_SHADOW  18
 #define HC_MUSH    19 // mushrooms produce fake hydras when using RGROW
+#define HC_EVOLVE  20
 #define HC_TWIN    32
+#define HC_50      33 // just for generation!
 #define HC_DRAGON  64
 #define HC_DRMASK  63
 
-#define ANIM_PLUS 20
-#define ANIM_HAMMER 21
-#define ANIM_DUST 22
-#define ANIM_ZIG 23
-#define ANIM_CANCEL 24
+#define ANIM_PLUS 21
+#define ANIM_HAMMER 22
+#define ANIM_DUST 23
+#define ANIM_ZIG 24
+#define ANIM_CANCEL 25
 
-#define ANIM_MAX 25
+#define ANIM_MAX 26
 
 struct hydraInfo {
   string hname;
@@ -422,14 +424,14 @@ hydraInfo hyinf[HYDRAS] = {
     "and sometimes a band of adventurous giants leaves their cave and "
     "causes destruction among the the peasants, who try to defend their "
     "possessions. Apparently such a band of giants has also entered the "
-    "Hydras Pit, but contrary to the peasants, the Hydras did not want "
+    "Hydras Pit, but contrary to the peasants, the hydras did not want "
     "to fight... probably two heads confused the hydras, and they "
     "thought of them as ones of their kind, and considered them to be friends. "
     "Your mission does not force you to kill giants, but still, they are friends "
     "with your enemies, and carry nice oversized weapons... that is, they would "
     "be nice if you wielded them. Giants are more nimble than hydras, and they "
     "are able to dodge ranged weapons. The powder of growth works on them, but "
-    "it is not as powerful as on Hydras. They do not attack as mindlessly as "
+    "it is not as powerful as on hydras. They do not attack as mindlessly as "
     "hydras; they attack only if they consider the target vulnerable."
     },
   { "ancient ", 14, 4, 14, 13, -1, "attacks", "reaches",
@@ -457,9 +459,9 @@ hydraInfo hyinf[HYDRAS] = {
   { "monkey", 14, 1, 12, 12, -1, "punches", "throws feces at",
     "A pack of three-headed monkeys was rumored to once be brought from "
     "some remote island and live peacefully with humans for "
-    "some time... until they noticed a Hydra. From this point, "
-    "they have decided that they are more alike Hydras than humans. "
-    "They have escaped and joined the Hydras in the Hydras Pit... "
+    "some time... until they noticed a hydra. From this point, "
+    "they have decided that they are more alike hydras than humans. "
+    "They have escaped and joined the hydras in the Hydras Pit... "
     "and they were lucky, Hydras accepted their friendship.\n"
     "This monkey looks as if it wants to sneak on you from behind, "
     "and seems to concentrate on your weapons. "
@@ -471,7 +473,7 @@ hydraInfo hyinf[HYDRAS] = {
     "attack only vulnerable targets.\n"
     },
   { "twin",      14, 13, -1, -1, -1,
-    "<copied>"
+    "hugs", "smiles at", "<copied>"
     },
   { "shadow", 14, 8, -1, -1, -1, "touches", "wails at",
     "While shadow hydras have no natural instant regeneration ability, "
@@ -484,27 +486,37 @@ hydraInfo hyinf[HYDRAS] = {
     "If your move is impossible due to presence of a shadow hydra with a "
     "head count not right for your selected weapon, you will 'miss' it "
     "and lose your turn.\n"
-    "You can use a Potion of Knowledge on the Shadow Hydra. "
+    "You can use a Potion of Knowledge on the shadow hydra. "
     "It won't tell you how many heads it has, or where exactly it is, "
     "but it will recommend the first three single attacks.\n"
     },
   { "mushroom", 14, 8, -1, -1, -1, "crushes", "throws spores at",
   "Mushrooms block your way, so "
   "you have to cut them before you proceed. They also have many uses, "
-  "though. They block the way of Hydras, and also provide additional "
+  "though. They block the way of hydras, and also provide additional "
   "\"heads\" which are useful with some of the special abilities, or "
-  "for testing your weapons.\n" }
+  "for testing your weapons.\n" },
+
+  { "evolving ", 14, 20, 10, 11, -1, "bites", "spits at",
+    "This hydra rapidly evolves. "
+    "Whenever you hit it with a weapon, it improves its resistance against it. "
+    "Your further attacks with a weapon of the same material will cause it "
+    "to regrow one head more. Even meteorite weapons are affected.\n\n"
+    "Potion of Knowledge and Rune of Growth won't work reliably on evolving "
+    "hydras, because they won't take the improving resistance into account."
+    },
   };
 
 #define MAXARMS    10
 
-#define RACES   6
+#define RACES   7
 #define R_HUMAN 0
 #define R_ELF   1
 #define R_NAGA  2
 #define R_TROLL 3
 #define R_TWIN  4
 #define R_CENTAUR  5
+#define R_ATLANTEAAN   6
 
 struct raceInfo {
   string rname;
@@ -593,6 +605,21 @@ raceInfo rinf[RACES] = {
     "around, and thus they are not able to "
     "use the Potion of Power Swipe to attack several enemies around them "
     "at once.\n"
+    },
+  { "Atlantean", 'a', '@', 10,
+    "People from the island of Atlantis have been cursed by the gods. "
+    "Will you be able to turn your curse into an advantage?\n"
+
+    "All hydras will behave as vulture hydras, that is, "
+    "after causing you a number of wounds, they will grow that many heads "
+    "(double the number for vulture hydras).\n"
+
+    "On the good side, Atlanteans are able to heal much better from hydra blood, "
+    "and much more skilled at transmutations -- they "
+    "can choose the material to transmute their items into, "
+    "and eventually they even learn to create "
+    "special materials.\n"
+    "Atlanteans start with a single mighty weapon."
     }
   };
 
@@ -722,7 +749,7 @@ const char* helpinfo[HELPLEN] = {
 //"See more at http://roguebard.eptalys.net\n"
 "\biThanks to Ancient, Xecutor, JLC, sbluen, cephalopid, Legend, "
 "CommentLurker, tricosahedron, zulmetefza, Ryan Dorkoski, #16, "
-"Bloodysetsail, and vo3435 "
+"Bloodysetsail, vo3435, Patashu, Nick, and tehora "
 "for their bug reports, suggestions, and other help!\n\n"
 "\boAnd thanks to you for playing!"
 };

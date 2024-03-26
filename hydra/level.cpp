@@ -87,7 +87,7 @@ vec2 wrap(vec2 v) {
   }
 
 int neighborDir(vec2 v, vec2 w) {
-  w = wrap(w); v = wrap(v);
+  w = wrap(w);
   for(int i=0; i<DIRS; i++) if(wrap(v+dirs[i]) == w) return i;
   return -1;
   }
@@ -244,7 +244,7 @@ void bfs(int who, bool nmush) {
     }
   
   int qs = 0;
-  while(qs < size(d)) {
+  while(qs < isize(d)) {
     vec2 pos = d[qs++];
     int di = M[pos].dist;
     int gv = M[pos].govia;
@@ -294,7 +294,7 @@ void bfs(int who, bool nmush) {
     }
   
   if(who == 2) {
-    for(int i=0; i<size(hydras); i++)
+    for(int i=0; i<isize(hydras); i++)
       if(M[hydras[i]->pos].seen && 
         !hydras[i]->zombie && 
         hydras[i]->heads > hydras[i]->sheads &&
@@ -433,7 +433,7 @@ bool verifyConnected(int mode = 0) {
       }
     }
 
-  for(int i=1; i<size(av); i++) 
+  for(int i=1; i<isize(av); i++) 
     if(ufind(vindex(av[i])) != ufind(vindex(av[0])))
       return false;
     
@@ -475,12 +475,12 @@ void ensureConnected() {
 
   verifyConnected();
   
-  for(int i=0; i<size(av); i++) swap(av[i], av[hrand(i+1)]);
+  for(int i=0; i<isize(av); i++) swap(av[i], av[hrand(i+1)]);
   
-  for(int i=1; i<size(av); i++) 
+  for(int i=1; i<isize(av); i++) 
     if(ufind(vindex(av[i])) != ufind(vindex(av[0]))) {
       int r;
-      do { r = hrand(size(av)); } while(vindex(av[r]) != vindex(av[0]));
+      do { r = hrand(isize(av)); } while(vindex(av[r]) != vindex(av[0]));
       int l = len(av[i] - av[r]) * 2;
       
       vec2 dif = pickMinus(av[i], av[r]);
@@ -817,6 +817,59 @@ weapon *newTrap(int col, int size, char type) {
   return w;
   }
 
+hydra *createSpecial(int special, int hydrasize, int growpow, int healing) {
+  hydra *h = NULL;
+  switch(special) {
+    case HC_ETTIN: case HC_50:
+      h = new hydra(HC_ETTIN, 1, 1, 0);
+      h->heads = 2;
+      if(special == 7) h->heads = 50;
+      switch(hrand(3)) {
+        case 0:
+          h->ewpn = new weapon(randHCol(), 5 * (P.curlevel/5), WT_BLADE);
+          break;
+        case 1:
+          h->ewpn = new weapon(randSCol(), P.curlevel+4, WT_BLUNT);
+          break;
+        case 2:
+          h->ewpn = new weapon(randHCol(), P.curlevel+2-hrand(5), WT_AXE);
+          break;
+        }
+      break;
+    
+    case HC_VAMPIRE:
+      h = new hydra(HC_VAMPIRE, hydrasize - hrand(hydrasize/3), growpow, healing/5);
+      break;
+
+    case HC_ALIEN:
+      h = new hydra(HC_ALIEN, hydrasize * 2 + hrand(60), growpow, healing/7);
+      for(int i=0; i<COLORS; i++) h->res[i] = i == HC_OBSID ? -2 : 0;
+      break;
+    
+    case HC_GROW:
+      h = new hydra(HC_GROW, hydrasize + hrand(100), 1, healing/4);
+      break;
+
+    case HC_WIZARD:
+      h = new hydra(HC_WIZARD, P.curlevel + hrand(P.curlevel), growpow+2, healing/4);
+      break;
+    
+    case HC_MONKEY:
+      h = new hydra(HC_MONKEY, 1, 1, 5);
+      h->heads = 3;
+      break;
+    
+    case HC_SHADOW:
+      h = new hydra(HC_SHADOW, hydrasize + hrand(100), 1, healing/4);
+      break;
+    
+    case HC_EVOLVE:
+      h = new hydra(HC_EVOLVE, hydrasize + hrand(100), 1, healing/2);
+      break;
+    }
+  return h;
+  }
+
 void generateExtraMonsters() {
   int growpow = 13 + (P.curlevel - 13) / 5;
   int hydrasize = 200 + 5 * P.curlevel;
@@ -868,11 +921,39 @@ void generateExtraMonsters() {
   if(dirtycolor != -1 && onein(2))
     dirtycolor2 = randHCol();
   
+  int missingcolor = -1;
+  if(onein(4)) do {
+    missingcolor = randHCol();
+    } while(missingcolor == dirtycolor || missingcolor == dragoncolor || missingcolor == dirtycolor2);
+  
+  int stdcolor = -1;
+  
+  // special hydra level
+  bool shlev = hrand(100) < 15;
+  if(shlev) {
+    if(hrand(P.curlevel) >= dragonmin)
+      dragoncolor = randHCol();
+    dirtycolor = randHCol();
+    dirtycolor2 = randHCol();
+    stdcolor = randHCol();
+    missingcolor = -1;
+    }
+  
+  int hydracount = 0;
+  
   // Hydras
   if(P.curlevel != 49) for(int c=0; c<HCOLORS; c++) {
+
+    if(shlev && (c != dragoncolor && c != dirtycolor && c != dirtycolor2 && c != stdcolor))
+      continue;
+    
+    if(c == missingcolor) continue;
+    
+    hydracount++;
+
     hydra *H = new hydra(c, hrand(hydrasize) + 1, growpow, healing / 10);
     if(c == dragoncolor) H->color |= HC_DRAGON, H->heal = healing / 8;
-
+    
     if(!(P.flags & dfBackups)) {    
       if(c == dirtycolor) H->dirty = 2*IS_DIRTY-1, H->heal += healing / 10;
       if(c == dirtycolor2 && c != dirtycolor) H->dirty = 2*IS_DIRTY-1, H->heal += healing / 8;
@@ -882,7 +963,11 @@ void generateExtraMonsters() {
 
     H->put();
     }
+  
+  bool hadspec[128];
+  for(int i=0; i<128; i++) hadspec[i] = false;
 
+  // special hydras
   if(P.curlevel == 49) {
     int hc = 900000 + hrand(50000);
     while(primediv(hc) != -1) hc++;
@@ -890,78 +975,71 @@ void generateExtraMonsters() {
     adragon->dirty = IS_DIRTY-1; // do not know susceptibilities
     adragon->put();
     }
+  else if(shlev) {
+    int healing2 = healing;
+#define SPEC(id, lev, prob) \
+    if(P.curlevel >= lev && hydracount < 11 && !hadspec[id] && hrand(100) < prob) \
+      hadspec[id] = true, hydracount++, createSpecial(id, hydrasize, growpow, healing2)->put();
+
+    for(int i=0; i<50; i++) {
+      SPEC(HC_VAMPIRE, 0, 10)
+      SPEC(HC_ETTIN, 0, 10) 
+      SPEC(HC_ALIEN, 0, 10) 
+      SPEC(HC_MONKEY, 0, 10)
+      SPEC(HC_SHADOW, 0, 10) 
+      SPEC(HC_GROW, 20, 10) 
+      SPEC(HC_EVOLVE, 25, 10) 
+      SPEC(HC_WIZARD, 30, 10)
+      SPEC(HC_50, 75, 1)
+      }
+    }
   else {
-    int special = hrand(5);
+    int spectab[9] = { HC_VAMPIRE, HC_ETTIN, HC_ALIEN, HC_GROW, HC_WIZARD,
+      HC_MONKEY, HC_SHADOW, HC_50, HC_EVOLVE };
+    int special = spectab[hrand(5)];
     
     // Wizards are picked only after Level 30
-    if(P.curlevel < 30)
-      special = hrand(4);
+    if(P.curlevel < 30) special = spectab[hrand(4)];
   
     // Growing hydras only after Level 20 (otherwise it's free)
-    if(P.curlevel < 20 && special == 3)
-      return;
+    if(P.curlevel < 20 && special == HC_GROW)
+      special = -1;
       
-    if(onein(6)) // monkeys each 7 levels
-      special = 5;
+    if(onein(6)) // monkeys each 8 levels
+      special = HC_MONKEY;
     
-    if(onein(7)) // shadows each 7 levels
-      special = 6;
+    if(onein(7)) // shadows each 8 levels
+      special = HC_SHADOW;
+    
+    if(onein(8) && P.curlevel >= 25) // evolvers each 8 levels (after Level 25)
+      special = HC_EVOLVE;
     
     if(P.curlevel == levseed[5] % 23 + 25) 
-      special = 7;
+      special = HC_50;
     
     if(P.curlevel >= 75 && hrand(20) == 0)
-      special = 7;
-
+      special = HC_50;
     
-    hydra *h = NULL;
-      
-    switch(special) {
-      case 0: case 7:
-        h = new hydra(HC_ETTIN, 1, 1, 0);
-        h->heads = 2;
-        if(special == 7) h->heads = 50;
-        switch(hrand(3)) {
-          case 0:
-            h->ewpn = new weapon(randHCol(), 5 * (P.curlevel/5), WT_BLADE);
-            break;
-          case 1:
-            h->ewpn = new weapon(randSCol(), P.curlevel+4, WT_BLUNT);
-            break;
-          case 2:
-            h->ewpn = new weapon(randHCol(), P.curlevel+2-hrand(5), WT_AXE);
-            break;
-          }
-        break;
-      
-      case 1:
-        h = new hydra(HC_VAMPIRE, hydrasize - hrand(hydrasize/3), growpow, healing/5);
-        break;
-  
-      case 2:
-        h = new hydra(HC_ALIEN, hydrasize * 2 + hrand(60), growpow, healing/7);
-        for(int i=0; i<COLORS; i++) h->res[i] = i == HC_OBSID ? -2 : 0;
-        break;
-      
-      case 3:
-        h = new hydra(HC_GROW, hydrasize + hrand(100), 1, healing/4);
-        break;
-  
-      case 4:
-        h = new hydra(HC_WIZARD, P.curlevel + hrand(P.curlevel), growpow+2, healing/4);
-        break;
-      
-      case 5:
-        h = new hydra(HC_MONKEY, 1, 1, 5);
-        h->heads = 3;
-        break;
-      
-      case 6:
-        h = new hydra(HC_SHADOW, hydrasize + hrand(100), 1, healing/4);
-        break;
+    hydra *h = createSpecial(special, hydrasize, growpow, healing);
+    
+    if(h) h->put();
+
+    if(missingcolor >= 0) while(true) {
+      int special2 = spectab[hrand(9)];
+      if(special == special2) continue;
+      if(special2 == HC_50 && hrand(100) < (P.curlevel < 90 ? 0 : 10))
+        continue;
+      if(special2 == HC_GROW && P.curlevel < 25)
+        continue;
+      if(special2 == HC_EVOLVE && P.curlevel < 30)
+        continue;
+      if(special2 == HC_WIZARD && P.curlevel < 35)
+        continue;
+      hydra *h2 = createSpecial(special2, hydrasize*2/3, growpow, healing);
+      if(h2) h2->put();
+      break;
       }
   
-    if(h) h->put();
     }
 
   // traps
@@ -1067,6 +1145,7 @@ void generateUniqueItems() {
   if(onlev(14, 80))   make(randHCol(), 3, WT_SUBD);
   if(onlev(14, 80))   make(randHCol(), 5, WT_QUI);
   if(onlev(20, 85))   make(9, 1, WT_GOLD);
+  if(onlev(20, 85))   make(12, 0, WT_COLL);
   if(onlev(15, 17))   make(randHCol(), 0, WT_DIV);
   if(onlev(15, 100))  make(1, 1, WT_RAND);
   if(onlev(12, 150))  generateOrb(50 + hrand(150))->put();
@@ -1107,6 +1186,15 @@ void generateExtraItems() {
   if(onein(5)) (new item(IT_RCONF))->put();
   if(onein(6)) (new item(IT_RFUNG))->put();
   if(onein(6)) (new item(IT_RNECR))->put();
+  
+  // some extra tools against the more frequest special hydras in 18.0
+  if(onein(18)) (new item(IT_RSTUN))->put();
+  if(onein(18)) (new item(IT_RDEAD))->put();
+  if(onein(18)) (new item(IT_RGROW))->put();
+  if(onein(18)) (new item(IT_RFUNG))->put();
+  if(onein(10)) (new item(IT_RCANC))->put();
+  if(onein(15)) (new item(IT_PFAST))->put();
+  if(onein(12)) (new item(IT_PCHRG))->put();
   
   for(int u=0; u<2; u++) if(onein(2)) (new item(IT_SGROW))->put(); // big weapons are fun!
   if(onein(2)) (new item(IT_SXMUT))->put();
@@ -1210,8 +1298,12 @@ void generateDeepItems() {
     make(randHCol(), hrand(2) ? 3 : 5, WT_QUI);
   
   // extra golden sectors
-  if(onein(100) && P.curlevel >= 50)
+  if(onein(200) && P.curlevel >= 50)
     make(9, 1, WT_GOLD);
+
+  // extra Syracuse blades
+  if(onein(200) && P.curlevel >= 50)
+    make(12, 0, WT_COLL);
   
   // extra timedaggers
   if(onein(40) && P.curlevel >= LEVELS)
@@ -1329,7 +1421,7 @@ int shuford(hydra *h) {
   }
 
 void bloodshuffle() {
-  int sh = size(hydras);
+  int sh = isize(hydras);
   int i = 0;
   while(i < sh) {
     if(i && shuford(hydras[i]) < shuford(hydras[i-1])) { 
@@ -1395,7 +1487,7 @@ void generateLevel() {
     
   if(P.curlevel < GLEVELS) {
   
-    for(int i=0; i<size(toput[P.curlevel]); i++) toput[P.curlevel][i]->put();
+    for(int i=0; i<isize(toput[P.curlevel]); i++) toput[P.curlevel][i]->put();
     toput[P.curlevel].clear();
     }
   
@@ -1473,13 +1565,37 @@ void generateNormalGame() {
     if(r >= 2)
       toput[i].push_back(new item(IT_SGROW));
     
+    int numtry = 0;
+
+    genhydraagain:
+    numtry++;
+    
+    hydra *hydraofcol[HCOLORS];
+    for(int c=0; c<HCOLORS; c++) 
+       hydraofcol[c] = new hydra(c, hrand(linf[i].maxheads) + 1, linf[i].growlimit, linf[i].heal);
+    
+    if(i == 0 && P.race == R_ATLANTEAAN) {
+      // were-hydra not allowed to be of size 3
+      if(hydraofcol[0]->heads == 3) goto genhydraagain;
+      int q[4];
+      for(int a=0; a<4; a++) q[a] = 0;
+      for(int c=1; c<HCOLORS; c++)
+        if(hydraofcol[c]->heads == 3)
+          q[hydraofcol[c]->res[0]]++;
+      if(q[0] != 1) goto genhydraagain;
+      if(q[1] != 1) goto genhydraagain;
+      if(q[2] != 1) goto genhydraagain;
+      }
+    
+    // printf("numtry = %d\n", numtry);
+    
     // one hydra of each color
     for(int c=0; c<HCOLORS; c++)
-      toput[i].push_back(new hydra(c, hrand(linf[i].maxheads) + 1, linf[i].growlimit, linf[i].heal));
+      toput[i].push_back(hydraofcol[c]);
     
     // make some hydras dirty
     if(i == 10 || i == dirtylev) {
-      hydra *H = (hydra*) toput[i][size(toput[i])-1-hrand(10)];
+      hydra *H = (hydra*) toput[i][isize(toput[i])-1-hrand(10)];
       H->dirty = 2*IS_DIRTY-1;
       H->heal += 5;
       }
@@ -1496,13 +1612,23 @@ void generateNormalGame() {
   for(int i=0; i<HCOLORS; i++) dcolors[i] = i;
   for(int i=0; i<HCOLORS; i++) swap(dcolors[i], dcolors[hrand(i+1)]);
   sclass *extras[LEVELS];
+
+  if(P.race == R_ATLANTEAAN) {
+    for(int i=0; i<10; i++) if(dcolors[i] == 0)
+      swap(dcolors[i], dcolors[0]);
+    }
   
   // original weapons and extras...
   
   if(!stats.savecount) {
-    wpn[0] = new weapon(dcolors[0], 1, WT_BLADE);
-    wpn[1] = new weapon(dcolors[1], 2, WT_BLADE);
-    wpn[0]->level = wpn[1]->level = 0;
+    if(P.race == R_ATLANTEAAN) {
+      wpn[0] = new weapon(dcolors[0], 7, WT_BLADE);
+      }
+    else {
+      wpn[0] = new weapon(dcolors[0], 1, WT_BLADE);
+      wpn[1] = new weapon(dcolors[1], 2, WT_BLADE);
+      wpn[0]->level = wpn[1]->level = 0;
+      }
     }
     
   int artdie = hrand(6);
@@ -1608,7 +1734,7 @@ void generateNormalGame() {
   toput[LEVELS-1].push_back(new weapon(dcolors[9], 2, WT_ROOT));
   
   // store level info for weapons
-  for(int u=0; u<LEVELS; u++) for(int v=0; v<size(toput[u]); v++) {
+  for(int u=0; u<LEVELS; u++) for(int v=0; v<isize(toput[u]); v++) {
     weapon* w = toput[u][v]->asWpn();
     if(w) w->level = u+1;
     }
@@ -1625,6 +1751,8 @@ void putat(int lev, sclass *o) {
   if(lev >= 0 && lev < CLEVELS && o)
     toput[lev].push_back(o);
   }
+
+int challenge_version;
 
 int cheadcount[CLEVELS];
 int cgrowlimit[CLEVELS];
@@ -1674,7 +1802,7 @@ weapon *finhelper() {
   }
 
 weapon *antibig(int q) {
-  switch(hrand(P.race == R_NAGA ? 4 : 8)) {
+  switch(hrand(P.race == R_NAGA ? 4 : (challenge_version >= 1800 ? 9 : 8))) {
     case 0: return new weapon(randHCol(), 3 + hrand(q?6:12), WT_DIV);
     case 1: return new weapon(HC_OBSID, 2 + hrand(q?3:6), WT_DIV);
     case 2: return new weapon(onein(5) ? HC_OBSID : randHCol(), onein(5) ? 3 : 2, WT_ROOT);
@@ -1683,6 +1811,9 @@ weapon *antibig(int q) {
     case 5: return new weapon(onein(5) ? HC_OBSID : randHCol(), 1, WT_VORP);
     case 6: return new weapon(9, hrand(6), WT_GOLD);
     case 7: return new weapon(randHCol(), 3 + hrand(3), WT_SUBD);
+    case 8: 
+      int hr = hrand(100);
+      return new weapon(12, hr < 5 ? 27 : hr < 10 ? 7 :hr < 20 ? 3 : 0, WT_COLL);
     }
   return NULL;
   }
@@ -1801,6 +1932,7 @@ void generateItems() {
 int raceForSeed(int seed) {
   int r = seed % 5;
   if(r == R_ELF) r = R_CENTAUR;
+  if(seed % 7 == 0) r = R_ATLANTEAAN;
   return r;
   }
 
@@ -1826,8 +1958,17 @@ string geometryName(int g) {
   return "unknown geometry";
   }
 
+#define ALPHA1800 1750
+
 void generateChallengeGame() {
 
+  if((P.flags & dfDaily) && P.gameseed < 290) 
+    challenge_version = 1720;
+  else
+    challenge_version = 1800;
+  if(P.oldversion && challenge_version > P.oldversion)
+    challenge_version = P.oldversion;
+  
   int conscheck = 0;
 
   gameExists = true;
@@ -1908,24 +2049,35 @@ void generateChallengeGame() {
     }
   
   conscheck += hrand(1000000000);
+  
+  int hspec0 = -1;
 
   // special hydras
-  for(int i=0; i<CLEVELS-1; i++) {
+  for(int i=0; i<CLEVELS-1; i++) for(int j=0; j<2; j++) {
     hydra *h = NULL;
     
-    switch(hrand(7)) {
+    if(j == 1 && challenge_version < ALPHA1800) continue;
+
+    
+    int hspec = hrand(challenge_version >= ALPHA1800 ? 8 : 7);
+    if(j==0) hspec0 = hspec;
+    if(j == 1 && hspec0 == hspec) continue;
+    
+    printf("i=%d j=%d hspec0=%d hspec=%d\n", i, j, hspec0, hspec);
+    
+    switch(hspec) {
       case 0:
         h = new hydra(HC_ETTIN, 1, 1, 0);
         h->heads = 2;
         switch(hrand(3)) {
           case 0:
-            h->ewpn = new weapon(randHCol(), 5 * (1+P.curlevel/3), WT_BLADE);
+            h->ewpn = new weapon(randHCol(), 5 * (1+i/3), WT_BLADE);
             break;
           case 1:
-            h->ewpn = new weapon(randSCol(), P.curlevel*3+4, WT_BLUNT);
+            h->ewpn = new weapon(randSCol(), i*3+4, WT_BLUNT);
             break;
           case 2:
-            h->ewpn = new weapon(randHCol(), P.curlevel*2+2-hrand(5), WT_AXE);
+            h->ewpn = new weapon(randHCol(), i*2+2-hrand(5), WT_AXE);
             break;
           }
         break;
@@ -1958,9 +2110,19 @@ void generateChallengeGame() {
         if(cheadcount[i] >= 100)
           h = new hydra(HC_SHADOW, cheadcount[i] + hrand(cheadcount[i]), 1, 50 + 15 * i);
         break;
+      
+      case 7:
+        h = new hydra(HC_EVOLVE, cheadcount[i] - hrand(cheadcount[i]/3), cgrowlimit[i], 30 + 10 * i);
+        break;
       }
     
-    putat(i, h);
+    if(j == 0) 
+      putat(i, h);
+    
+    if(j == 1 && h) {
+      int c = hrand(10);
+      swap(*hydratab[i][c], *h);
+      }
     }
 
   conscheck += hrand(1000000000);
@@ -2156,7 +2318,7 @@ void generateChallengeGame() {
   conscheck += hrand(1000000000);
 
   // store level info for weapons
-  for(int u=0; u<CLEVELS; u++) for(int v=0; v<size(toput[u]); v++) {
+  for(int u=0; u<CLEVELS; u++) for(int v=0; v<isize(toput[u]); v++) {
     weapon* w = toput[u][v]->asWpn();
     if(w) w->level = u+1;
     }
@@ -2197,7 +2359,7 @@ void listChallenge() {
   printf("\n");
 
   for(int j=0; j<GLEVELS; j++) {
-    for(int k=0; k<size(toput[j]); k++) {
+    for(int k=0; k<isize(toput[j]); k++) {
       string s = fullname(toput[j][k]);
       printf("%3d %s\n", j, s.c_str());
       }

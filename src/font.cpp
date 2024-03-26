@@ -6,6 +6,7 @@ namespace noteye {
 
 // -- bitmap fonts --
 
+extern "C" {
 BitmapFont *newFont(Image *base, int inx, int iny, int trans) {
   BitmapFont *F = new BitmapFont;
   int sx = base->s ? base->s->w : 0;
@@ -13,48 +14,45 @@ BitmapFont *newFont(Image *base, int inx, int iny, int trans) {
   int dx = sx / inx;
   int dy = sy / iny;
   F->cnt = inx * iny;
-  F->ti = new int[F->cnt];
-  for(int i=0; i<inx*iny; i++) {
+  F->ti.resize(F->cnt);
+  for(int i=0; i<F->cnt; i++) {
     F->ti[i] = 
       addTile(base, dx * (i % inx), dy * (i / inx), dx, dy, trans);
-    if(F->ti[i]) 
-      (byId<TileImage> (F->ti[i], NULL))->chid = i;
+    if(F->ti[i]) {
+      Get(TileImage, TI, F->ti[i]);
+      if(TI) TI->chid = i;
+      }
     }
-  return F;
+  return registerObject(F);
   }
+}
 
-int BitmapFont::gettile(int i) {
-  if(i < 0 || i >= cnt) return 0;
+Tile *BitmapFont::gettile(int i) {
+  if(i < 0 || i >= cnt) return NULL;
   return ti[i];
   }
 
-int BitmapFont::gettile(const char *s) {
+Tile *BitmapFont::gettile(const char *s) {
   return gettile((unsigned char) s[0]);
   }
 
-#ifdef USELUA
-int lh_newfont(lua_State *L) {
-  checkArg(L, 4, "newfont");
-  return noteye_retObject(L, newFont(luaO(1, Image), luaInt(2), luaInt(3), luaInt(4)));
+extern "C" {
+Tile *fontgetchar(Font *F, const char *s) {
+  if(!F) return NULL;
+  return F->gettile(s);
   }
 
-int lh_getchar(lua_State *L) {
-  checkArg(L, 2, "getchar");
-  luamapstate = L;
-  return noteye_retInt(L, luaO(1, Font)->gettile(luaStr(2)));
+Tile *fontgetcharav(Font *F, int id) {
+  if(!F) return NULL;
+  return F->gettile(id);
   }
-
-int lh_getcharav(lua_State *L) {
-  checkArg(L, 2, "getcharav");
-  luamapstate = L;
-  return noteye_retInt(L, luaO(1, Font)->gettile(luaInt(2)));
-  }
-#endif
+}
 
 // -- truetype fonts --
 
 #ifndef LIBTCOD
-TTFont *newTTFont(string fname) {
+extern "C" {
+TTFont *newTTFont(const char *fname) {
   if(TTF_Init() != 0) {
     if(errfile)
       fprintf(errfile, "Failed to initialize TTF.\n");
@@ -62,20 +60,14 @@ TTFont *newTTFont(string fname) {
   
   TTFont *F = new TTFont;
   F->fname = fname;
-  return F;
+  return registerObject(F);
+  }
   }
 #endif
 
 TTFont::~TTFont() {
   for(int i=0; i<size(sizes); i++) if(sizes[i]) TTF_CloseFont(sizes[i]);
   }
-
-#ifdef USELUA
-int lh_newttfont(lua_State *L) {
-  checkArg(L, 1, "newttfont");
-  return noteye_retObject(L, newTTFont(luaStr(1)));
-  }
-#endif
 
 #ifndef LIBTCOD
 TTF_Font* TTFont::getsize(int s) {
@@ -90,19 +82,18 @@ TTF_Font* TTFont::getsize(int s) {
   }
 #endif
 
-#ifdef USELUA
-int lh_ttfgetsize(lua_State *L) {
-  checkArg(L, 4, "ttfgetsize");
-  TTFont* f = luaO(1, TTFont);
-  int s = luaInt(2);
-  string str = luaStr(3);
-  int flags = luaInt(4);
-  if(str == "") return 0;
+extern "C" {
+point ttfgetsize(TTFont *f, int s, const char *bstr, int flags) {
+
+  point res; res.x = 0; res.y = 0;
+  
+  if(bstr[0] == 0) return res;
   TTF_Font* tf = f->getsize(s);
-  if(!tf) return 0;
+  if(!tf) return res;
 
   char buf[10000]; int bufpos = 0;
-  if(str.size() > 9000) return 0;
+  string str = bstr;
+  if(str.size() > 9000) return res;
   int omit = 0, omitnum = false, iix=0, iiy=0, totx=0, toty=0;
   int nid = 0;
   str = str + "\n";
@@ -111,7 +102,7 @@ int lh_ttfgetsize(lua_State *L) {
       if(str[i] >= '0' && str[i] <= '9') 
         nid = 10*nid + str[i] - '0';
       else {
-        Image *im = dbyId<Image> (nid);
+        Image *im = dynamic_cast<Image*> (noteye_by_handle(nid));
         if(im) iix += im->s->w, iiy = max(iiy, im->s->h);
         }
       }
@@ -137,11 +128,11 @@ int lh_ttfgetsize(lua_State *L) {
   if(flags & 3) 
     totx += 4, toty += 4;
   
-  lua_newtable(L);
-  noteye_table_setInt(L, "x", totx);
-  noteye_table_setInt(L, "y", toty);
-  return 1; 
+  res.x = totx;
+  res.y = toty;
+  return res;
   }
+}
 
 enum AppendAlignment {
   aaHorizontal,
@@ -202,24 +193,22 @@ void appendImage(SDL_Surface*& target, SDL_Surface *s2, bool freeit, AppendAlign
   if(freeit) SDL_FreeSurface(s2);
   }
 
-int lh_ttfrender(lua_State *L) {
-  checkArg(L, 6, "ttfrender");
-  TTFont* f = luaO(1, TTFont);
-  int s = luaInt(2);
-  string str = luaStr(3);
-  noteyecolor color = luaInt(4);
-  Image *i = luaO(5, Image);
-  int flags = luaInt(6);
+extern "C" {
+
+int ttfrender(TTFont *f, int s, const char *bstr, noteyecolor color, Image *i, int flags) {
   
   int ncolor = color;
   
   TTF_Font *tf = f->getsize(s);
-  if(!tf) return noteye_retInt(L, 0);
+  if(!tf) return 0;
   
   SDL_Surface *cline = NULL, *plines = NULL;
 
+  string str = bstr;
+
   char buf[10000]; int bufpos = 0;
   if(str.size() > 9000) return 0;
+  
   
   str = str + "\n0000000000"; // to protect against errors
 
@@ -230,6 +219,7 @@ int lh_ttfrender(lua_State *L) {
     else {
       if(bufpos) {
         SDL_Color col;
+        col.a = (ncolor >> 24) & 255;
         col.r = (ncolor >> 16) & 255;
         col.g = (ncolor >> 8 ) & 255;
         col.b = (ncolor >> 0 ) & 255;
@@ -269,7 +259,7 @@ int lh_ttfrender(lua_State *L) {
         // "\viXXX;" = insert image by number
         int id = 0;
         for(ii++; str[ii] >= '0' && str[ii] <= '9'; ii++) id = 10*id + str[ii] - '0';
-        Image *im = dbyId<Image> (id);
+        Image *im = dynamic_cast<Image*> (noteye_by_handle(id));
         if(im) appendImage(cline, im->s, false, aaHorizontal);
         }
       if(ch2 == '#') {
@@ -294,7 +284,7 @@ int lh_ttfrender(lua_State *L) {
     i->s = plines;
   else {
     i->s = SDL_CreateRGBSurface(SURFACETYPE, 0, 0, 32, 0xFF<<16,0xFF<<8,0xFF,0xFF<<24);
-    return noteye_retInt(L, 0);
+    return 0;
     }
 
   if(flags & 3) {
@@ -343,46 +333,25 @@ int lh_ttfrender(lua_State *L) {
   
   i->changes++;
 
-  return noteye_retInt(L, 1);
+  return 1;
   }
-#endif
+}
 
-void DynamicFont::deleteLua() {
-  if(ref == -1) return;
-  luaL_unref(L, LUA_REGISTRYINDEX, ref);
-  ref = -1;
-  }
-
-int DynamicFont::gettile(const char *s) {
+Tile *DynamicFont::gettile(const char *s) {
   return gettile(utf8_decode(s));
   }
 
-int DynamicFont::gettile(int i) {
+Tile *DynamicFont::gettile(int i) {
   if(ti.count(i)) return ti[i];
-  myuchar uc = utf8_encode_array(i);
-  
-  lua_rawgeti(luamapstate, LUA_REGISTRYINDEX, ref);
-  lua_pushstring(luamapstate, (char*) &uc);
-  if (lua_pcall(luamapstate, 1, 1, 0) != 0) {
-    noteyeError(16, "error running dynamicfont", lua_tostring(luamapstate, -1));
-    return 0;
-    }
-  int res = noteye_argInt(luamapstate, -1);
-  lua_pop(luamapstate, 1);
-  
-  ti[i] = res;
-  return res;
+  return ti[i] = f(i);
   }
 
-#ifdef USELUA
-int lh_newdynamicfont(lua_State *L) {
-  checkArg(L, 1, "newdynamicfont");
-  lua_pushvalue(L, -1);
-  DynamicFont *f = new DynamicFont;
-  f->L = L;
-  f->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-  return noteye_retObject(L, f);
+extern "C" {
+DynamicFont* newdynamicfont(dynamicfontfun f) {
+  DynamicFont *F = new DynamicFont;
+  F->f = f;
+  return registerObject(F);
   }
-#endif
+}
 
 }

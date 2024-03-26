@@ -19,10 +19,7 @@ function vecerror(x)
   -- for debugging: crash NotEye
   -- error(x)
   -- for release: just print the error (sometimes we may survive)
-  local f = io.open("veclog.txt", "wt")
-  if x then io.write(x) end
-  f:write(debug.traceback())
-  io.close(f)
+  logprint2(debug.traceback())
   if x then logprint2(x) end
   end
 
@@ -99,6 +96,7 @@ function V.mt.__tostring(a)
 
 function V.be(v)
   if type(v) == "number" then return V(v,v) end
+  if type(v) == "cdata" then return V(v.x, v.y) end
   setmetatable(v, V.mt)
   v.isvec = true
   return v
@@ -204,14 +202,12 @@ function rectCS(ctr, size)
   return rectTB(ctr-size/2, ctr+size/2)
   end
 
-function inrect(vect, rec)
-  if (not vect) or not vect.isvec then
-    logprint2("SUSPICIOUS INRECT VEC")
-    logprint2(debug.traceback())
-    end
-  if (not rec) or not rec.isrect then
-    logprint2("SUSPICIOUS INRECT REC")
-    logprint2(debug.traceback())
+function inrect(vect, rec, verbose)
+  if not vect or not rec or not vect.isvec or not rec.isrect then
+    if verbose then
+      logprint2("SUSPICIOUS INRECT:\n" .. debug.traceback())
+      end
+    return false
     end
   local r = rectTB(V(rec.top.x, rec.top.y), V(rec.bot.x, rec.bot.y))
   local lef = getmetatable(r.top).__le
@@ -222,8 +218,12 @@ function inrect(vect, rec)
   return b0 and b1
   end
 
+function unionrect(R1, R2)
+  return rectTB(V.min(R1.top, R2.top), V.max(R1.bot, R2.bot))
+  end
+  
 function intersect(R1, R2)
-  return rectB(V.max(R1.top, R2.top), V.min(R1.bot, R2.bot))
+  return rectTB(V.max(R1.top, R2.top), V.min(R1.bot, R2.bot))
   end
   
 -- vector/rectangle-based versions of NotEye functions
@@ -281,6 +281,32 @@ function V.scrcopy(S1, V1, S2, V2, size, f)
   V2 = V.be(V2)
   if not S2 then vecerror("ss") end
   return scrcopy(S1, V1.x, V1.y, S2, V2.x, V2.y, size.x, size.y, f)
+  end
+
+function V.scrcopy_f(S1, V1, S2, V2, size, f)
+
+  if true then
+    -- this variant seems faster
+    V1 = V.be(V1)
+    V2 = V.be(V2)
+    local t1 = noteye_precise_time()
+    scrcopy_sample:set(f)
+    scrcopy_f(S1, V1.x, V1.y, S2, V2.x, V2.y, size.x, size.y, scrcopy_sample)
+    local t2 = noteye_precise_time()
+    -- print("scrcopy_f: "..tostring(size).." time = "..(t2-t1))
+  
+  else
+    V1 = V.be(V1)
+    V2 = V.be(V2)
+    local t1 = noteye_precise_time()
+    for x = 0, size.x-1 do
+    for y = 0, size.y-1 do
+      scrset(S2, V2.x+x, V2.y+y, f(scrget(S1, V1.x+x, V1.y+y), V1.x+x, V1.y+y))
+      end end
+    local t2 = noteye_precise_time()
+    -- print("scrcopy_l: "..tostring(size).." time = "..(t2-t1))
+    end
+    
   end
 
 function V.scrget(S, V)
@@ -342,6 +368,7 @@ end
 
 V.xy = {x="x", y="y"}
 
+-- iterate over a rectangle
 function irect(R, step)
   local x = R.top.x
   local y = R.top.y

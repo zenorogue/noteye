@@ -9,6 +9,7 @@ appactive = true
 mouse_inside = true
 mousepressed = false
 ignorefocus = false
+focus_timestamp = 0
 
 -- FPS calculation and control
 
@@ -234,15 +235,22 @@ function savecpu()
     end
   end
 
+getticks_real = getticks
+
+-- stop the idle animations
+-- (but not auto-explore, movement, etc.)
 function handleanimstop()
-  if appactive and animstopped then
+  active_or_animating = appactive or inAnimation
+  if active_or_animating and animstopped then
+    print("real time")
     getticks = animstopped
     animstopped = nil
-  elseif not appactive and not animstopped then
+  elseif not active_or_animating and not animstopped then
+    print("stopping the clock")
     local t = getticks()
     animstopped = getticks
     function getticks() return t end
-    end  
+    end
   end
 
 evhandlers[0] = function(ev)
@@ -280,17 +288,19 @@ evhandlers[0] = function(ev)
   end
 
 function animateAutoexplore()
-  inAnimation = true
+  inAnimation = getticks_real()
   handlePendingAnimations(speedupAutoexplore, 2)
-  inAnimation = false
+  inAnimation = nil
   end
 
 function uisleep2()
-  if threaded and not inAnimation then
+  if threaded and not inAnimation then    
     -- print(addindent().."UI coroutine yields.")
     uisleep()
     -- print(addindent().."UI coroutine is resumed.")
-  else
+  elseif threaded then
+    -- do nothing
+  elseif from_callui then
     uireturn = true
     end
   end
@@ -358,6 +368,8 @@ evhandlers[evWindowEvent] = function(ev)
   if ev.subtype == w.FOCUS_GAINED then
     ignorefocus = true
     appactive = true
+    focus_timestamp = ev.timestamp
+    startmusic_lostfocus()
     end
     
   if ev.subtype == w.FOCUS_LOST then
@@ -404,9 +416,17 @@ evhandlers[evProcScreen] = function(ev)
 function copygamedata()
   end
 
+function get_cursor_and_size(P)
+  local c = noteye_getcursor(P)  
+  local size = noteye_getcursorsize(P)
+  c = V(c.x, c.y)
+  c.size = size
+  return c
+  end
+  
 function copymapall()
   if P == LUAPROCESS then setcursor(luag.cursor)
-  elseif P then setcursor(proccur(P)) end
+  elseif P then setcursor(get_cursor_and_size(P)) end
   copygamedata()
   if maptocopy then
     maptocopy = false
@@ -482,9 +502,9 @@ function mainloopcyc_small()
     end
 
   if protectevents then
-    return 
-      noteye_pcall("event type "..ev.type, elSerious, 1, function() return handler(ev) end)
+    v = noteye_pcall("event type "..ev.type, elSerious, 1, function() return handler(ev) end)
       or 1
+    return v
     end
   return handler(ev) or 1
     
@@ -510,7 +530,9 @@ function noteye_callui()
   -- print(addindent().."reentrant main loop")
   if threaded then
     threaded = false
+    from_callui = true
     local v = mainloopcyc()
+    from_callui = false
     threaded = true
     return v
     end
@@ -743,8 +765,12 @@ function handlemouse2(ev)
       return true
       end
     
-    movetowards(ev, pixeltoprocess(ev), pixeltodir(ev))
-    return true
+    if moveonwheel then 
+      movetowards(ev, pixeltoprocess(ev), pixeltodir(ev))
+      return true
+      end
+
+    return false
 
   elseif ev.type == evMouseDown and mapon then
     movetowards(ev, pixeltoprocess(ev), pixeltodir(ev))
@@ -774,15 +800,17 @@ function handlemultigesture(ev)
 
 -- == start the game process ==
 
-function caller(name, dir, uname, wname)
+function caller(name, dir, uname, wname, wparams, uparams)
+  wparams = wparams or ""
+  uparams = uparams or ""
   if manualcall and linux then
     return "sh -l"
   elseif manualcall then
     return "cmd"
   elseif linux then
-    return "sh "..noteyedir.."caller.sh "..dir.." "..uname.." \""..name.."\""
+    return "sh "..noteyedir.."caller.sh "..dir.." "..uname.." \""..name.."\"".." "..uparams
   else
-    return ".\\caller.bat "..dir.." "..wname.." \""..name.."\""
+    return ".\\caller.bat "..dir.." "..wname.." \""..name.."\"".. " "..wparams
     end
   end
 
@@ -815,7 +843,10 @@ function rungame2(cmdline)
 
   if havemain then createmain() end
   if P == LUAPROCESS then P = nil end
-  if P then delete(P); P = nil end
+  if P then 
+    remove_event_listener(P)   
+    P = nil
+    end
   savegameconfigonexit()
   end
 
@@ -840,7 +871,6 @@ function rungame(cmdline)
   elseif threaded and not viewmode then
 
     function rungamex(cmdline)
-
       P = internal(S, FixedFont or Font, cmdline)
       end
     

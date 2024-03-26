@@ -22,10 +22,10 @@
 #ifndef _NOTEYE_H
 #define _NOTEYE_H
 
-#define NOTEYEVERSION "8.4"
-#define NOTEYEVER 0x840
-#define NOTEYEPATCH 2
-#define NOTEYEPATCHSTR "P2"
+#define NOTEYEVERSION "9.0"
+#define NOTEYEVER 0x900
+#define NOTEYEPATCH 0
+#define NOTEYEPATCHSTR "P0"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -40,10 +40,13 @@ typedef int bool;
 #include <complex>
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <typeinfo>
+#include <set>
 #endif
 
 // define SDLFLAT if SDL files do not use a subdirectory
@@ -197,13 +200,88 @@ typedef Uint32 noteyecolor;
 #ifdef __cplusplus 
 // Objects can be affected by Lua script
 
+extern int objcount;
+
+#define ALLOBJ(x) 
+#define IMGOBSERVE(x)
+
+ALLOBJ( extern std::set<struct Object*> all_objects; )
+
 // basic object type
 struct Object {
-  int id;
+  int refcount;
+  int stamp;
+  Object *next_to_delete;
   virtual bool checkEvent(struct lua_State *L) {return false;}
-  virtual ~Object() {}
+  virtual ~Object() { 
+    objcount--; 
+    ALLOBJ( 
+      if(!all_objects.count(this)) {
+        printf("non-existing object erased\n");
+        inform();
+        }
+      all_objects.erase(this); 
+      )
+    }
   virtual void deleteLua() {}
+  Object() { refcount = 0; next_to_delete = NULL; objcount++; stamp = SDL_GetTicks(); ALLOBJ( all_objects.insert(this); )
+    }
+  void inform_base(const char *s) {
+    printf("%s %p (refs: %d timestamp: %d ntd: %p)\n", s, this, refcount, stamp, next_to_delete);
+    }
+  virtual void inform() { 
+    inform_base("object"); 
+    printf("  name of class is: %s\n", typeid(*this).name());
+    }
   };
+
+extern Object *first_to_delete;
+
+template<class T> T* registerObject(T* o) { 
+  // printf("registerObject %p at refcount = %d\n", o, o->refcount);
+  if(o->refcount == 0 && !o->next_to_delete) {
+    o->next_to_delete = first_to_delete, first_to_delete = o; 
+    }
+  return o;
+  }
+
+extern "C" {
+  void increase_refcount(Object *o);
+  void decrease_refcount(Object *o);
+  }
+  
+template<class T> struct smartptr {
+  T* base;
+  T& operator *() { return *base; }
+  T* operator ->() { return base; }
+  smartptr(T* b) { base = b; if(b) increase_refcount(base); }
+  smartptr() { base = NULL; }
+  bool operator == (smartptr<T> right) const { return base == right.base; }
+  bool operator ! () const { return !base; }
+  operator T* () { return base; }
+  bool operator < (const smartptr<T>& right) const { return base < right.base; }
+  ~smartptr() { if(base) decrease_refcount(base); }
+  smartptr<T>& operator= (const smartptr& x) {
+    if(base) decrease_refcount(base);
+    base = x.base;
+    if(base) increase_refcount(base);
+    return *this;
+    }
+  smartptr<T>& operator= (smartptr&& x) {
+    if(base) decrease_refcount(base);
+    base = x.base;
+    x.base = NULL;
+    return *this;
+    }
+  smartptr(const smartptr<T>& x) {
+    base = x.base;
+    if(base) increase_refcount(base);
+    }
+  };
+
+typedef smartptr<struct Tile> tileptr;
+
+template<class T> T* registerObject(smartptr<T> o) { /* do nothing -- it already has a smart pointer */ return o.base; }
 
 // image
 struct Image : Object {
@@ -211,12 +289,14 @@ struct Image : Object {
   bool locked;
   int changes;
   void setLock(bool lock);
+  void upchange();
   Image(const char *fname);
   Image(int sx, int sy, noteyecolor color = 0);
   Image();
   ~Image();
   void convert();
   std::string title;
+  virtual void inform() { inform_base("image"); printf("  surface = %p, title = %s\n", s, title.c_str()); }
   };
 
 // tile
@@ -226,10 +306,15 @@ struct Tile : Object {
   Tile() : nextinhash(0), previnhash(0) {}
   ~Tile();
   virtual void debug() { printf("Tile\n"); }
+  virtual void inform() { inform_base("tile"); 
+    printf("  name of class is: %s\n", typeid(*this).name());
+    }
   };
 
+extern std::set<struct TileImage*> all_images;
+
 struct TileImage : Tile {
-  Image *i;
+  smartptr<Image> i;
   short ox, oy, sx, sy;
   noteyecolor trans;
   int chid; // character ID
@@ -237,26 +322,42 @@ struct TileImage : Tile {
   struct SDLtexture *sdltexture;
   short tx, ty, bx, by; // bounding box
   int bcurrent; // is the bounding box correct? (bcurrent should equal i->changes)
-  std::vector<struct TransCache*> caches;
+  std::vector<smartptr<struct TransCache> > caches;
   virtual int hash() const;
   virtual void debug();
   TileImage();
   TileImage(int _sx, int _sy);
+#ifdef _WIN32
+  TileImage(TileImage& ti);
+#else
+  TileImage(TileImage& ti) = delete;
+#endif
   ~TileImage();
+  virtual void inform() { 
+#ifndef _WIN32
+    inform_base("image"); printf("  tile of %p (%d,%d,%d,%d)\n", i.base, ox, oy, sx, sy); 
+    for(auto& c: caches) printf("  transcache %p\n", c.base);
+#endif
+    }
   };
 
 struct TileMerge : Tile {
-  int t1, t2;
+  tileptr t1, t2;
   bool over;
   virtual int hash() const;
   virtual void debug();
+  virtual void inform() { 
+    inform_base("merge"); printf("  merge of %p %p (%d)\n", t1.base, t2.base, over);
+    }
   };
 
 struct TileRecolor : Tile {
-  int t1, mode;
+  tileptr t1;
+  int mode;
   noteyecolor color;
   virtual int hash() const;
-  int cache, cachechg;
+  smartptr<TileImage> cache;
+  int cachechg;
   virtual void preprocess();
   virtual void recache(); // redraw the cache
   virtual void debug();
@@ -264,19 +365,21 @@ struct TileRecolor : Tile {
   };
 
 struct TileSpatial : Tile {
-  int t1, sf;
+  tileptr t1;
+  int sf;
   virtual int hash() const;
   virtual void debug();
   };
 
 struct TileLayer : Tile {
-  int t1, layerid;
+  tileptr t1;
+  int layerid;
   virtual int hash() const;
   virtual void debug();
   };
 
 struct TileTransform : Tile {
-  int t1;
+  tileptr t1;
   double dx, dy, sx, sy, dz, rot;
   virtual int hash() const;
   virtual void debug();
@@ -303,6 +406,7 @@ struct fpoint4 {
 
 // viewpar struct for the FPP
 struct viewpar {
+  smartptr<Image> vimg;
   int x0, x1, y0, y1, xm, ym, xs, ys;
   double xz, yz;
   int ctrsize, monsize, objsize, monpush, objpush;
@@ -310,6 +414,7 @@ struct viewpar {
   int side;
   double cameraangle, cameratilt, camerazoom;
   fpoint4 delta;
+  bool hex;
   };
 
 struct drawmatrix {
@@ -317,8 +422,8 @@ struct drawmatrix {
   };
 
 struct TileFreeform : Tile {
-  int t1;
-  FreeFormParam *par;
+  tileptr t1;
+  smartptr<FreeFormParam> par;
   virtual int hash() const;
   virtual void debug();
   };
@@ -327,31 +432,30 @@ struct TileFill : Tile {
   noteyecolor color, alpha;
   virtual int hash() const;
   virtual void debug();
-  TileImage *cache;
+  smartptr<TileImage> cache;
+  ~TileFill();
   };
 
 // font
 struct Font : Object {
-  virtual int gettile(int id) = 0;
-  virtual int gettile(const char* chr) = 0;
+  virtual Tile *gettile(int id) = 0;
+  virtual Tile *gettile(const char* chr) = 0;
   };
 
 struct BitmapFont : Font {
-  int *ti;
+  std::vector<tileptr> ti;
   int cnt;
-  ~BitmapFont() { delete[] ti; }
-  int gettile(int id);
-  int gettile(const char* chr);
+  Tile *gettile(int id);
+  Tile *gettile(const char* chr);
   };
 
+typedef Tile* (*dynamicfontfun)(int i);
+
 struct DynamicFont : Font { 
-  int ref;
-  struct lua_State *L;
-  void deleteLua();
-  ~DynamicFont() { deleteLua(); }
-  std::map<int, int> ti;
-  int gettile(int id);
-  int gettile(const char* chr);
+  dynamicfontfun f;
+  std::map<int, tileptr> ti;
+  Tile *gettile(int id);
+  Tile *gettile(const char* chr);
   };
 
 #ifndef NOTTF
@@ -367,31 +471,43 @@ struct TTFont : Object {
 // screen
 struct Screen : Object {
   int sx, sy;
-  std::vector<int> v;
+  std::vector<tileptr> v;
   void setSize(int _sx, int _sy);
-  void write(int x, int y, const char *buf, Font *f, int color);
-  int& get(int x, int y);
+  void write(int x, int y, const char *buf, Font *f, noteyecolor color);
+  tileptr& get(int x, int y);
   };
 
 // tile mapping cache
 
 extern std::set<struct TileMapping*> all_mappings;
 
+extern tileptr cache_identity;
+
 struct TileMapping : Object {
-  std::vector<int> cache;
-  virtual int apply(int id);
-  virtual void uncache(int id);
-  virtual int applyRaw(int id) = 0;
+  std::unordered_map<Tile*, tileptr> cache;
+  virtual Tile* apply(Tile*);
+  virtual void uncache(Tile*);
+  virtual Tile* applyRaw(Tile*) = 0;
   TileMapping() { all_mappings.insert(this); }
   ~TileMapping() { all_mappings.erase(this); }
+  virtual void inform() { 
+#ifndef _WIN32
+    inform_base("tilemapping"); 
+    int identities = 0;
+    for(auto& p: cache)
+      if(p.second == cache_identity)
+        identities++;
+      else
+        printf("  [%p] -> %p\n", p.first, p.second.base);        
+    printf("  indentities = %d\n", identities);
+#endif
+    }
   };
 
-extern TileMapping 
-  *tmFlat, *tmFloor, *tmCeil, *tmMonst, *tmItem, *tmCenter, *tmFloor, *tmItem,
-  *tmICeil, *tmIWallL, *tmIWallR, *tmWallN, *tmWallE, *tmWallS, *tmWallW,
-  *tmFree, *tmWallTop, *tmWallBot;
-
-extern TileMapping *tmLayer[16];
+extern smartptr<TileMapping> 
+  tmFlat, tmFloor, tmCeil, tmMonst, tmItem, tmCenter, tmFloor, tmItem,
+  tmICeil, tmIWallL, tmIWallR, tmWallN, tmWallE, tmWallS, tmWallW,
+  tmFree, tmWallTop, tmWallBot, tmLayer[16];
 
 // graphical window
 struct Window : Image {
@@ -406,6 +522,7 @@ struct Window : Image {
   bool open(int x, int y, int flags, int renflags, int px, int py);
   void close();
   ~Window() { close(); }
+  smartptr<Image> icon;
 
   // create the surface (s) and texture (tex) of given sizse
   // (it need not be equal to sx,sy -- it might be an auxiliary surface for FPP)
@@ -414,8 +531,8 @@ struct Window : Image {
 
 // process
 struct Process : Object {
-  Screen *s;
-  Font *f;
+  smartptr<Screen> s;
+  smartptr<Font> f;
   const char *cmdline;
   bool isActive;
   int exitcode;
@@ -441,7 +558,8 @@ struct InternalProcess : Process {
   InternalProcess(Screen *scr, Font *f, const char *cmdline);
   ~InternalProcess();
   
-  int back, fore, brushback, brush0;
+  int back, fore;
+  tileptr brushback, brush0;
   
   // int kbuf[IBUFSIZE], modbuf[IBUFSIZE], kbs, kbe, lastmod;
   
@@ -475,8 +593,9 @@ template <class T> struct push {
 
 // stream
 struct NStream : Object {
-  std::set<int> knownout;       // for output streams
-  std::map<int, int> knownin;   // for input  streams
+  int nextid;
+  std::map<smartptr<Object>, int> knownout;  // for output streams
+  std::map<int, smartptr<Object> > knownin;   // for input  streams
 
   virtual void writeChar(char c) = 0;
   virtual char readChar() = 0;
@@ -488,7 +607,7 @@ struct NStream : Object {
   double readDouble();
 
   void writeStr(const std::string& s) {
-    int sz = s.size();
+    int sz = (int) s.size();
     writeInt(sz);
     for(int i=0; i<sz; i++) writeChar(s[i]);
     }
@@ -499,11 +618,13 @@ struct NStream : Object {
     for(int i=0; i<size; i++) v[i] = readChar();
     return v;
     }
-  void writeObj(int x);
-  int readObj();
+  void writeObj(Object* x);
+  Object* readObj();
 
   void readScr(Screen *s);
   void writeScr(Screen *s);  
+  
+  NStream() { nextid = 1; }
   };
 
 struct NCompressedStream : NStream {
@@ -590,6 +711,11 @@ struct Music : Object {
   ~Music();
   void play(int loops);
   };
+
+template<class T> T* unbase(T* x) { return x; }
+template<class T> T* unbase(const smartptr<T>& x) { return x.base; }
+#define Get(Type, x, ofwhat) auto x = dynamic_cast<Type*> (unbase(ofwhat))
+
 #endif
 
 #else
@@ -623,8 +749,12 @@ void checkArg(struct lua_State *L, int q, const char *fname);
 #define luaBool(x) noteye_argBool(L, x)
 #define luaStr(x) noteye_argStr(L, x)
 
-#define luaO(x,t) (byId<t> (luaInt(x), L))
-#define dluaO(x,t) (dbyId<t> (luaInt(x)))
+#define ASSERT_TYPE(x, type, rval) \
+  if(x == NULL) { fprintf(stderr, "null passed\n"); return rval; } \
+  if(!dynamic_cast<type*>(x)) { fprintf(stderr, "type assertion failed, is: [%p] %s\n", x, typeid(*x).name()); return rval; }
+
+// #define luaO(x,t) (byId<t> (luaInt(x), L))
+// #define dluaO(x,t) (dbyId<t> (luaInt(x)))
 
 int noteye_argcount(struct lua_State *L);
 
@@ -656,8 +786,6 @@ void noteye_globalint(const char *name, int value);
 void noteye_globalstr(const char *name, const char *value);
 void noteye_globalfun(const char *name, int f(lua_State *L));
 
-struct Object *noteye_getobj(int id);
-struct Object *noteye_getobjd(int id);
 void noteye_wrongclass(int id, struct lua_State *L);
 
 // make Curses calls refer to Prc, and call the object at stack position 'spos'
@@ -665,12 +793,13 @@ void noteye_wrongclass(int id, struct lua_State *L);
 
 struct BitmapFont *newFont(struct Image *base, int inx, int iny, int trans);
 
-int registerObject(struct Object* o);
-
 struct InternalProcess *noteye_getinternal();
 
 int noteye_getinternalx();
 int noteye_getinternaly();
+
+struct point {int x, y;};
+struct point noteye_getcursor(Process *P);
 
 void noteye_setinternal(struct InternalProcess *Proc, lua_State *L, int spos);
 void noteye_finishinternal(int exitcode);
@@ -685,33 +814,32 @@ struct NStream *openTCPStream(void *skt);
 
 void noteye_initnet();
 
-int addTile(struct Image *i, int ox, int oy, int sx, int sy, int trans);
-int addTileID(int id, int ox, int oy, int sx, int sy, int trans);
-int addSpatial(int t1, int sf);
-int addMerge(int t1, int t2, bool over);
-int addMerge0(int t1, int t2);
-int addMerge1(int t1, int t2);
-int addRecolor(int t1, int color, int mode);
-int addFill(int color, int alpha);
-int addTransform(int t1, double dx, double dy, double sx, double sy, double dz, double rot);
-int addLayer(int t1, int layerid);
-int distillLayer(int x, int layerid);
-int distill(int x, int sp);
-int getChar(int x); 
-int getBak(int x);
-const char* getChar2(int i);
-int getCol(int x);
-int getImage(int x);
-void tileSetChid(int x, int chid);
+TileImage* addTile(struct Image *i, int ox, int oy, int sx, int sy, int trans);
+TileSpatial* addSpatial(Tile *t1, int sf);
+Tile* addMerge(Tile *t1, Tile *t2, bool over);
+Tile* addMerge0(Tile *t1, Tile *t2);
+Tile* addMerge1(Tile *t1, Tile *t2);
+Tile* addRecolor(Tile *t1, noteyecolor color, int mode);
+TileFill* addFill(noteyecolor color, noteyecolor alpha);
+TileTransform* addTransform(Tile *t1, double dx, double dy, double sx, double sy, double dz, double rot);
+TileLayer* addLayer(Tile *t1, int layerid);
+Tile* distillLayer(Tile *x, int layerid);
+Tile* distill(Tile *x, int sp);
+int getChar(Tile *x); 
+noteyecolor getBak(Tile *x);
+const char* getChar2(Tile *i);
+noteyecolor getCol(Tile *x);
+Image *getImage(Tile *x);
+void tileSetChid(Tile *x, int chid);
 
-void saveimage(int id, const char *fname);
-int scrget(int scr, int x, int y);
-void scrset(int scr, int x, int y, int val);
+void saveimage(Image *img, const char *fname);
+Tile *scrget(Screen *scr, int x, int y);
+void scrset(Screen *scr, int x, int y, Tile *val);
 void setdirectansi(int val);
 void setconsolewindowtitle(const char *s);
 
-noteyecolor img_getpixel(int src, int srcX, int srcY);
-void img_setpixel(int src, int srcX, int srcY, noteyecolor pix);
+noteyecolor img_getpixel(Image *src, int srcX, int srcY);
+void img_setpixel(Image *src, int srcX, int srcY, noteyecolor pix);
 
 #ifdef __cplusplus
 int utf8_numbytes(const char *s, int pos = 0);
@@ -754,15 +882,18 @@ void alphablendc(noteyecolor& col, noteyecolor ncol, bool cache);
 #endif
 
 #ifdef __cplusplus
-template<class T> T* byId(int id, lua_State *L) {
-  T* g = dynamic_cast<T*> (noteye_getobj(id));
-  if(!g) noteye_wrongclass(id, L);
-  return g;
+
+extern "C" { 
+  extern int next_noteye_handle;
+  int noteye_assign_handle(Object *o);
+  int noteye_get_handle(Object *o);
+  Object *noteye_by_handle(int handle);
+  void noteye_free_handle(Object *o);
+  void add_event_listener(Object *o);
+  void remove_event_listener(Object *o);
   }
 
-template<class T> T* dbyId(int id) {
-  return dynamic_cast<T*> (noteye_getobjd(id));
-  }
+
 #endif
 
 #ifdef __cplusplus
@@ -770,3 +901,4 @@ template<class T> T* dbyId(int id) {
 #endif
 
 #endif
+

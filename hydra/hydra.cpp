@@ -18,8 +18,8 @@
 #define VER "16.1"
 #define VERSION 1600
 #else
-#define VER "17.1"
-#define VERSION 1720
+#define VER "18.0c"
+#define VERSION 1803
 #endif
 
 #include "utils.cpp"
@@ -40,7 +40,7 @@ void achievement(const char *buf);
 void shareClose() { }
 void shareUpdate() { }
 
-void highscore(const char *what, int val, int highisgood) { }
+void highscore(const char *what, int val, int highisgood, struct playerinfo&) { }
 void share(const string& s) { }
 
 void shform(const string& s, const string& am , const string& is, const string& are) {}
@@ -145,7 +145,7 @@ void twinswap_phase() {
 hydra *twinAlive() {
   if(twin)
     return twin;
-  for(int i=0; i<size(stairqueue); i++)
+  for(int i=0; i<isize(stairqueue); i++)
     if(stairqueue[i]->color == HC_TWIN)
       return stairqueue[i];
   return NULL;
@@ -348,53 +348,6 @@ void movedir(int dir) {
       addMessage("You see "+c.it->getname()+" here.");
     }
 
-  else if(W && W->type == WT_QUAKE && (c.type == CT_WALL || hc)) {
-    weapon *w = W;
-    if(w->size == 0) {
-      addMessage("Club need recharging. Need Scroll of Big Stick.");
-      checkShadow(*shc);
-      return;
-      }
-    w->size--;
-    string exclamation = "!";
-    int i = w->color; while(i != HC_ALIEN) exclamation += "!", i--;
-    if(c.type == CT_WALL)
-      addMessage("The level shakes as you hit the wall"+exclamation);
-    else if(c.h)
-      addMessage("As you hit the "+c.h->name()+", a huge shockwave is released"+exclamation);
-    else
-      addMessage("The poor mushroom shakes and the ground trembles"+exclamation);
-    playSound("../hydra-old/quake", 100, 0);
-    for(int i=0; i<size(hydras); i++) {
-      hydra *h (hydras[i]);
-      h->sheads = h->heads;
-      if(h->lowhead())
-        h->stunforce += h->heads * (w->info().stunturns + 5) / 10;
-      else {
-        h->stunforce += quakefun(h->heads, w->color);
-        }
-      w->sc.sc[WS_HKILL] ++;
-      w->sc.sc[WS_HHEAD] += h->heads;
-      }
-    if(!w->sc.sc[WS_USE]) shareBe("using the " + w->name());
-    w->sc.sc[WS_USE] ++;
-    achievement("HYDRAQUAKES");
-    }
-  
-  else if(W && W->type == WT_RAND && c.h) {
-    ATTACK_ANIMATION;
-    playAttackSound(W, NULL, false, 0);
-    mersenneTwist(W, c.h);
-    }
-  
-  else if(W && W->type == WT_RAND && hc) {
-    playAttackSound(W, NULL, false, 0);
-    ATTACK_ANIMATION;
-    hydra h(HC_MUSH, c.mushrooms, 1, 0);
-    mersenneTwist(W, &h);
-    c.mushrooms = h.heads;
-    }
-  
   else if(W && W->wand() && (c.type == CT_WALL || hc)) {
     if(c.type != CT_WALL) {
       if(!checkShadow(*shc)) 
@@ -638,11 +591,11 @@ void movedir(int dir) {
     if(c.h->color == HC_ALIEN) {
       addMessage("The "+c.h->name()+" is not affected!");
     } else if(c.h->isAncient()) {
-      for(int i=0; i<HCOLORS; i++) c.h->res[i] /= 2;
+      for(int i=0; i<COLORS; i++) c.h->res[i] /= 2;
       addMessage("The "+c.h->name()+" partially resists your spell!");
       }
     else {
-      for(int i=0; i<HCOLORS; i++) c.h->res[i] = 0;
+      for(int i=0; i<COLORS; i++) c.h->res[i] = 0;
       addMessage("The "+c.h->name()+" looks somehow normal now!");
       c.h->clearswnd(); 
       }
@@ -699,7 +652,7 @@ void movedir(int dir) {
     playSound("../hydra-old/rune", headsToVolume(c.mushrooms), 0);
     if(c.h->color == HC_ALIEN)
       addMessage("The "+c.h->name()+" turns into an otherworldly mushroom!");
-    if(c.h->color != HC_VAMPIRE) 
+    else if(c.h->color != HC_VAMPIRE)
       addMessage("The "+c.h->name()+" turns into a mushroom!");
     if(c.h->color == HC_VAMPIRE) {
       stats.unhonor++;
@@ -731,6 +684,72 @@ void movedir(int dir) {
     achievement("ZERO");
     }
   
+  else if(W && W->type == WT_QUAKE && (c.type == CT_WALL || hc)) {
+    weapon *w = W;
+    if(w->size == 0) {
+      addMessage("Club need recharging. Need Scroll of Big Stick.");
+      checkShadow(*shc);
+      return;
+      }
+    w->size--;
+    string exclamation = "!";
+    int i = w->color; while(i != HC_ALIEN) exclamation += "!", i--;
+    if(c.type == CT_WALL)
+      addMessage("The level shakes as you hit the wall"+exclamation);
+    else if(c.h)
+      addMessage("As you hit the "+c.h->name()+", a huge shockwave is released"+exclamation);
+    else
+      addMessage("The poor mushroom shakes and the ground trembles"+exclamation);
+    playSound("../hydra-old/quake", 100, 0);
+    for(int i=0; i<isize(hydras); i++) {
+      hydra *h (hydras[i]);
+      h->sheads = h->heads;
+      if(h->lowhead())
+        h->stunforce += h->heads * (w->info().stunturns + 5) / 10;
+      else {
+        h->stunforce += quakefun(h->heads, w->color);
+        }
+      w->sc.sc[WS_HKILL] ++;
+      w->sc.sc[WS_HHEAD] += h->heads;
+      }
+    if(!w->sc.sc[WS_USE]) shareBe("using the " + w->name());
+    w->sc.sc[WS_USE] ++;
+    achievement("HYDRAQUAKES");
+    }
+  
+  else if(W && W->type == WT_RAND && c.h) {
+    ATTACK_ANIMATION;
+    playAttackSound(W, NULL, false, 0);
+    mersenneTwist(W, c.h);
+    }
+  
+  else if(W && W->type == WT_COLL && c.h) {
+    ATTACK_ANIMATION;
+    playAttackSound(W, NULL, false, 0);
+    collatz(W, c.h);
+    }
+  
+  else if(W && W->type == WT_RAND && hc) {
+    playAttackSound(W, NULL, false, 0);
+    ATTACK_ANIMATION;
+    hydra h(HC_MUSH, c.mushrooms, 1, 0);
+    mersenneTwist(W, &h);
+    c.mushrooms = h.heads;
+    }
+
+  else if(W && W->type == WT_COLL && hc) {
+    playAttackSound(W, NULL, false, 0);
+    ATTACK_ANIMATION;
+    hydra h(HC_MUSH, c.mushrooms, 1, 0);
+    h.zombie = true;
+    collatz(W, &h);
+    c.mushrooms = h.heads;
+    }
+
+  else if(W && W->type == WT_COLL && hc) {
+    addMessage("Your "+W->name()+" cannot be used on mushrooms and zombies.");
+    }
+  
   else if(hc) {
     if(W->xcuts() && W->type != WT_PSLAY && !W->size) {
       if(!checkShadow(*shc)) {
@@ -745,16 +764,24 @@ void movedir(int dir) {
       if(c.h) {
         res = c.h->res[W->color];
         if(res < 0) res = -res * W->size;
+        if(c.h->color == HC_EVOLVE) {
+          if(res > 0) res--;
+          else res = XMUT_INVALID;
+          }
         hc = c.h->heads - c.h->sheads;
         }
-      if(c.mushrooms > 10)
+      if(res == XMUT_INVALID)
+        addMessage("That does not seem to work...");
+      else if(c.mushrooms && P.timemushlimit >= TIME_MUSH_LIMIT)
         addMessage("Hey, stop this! This is just boring.");
       else if(hc < res || (hc == res && !c.h->sheads))
         addMessage("Not enough active heads here...");
       else {
+        if(c.mushrooms) P.timemushlimit++;
         ATTACK_ANIMATION;
         c.attack(W, W->size, NULL);
         W->addStat(WS_USE, 1, 0);
+        // if(c.h->color == HC_EVOLVE) c.h->res[W->color]--;
         cancelspeed();
         }
       }
@@ -895,6 +922,30 @@ bool useKnowledgeOn(sclass *x) {
       } */
   }
 
+int checkValidColor(weapon *wpn, int c) {
+  if(wpn->cuts() || wpn->xcuts() || wpn->type == WT_TIME) {
+    if(c < HCOLORS) return 0;
+    if(c == COLORS-1) return 7;
+    return XMUT_INVALID;
+    }
+  if(wpn->doubles()) {
+    if(c < HCOLORS) return XMUT_INVALID;
+    if(c == COLORS-1) return 15;
+    return 0;
+    }
+  if(wpn->type == WT_SHLD) {
+    if(c < HCOLORS) return 0;
+    else if(c < COLORS-1) return 5;
+    else return 25;
+    }
+  if(wpn->stuns()) {
+    if(c < HCOLORS) return XMUT_INVALID;
+    else if(c < COLORS-1) return 0;
+    else return 20;
+    }
+  return XMUT_INVALID;
+  }
+
 bool useup(int ii, weapon *orb) {
   /* if(ii < IT_SXMUT && P.race == R_ELF) {
     ii = IT_SXMUT;
@@ -958,6 +1009,7 @@ bool useup(int ii, weapon *orb) {
           else if(wpn[i]->size > bigsize) bigsize = wpn[i]->size, bigat = i;
           }
         if(bigat >= 0 && wpn[bigat]->type == WT_ORB) error = true;
+        if(bigat >= 0 && wpn[bigat]->type == WT_QUAKE) error = true;
         if(!error)
           for(int i=0; i<P.arms; i++) if(havebit(P.ambiArm, i)) if(i != bigat) {
             if(wpn[i]->size & 1) error = true;
@@ -1067,7 +1119,7 @@ bool useup(int ii, weapon *orb) {
       break;
 
     case IT_PARMS:
-      P.arms++;
+      if(P.arms <= 10) P.arms++;
       addMessage(P.arms & 1 ? "You suddenly grow a new right arm!" : "You suddenly grow a new left arm!");
       
       {int ig = P.inv[IT_PARMS] - (P.race == R_TROLL ? 0 : 1);      
@@ -1124,7 +1176,7 @@ bool useup(int ii, weapon *orb) {
         }
 
       if(ii == IT_PAMBI && P.race == R_ELF && !orb) {
-        addMessage("Elves' superior fighting style does not work with this potion, but...");
+        addMessage("Elvish superior fighting style does not work with this potion, but...");
         }
       
       if(ii == IT_PAMBI && P.arms == 2) {
@@ -1145,7 +1197,7 @@ bool useup(int ii, weapon *orb) {
         }
       
       if(ii == IT_PSWIP && P.race == R_ELF) {
-        addMessage("Your Elven skill of attacking multiple targets feels more precise.");
+        addMessage("Your elvish skill of attacking multiple targets feels more precise.");
         }
       
       if(ii == IT_PSWIP && P.race == R_CENTAUR) {
@@ -1154,14 +1206,14 @@ bool useup(int ii, weapon *orb) {
       
       if(ii == IT_PKNOW) {
         #ifdef NOTEYE
-        addMessage("Right click a hydra, or select it from 'f', to analyze it.");
+        addMessage("Right click a hydra, or select it from 'f', to analyze.");
         #else
-        addMessage("Press 'f' and select a hydra to analyze it.");
+        addMessage("Press 'f' and select a hydra to analyze.");
         #endif
         }
       
       if(ii == IT_PAMBI && P.race == R_ELF) {
-        addMessage("Elves' superior fighting style does not work with this potion, but...");
+        addMessage("Elvish superior fighting style does not work with this potion, but...");
         }
       
       if(ii == IT_PAMBI && P.race == R_TWIN) {
@@ -1190,7 +1242,7 @@ bool useup(int ii, weapon *orb) {
 
 bool canGoDown() {
   
-  for(int i=0; i<size(hydras); i++)
+  for(int i=0; i<isize(hydras); i++)
     if(!hydras[i]->lowhead() && !hydras[i]->zombie)
       return false;
 
@@ -1199,7 +1251,7 @@ bool canGoDown() {
 
 bool noEnemies() {
   
-  for(int i=0; i<size(hydras); i++)
+  for(int i=0; i<isize(hydras); i++)
     if(!hydras[i]->zombie)
       return false;
 
@@ -1296,6 +1348,8 @@ void initCharacter() {
     P.inv[IT_RSTUN]++;
     P.inv[IT_RDEAD]++;        
     P.inv[it3[hrand(3)]]++;
+    if(P.race == R_ATLANTEAAN)
+      P.inv[IT_SXMUT]++;
     }
 
   else {
@@ -1355,6 +1409,7 @@ void initCharacter() {
     pinfo.trollwpn.push_back(new weapon(4, 1, WT_TIME));
     pinfo.trollwpn.push_back(new weapon(5, 10, WT_RAIN));
     pinfo.trollwpn.push_back(new weapon(1, 1, WT_RAND));
+    pinfo.trollwpn.push_back(new weapon(12, 0, WT_COLL));
     pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_PFAST), 60, WT_ORB));
     pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_RCONF), 61, WT_ORB));
     pinfo.trollwpn.push_back(new weapon(getOrbForItem(IT_RGROW), 62, WT_ORB));
@@ -1366,7 +1421,7 @@ void initCharacter() {
     pinfo.trollwpn.push_back(newTrap(7, 10, WT_BLUNT));
 
     pinfo.trollkey.clear();
-    for(int i=0; i<size(pinfo.trollwpn); i++)
+    for(int i=0; i<isize(pinfo.trollwpn); i++)
       pinfo.trollkey.push_back(i<26 ? 'a'+i : 'A'+(i-26));
     }    
 
@@ -1374,7 +1429,7 @@ void initCharacter() {
     addMessage("Welcome to the Tutorial!");
   
   else
-    addMessage("Welcome to Hydra Slayer v"VER"!");
+    addMessage("Welcome to Hydra Slayer v" VER "!");
   }
 
 void initGame() {

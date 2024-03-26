@@ -81,6 +81,8 @@ void noteye_refresh() {
       }
     lua_pop(internalstate, 1);
     }
+  
+  noteye_gc();
   }
 
 int halfdelaymode = -1;
@@ -113,6 +115,7 @@ SDL_Event *noteye_getevent() {
 
 int noteye_eventtokey(SDL_Event *ev) {
   SDL_KeyboardEvent& kev(ev->key);
+  int mod = kev.keysym.mod;
 
   switch(ev->type) {
     case SDL_TEXTINPUT:
@@ -138,10 +141,14 @@ int noteye_eventtokey(SDL_Event *ev) {
 
   if(!down) return 0;
 
+  bool numl = mod & KMOD_NUM;
+  
+  // printf("mod = %x sym = %x\n", mod, sym);
+
   int sym = kev.keysym.sym;
   
-  #define Snd(key, x) else if(sym == SDLK_ ## key) retkey = x;
-  #define SndKP(key, x) else if(sym == SDLK_KP_ ## key) retkey = x;
+  #define Snd(key, x) else if(sym == SDLK_ ## key) retkey = (x);
+  #define SndKP(key, x) else if(sym == SDLK_KP_ ## key) retkey = (x);
   
   if(sym == SDLK_LSHIFT) return 0;
   else if(sym == SDLK_RSHIFT) return 0;
@@ -178,16 +185,16 @@ int noteye_eventtokey(SDL_Event *ev) {
   Snd(END, D_END)
   Snd(PAGEUP, D_PGUP)
   Snd(PAGEDOWN, D_PGDN)
-
-  SndKP(8, D_UP)
-  SndKP(2, D_DOWN)
-  SndKP(6, D_RIGHT)
-  SndKP(4, D_LEFT)
-  SndKP(7, D_HOME)
-  SndKP(1, D_END)
-  SndKP(9, D_PGUP)
-  SndKP(3, D_PGDN)
-  SndKP(5, D_CTR)
+  
+  SndKP(8, numl ? 0 : D_UP)
+  SndKP(2, numl ? 0 : D_DOWN)
+  SndKP(6, numl ? 0 : D_RIGHT)
+  SndKP(4, numl ? 0 : D_LEFT)
+  SndKP(7, numl ? 0 : D_HOME)
+  SndKP(1, numl ? 0 : D_END)
+  SndKP(9, numl ? 0 : D_PGUP)
+  SndKP(3, numl ? 0 : D_PGDN)
+  SndKP(5, numl ? 0 : D_CTR)
 
   #undef Snd
   #undef SndKP
@@ -421,7 +428,7 @@ bool InternalProcess::checkEvent(lua_State *L) {
   if(!isActive) {
     lua_newtable(L);
     noteye_table_setInt(L, "type", evProcQuit);
-    noteye_table_setInt(L, "obj", P->id);
+    noteye_table_setInt(L, "obj", noteye_get_handle(P));
     noteye_table_setInt(L, "exitcode", exitcode);
     return true;
     }
@@ -430,7 +437,7 @@ bool InternalProcess::checkEvent(lua_State *L) {
     changed = false;
     lua_newtable(L);
     noteye_table_setInt(L, "type", evProcScreen);
-    noteye_table_setInt(L, "obj", id);
+    noteye_table_setInt(L, "obj", noteye_get_handle(P));
     return true;
     }
   
@@ -442,7 +449,7 @@ void InternalProcess::setColor(int _fore, int _back) {
   back = _back;
   fore = _fore;
   brushback = addFill(back, 0xffffff);
-  int rec = addRecolor(f->gettile(32), fore, 0xffffff);
+  Tile *rec = addRecolor(f->gettile(32), fore, 0xffffff);
   brush0 = addMerge(brushback, rec, false);
   }
 
@@ -450,23 +457,13 @@ int InternalProcess::getCursorSize() {
   return cursorsize;
   }
 
-#ifdef USELUA
-
 extern "C" {
 
-int lh_internal(lua_State *L) {
-  checkArg(L, 3, "internal");
-
-  P = new InternalProcess(luaO(1, Screen), luaO(2, Font), luaStr(3));
-  
-  return retObjectEv(L, P);
+InternalProcess* internal(Screen *s, Font *f, const char *str) {
+  P = new InternalProcess(s, f, str);
+  add_event_listener(registerObject(P));
+  return P;
   }
-
-}
-
-#endif
-
-extern "C" {
 
 void noteye_setinternal(InternalProcess *Proc, lua_State *L, int spos) {
   P = Proc;
@@ -536,6 +533,7 @@ void noteye_uifinish() {
     if(status == 0) break;
     if(status == LUA_YIELD && t>0) { t--; continue; }
     noteyeError(12, "uifinish did not finish thread", lua_tostring(uithread, -1), status);
+    break;
     }
   uithread_running = false;
   uithread = NULL;

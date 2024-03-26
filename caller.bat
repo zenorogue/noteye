@@ -6,12 +6,12 @@ if not exist %1\%2.exe goto :gamemissing
 
 :gamefound
 cd %1
-%2
+%2 %4 %5 %6 %7 %8
 exit
 
 :batchfound
 cd batch
-%2
+%2 %4 %5 %6 %7 %8
 exit
 
 :gamemissing

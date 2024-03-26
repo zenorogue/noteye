@@ -169,6 +169,7 @@ void createLog(bool saved) {
   STATI(ettinwnd, " wounds from armed attacks\n");
   STAT(ivykill,   " ivy hydras were killed\n");
   STAT(wizardkill," arch-hydras were killed\n");
+  STAT(evolkill," evolving hydras were killed\n");
   STAT(wiztimes,   " times Arch-Hydras aided other hydras\n");
   STAT(alienkill, " alien hydras have been killed\n");
   STAT(dragonkill," dragons were killed\n");
@@ -286,10 +287,10 @@ void addCurrentInfoToLog() {
   glog.push_back("Weapons at the end:\n");
   for(int i=0; i<P.arms; i++) if(wpn[i]) weaponToLog(wpn[i], "");
 
-  if(size(pinfo.trollkey)) {
+  if(isize(pinfo.trollkey)) {
     glog.push_back("\n");
     glog.push_back("Titan weapon inventory:\n");
-    for(int i=0; i<size(pinfo.trollkey); i++) {
+    for(int i=0; i<isize(pinfo.trollkey); i++) {
       string s = "[";
       s += pinfo.trollkey[i];
       s += "] ";
@@ -333,9 +334,9 @@ void addCurrentInfoToLog() {
 
   glog.push_back("\n");
   glog.push_back("Last messages:\n");
-  int from = size(msgs)-loglines;
+  int from = isize(msgs)-loglines;
   if(from < 0) from = 0;
-  for(int f=from; f<size(msgs); f++) glog.push_back("  "+msgs[f]+"\n");  
+  for(int f=from; f<isize(msgs); f++) glog.push_back("  "+msgs[f]+"\n");  
   }
 
 void editString(string& s, string title = "Enter the name: ") {
@@ -353,8 +354,8 @@ void editString(string& s, string title = "Enter the name: ") {
     }
   }
 
-bool invalidGame() {
-  return P.flags & dfsInvalid;
+bool invalidGame(playerinfo& pi) {
+  return pi.player.flags & dfsInvalid;
   }
 
 bool validChallengeGame() {
@@ -420,17 +421,36 @@ bool eqstr(const string& s1, const string& s2) {
   return true;
   }
 
+void updateHighscores(playerinfo &Pi) {
+  highscore("hydras killed", Pi.stats.hydrakill, 1, Pi);
+  if(!stats.usedup[IT_PLIFE])
+    highscore("hydras killed/no life", Pi.stats.hydrakill, 1, Pi);
+  if(Pi.stats.endtype >= 3)
+  if(Pi.stats.woundwin || Pi.stats.treasure || Pi.stats.armscore) {
+    highscore("wounds to win/partial", Pi.stats.woundwin, -1, Pi);
+    highscore("value of items used/partial", Pi.stats.treasure, -1, Pi);
+    highscore("mutation score/partial", Pi.stats.armscore, -1, Pi);
+    }
+  if(Pi.stats.endtype >= 6)
+  if(Pi.stats.woundwin2 || Pi.stats.treasure2 || Pi.stats.armscore2) {
+    highscore("wounds to win/full", Pi.stats.woundwin2, -1, Pi);
+    highscore("value of items used/full", Pi.stats.treasure2, -1, Pi);
+    highscore("mutation score/full", Pi.stats.armscore2, -1, Pi);
+    }
+  }
+
 void viewHall(bool current) {
   bool inChallenge = P.flags & dfChallenge;
   savefile = fopen((inChallenge?challname:scorename).c_str(), "rb");
   pi.clear();
+  if(!inChallenge) updateHighscores(pinfo);
   if(savefile) {
     error = false;
     
     while(not(feof(savefile))) {
       playerinfo Pi;
       load(Pi.player);
-      printf("error encountered: %d\n", error);
+      if(error) printf("error encountered: %d\n", error);
       if(error) break;
       loadStats(Pi.stats, Pi.player.saveformat);
       Pi.charname = loadString();
@@ -439,6 +459,9 @@ void viewHall(bool current) {
       if(inChallenge) load(Pi.cdata);
       if(inChallenge && Pi.player.gameseed != P.gameseed) continue;
       pi.push_back(Pi);
+      if(!inChallenge) {
+        updateHighscores(Pi);
+        }
       }
     fclose(savefile);
     }
@@ -477,7 +500,7 @@ void viewHall(bool current) {
     int cury = 1, at = startat;
     
     while(cury < 19) {
-      if(at >= size(pi)) break;
+      if(at >= isize(pi)) break;
       playerinfo& Pi(pi[at]);
       if(!global && Pi.username != pinfo.username) { at++; continue; }
       if(crace >= 0 && Pi.player.race != crace) { at++; continue; }
@@ -606,6 +629,9 @@ void viewHall(bool current) {
     if(tosync) halfdelay(1); else cbreak();
     int c = ghch(IC_HALL);
     if(tosync) cbreak();
+
+    if(c >= 'A' && c <= 'Z') c |= 32;
+
     switch(c) {
       case 'w': case 'c': case 'b': case 'u': case 'h': case 'm': case 'e':
         sorttype = c;
@@ -624,11 +650,11 @@ void viewHall(bool current) {
         startat += 10;
         break;
       
-      case 'a':
+      case 'a': case 'A':
         viewAchievements(pi, global);
         break;
       
-      case 'o':
+      case 'o': case 'O':
         startat ++;
         break;
       
@@ -653,8 +679,8 @@ void viewHall(bool current) {
         if(c == D_PGUP) startat -= 10;
         if(c == D_PGDN) startat += 10;
         if(c == D_HOME) startat = 0;
-        if(c == D_END ) startat = size(pi);
-        if(startat > size(pi)-17) startat = size(pi) - 17;
+        if(c == D_END ) startat = isize(pi);
+        if(startat > isize(pi)-17) startat = isize(pi) - 17;
         if(startat < 0) startat = 0;
         break;
       }
@@ -664,14 +690,14 @@ void viewHall(bool current) {
 void clearGame() {
   // if(!gameExists) return;
   for(int i=0; i<GLEVELS; i++) {
-    for(int j=0; j<size(toput[i]); j++) delete toput[i][j];
+    for(int j=0; j<isize(toput[i]); j++) delete toput[i][j];
     toput[i].clear();
     }
   gameExists = false;
   
   pinfo.player.flags |= dfCleanup;
   
-  while(size(hydras))
+  while(isize(hydras))
     M[hydras[0]->pos].hydraDead(NULL);
 
   pinfo.player.flags &= ~dfCleanup;
@@ -831,7 +857,10 @@ void mainmenu() {
         break;
     
       case 5:
-        addstr("You have won the battle, but not the war! Do you want to go home anyway?");
+        if(P.flags & dfChallenge)
+          addstr("You have won the Challenge!");
+        else
+          addstr("You have won the battle, but not the war! Do you want to go home anyway?");
         break;
 
       case 6:
@@ -1023,7 +1052,7 @@ void mainmenu() {
         initScreen();
         FILE *f = fopen(logname.c_str(), "wt");
         if(f) {
-          for(int i=0; i<size(glog); i++) {
+          for(int i=0; i<isize(glog); i++) {
             fprintf(f, "%s", glog[i].c_str());
             #ifndef ANDROID
             printf("%s", glog[i].c_str());
@@ -1180,7 +1209,7 @@ void randomChallengeMenu() {
         break;
       
       case 't': 
-        move(17, 0); col(15); addstr("Start the random challenge in Debug mode? (y/n)");
+        move(23, 0); col(15); addstr("Start the random challenge in Debug mode? (y/n)");
         if(!yesno(IC_MYESNO)) continue;
         if(selectRace(true)) {
           P.flags = dfChallenge | dfDebug;
@@ -1200,16 +1229,18 @@ bool selectRace(bool rchal) {
   
     move(1, 2); col(15); addstr("Select your race: ");
 
-    #ifdef ANDROID
+    /* #ifdef ANDROID
     move(1, 40);
     #else
     move(1, 30);
-    #endif
+    #endif */
+    
+    move(1, 20);
 
     for(int i=0; i<RACES; i++) if(i != R_ELF) {
       if(i) { col(8); addstr(" | "); }
       bool light = true;
-      for(int l=0; l<size(rinf[i].rname); l++) {
+      for(int l=0; l<isize(rinf[i].rname); l++) {
         char c = rinf[i].rname[l];
         if(rinf[i].rkey == tolower(c) && light) col(14), light = false;
         else if(i == P.race) col(15);

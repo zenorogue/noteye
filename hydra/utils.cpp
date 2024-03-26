@@ -28,6 +28,7 @@ const char *hydraver = VER;
 
 int getVGAcolorX(int a) { 
   if(a == 18) return 0x2004000;
+  if(a == 20) return 0x4000000 + 0x764e7c*2;
   if(a == 21) return 0x5FF8000;
   return getVGAcolor(a);
   }
@@ -50,15 +51,15 @@ void refresh(int context) { refresh(); }
 #include <memory.h>
 #include <math.h>
 #include <time.h>
+#include <random>
 
 //#include <io.h>
 
 // randomness
 
-#include "mtrand.cpp"
 #define HRANDMAX 0x7FFFFFFF
 
-MTRand_int32 randgen, *currand = &randgen;
+std::mt19937 randgen, *currand = &randgen;
 
 int hrandpos() { return (*currand)() & HRANDMAX; }
 
@@ -69,8 +70,8 @@ int hrand(int i) {
 int onein(int i) { return hrand(i) == 0; }
 
 struct tmprand {
-  MTRand_int32 what;
-  MTRand_int32 *last;
+  std::mt19937 what;
+  std::mt19937 *last;
   tmprand(int i): what(i) { last = currand; currand = &what; what(); what(); what(); }
   ~tmprand() { currand = last; }
   };
@@ -90,11 +91,17 @@ string itsf(int i, int spc) {
   return buf;
   }
 
+int digitcount(int x) {
+  if(x<0) return 1 + digitcount(-x);
+  else if(x<10) return 1;
+  else return digitcount(x/10) + 1;
+  }
+
 int bitcount(int x) { return x ? (x&1) + bitcount(x>>1) : 0; }
 
 bool havebit(int set, int bit) { return (set>>bit)&1; }
 
-template<class T> int size(const T& u) { return u.size(); }
+template<class T> int isize(const T& u) { return u.size(); }
 
 // vector utilities:
 struct vec2 {
@@ -215,7 +222,7 @@ int primediv(int x) {
 vector<int> sieve;
 
 int getPrimeIndex(int x) {
-  if(size(sieve) == 0) {
+  if(isize(sieve) == 0) {
     sieve.resize(SIEVE);
     for(int i=0; i<SIEVE; i++) sieve[i] = true;
     sieve[0] = 0; sieve[1] = 0;
@@ -261,8 +268,6 @@ void sendSwapEvent();
 #define ATT_PLAYER -2
 void sendAttackEvent(int hid, vec2 from, vec2 to);
 void playSound(const char *fname, int vol = 100, int msToWait = 0);
-
-bool invalidGame();
 
 int getOrbForItem(int i);
 void takeWounds(int thc);

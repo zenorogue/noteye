@@ -4,28 +4,31 @@
 
 namespace noteye {
 
+std::set<TileImage*> all_images;
+
 #define HASHMAX 65535
 
 #define COLMOD 65519
 
 void TileImage::debug() {
-  printf("%d: image from %d [%s]\n", id, i->id, i->title.c_str());
+  printf("%p: image from %p [%s]\n", this, i.base, i->title.c_str());
   }
 
+int tohash(Object *t) {
+  return (int)(long long)t;
+  }
+ 
+template<class T> int tohash(const smartptr<T>& t) {
+  return (int)(long long)t.base;
+  }
+ 
 int TileMerge::hash() const {
-  return (t1 ^ (t2 * 13157)) & HASHMAX;
+  return (tohash(t1) ^ (tohash(t2) * 13157)) & HASHMAX;
   }
-
-void Deb(int x) { 
-  Get(Tile, T, x); 
-  if(T) T->debug();
-  else printf("%d: not a tile\n", x);
-  }
-
 
 void TileMerge::debug() {
-  printf("%d: merge %d + %d\n", id, t1, t2);
-  Deb(t1); Deb(t2);
+  printf("%p: merge %p + %p\n", this, t1.base, t2.base);
+  t1->debug(); t2->debug();
   }
 
 int TileFill::hash() const {
@@ -33,56 +36,56 @@ int TileFill::hash() const {
   }
 
 void TileFill::debug() {
-  printf("%d: color %8x alpha %8x\n", id, color, alpha);
+  printf("%p: color %8x alpha %8x\n", this, color, alpha);
   }
 
 int TileRecolor::hash() const {
-  return ((color % COLMOD) ^ (mode + t1 * 13157)) & HASHMAX;
+  return ((color % COLMOD) ^ (mode + tohash(t1) * 13157)) & HASHMAX;
   }
 
 int TileImage::hash() const {
-  return (i->id + ox * 513 + oy * 1351) & HASHMAX;
+  return (tohash(i) + ox * 513 + oy * 1351) & HASHMAX;
   }
 
 void TileRecolor::debug() {
-  printf("%d: recolor %d, color %8x mode %d\n", id, t1, color, mode);
-  Deb(t1);
+  printf("%p: recolor %p, color %8x mode %d\n", this, t1.base, color, mode);
+  t1->debug();
   }
 
 int TileSpatial::hash() const {
-  return (t1+sf) & HASHMAX;
+  return (tohash(t1)+sf) & HASHMAX;
   }
 
 void TileSpatial::debug() {
-  printf("%d: %d, spatial %8x\n", id, t1, sf);
-  Deb(t1);
+  printf("%p: %p, spatial %8x\n", this, t1.base, sf);
+  t1->debug();
   }
 
 int TileLayer::hash() const {
-  return (t1+layerid) & HASHMAX;
+  return (tohash(t1)+layerid) & HASHMAX;
   }
 
 void TileLayer::debug() {
-  printf("%d: %d, layer %d\n", id, t1, layerid);
-  Deb(t1);
+  printf("%p: %p, layer %d\n", this, t1.base, layerid);
+  t1->debug();
   }
 
 int TileTransform::hash() const {
-  return (t1+1973) & HASHMAX;
+  return (tohash(t1)+1973) & HASHMAX;
   }
 
 void TileTransform::debug() { 
-  printf("%d: transform %d\n", id, t1);
-  Deb(t1);
+  printf("%p: transform %p\n", this, t1.base);
+  t1->debug();
   }
 
 int TileFreeform::hash() const {
-  return (t1+par->id) & HASHMAX;
+  return (tohash(t1)+tohash(par)) & HASHMAX;
   }
 
 void TileFreeform::debug() { 
-  printf("%d: freeform %d\n",id, t1);
-  Deb(t1);
+  printf("%p: freeform %p\n", this, t1.base);
+  t1->debug();
   }
 
 Tile *hashtab[HASHMAX+1];
@@ -128,9 +131,12 @@ int hashok = 0, hashcol = 0;
 Tile::~Tile() { 
   if(nextinhash) nextinhash->previnhash = previnhash;
   if(previnhash) *previnhash = nextinhash; 
+
+  for(auto mapping: all_mappings)
+    mapping->uncache(this);
   }
 
-template<class T> int registerTile(const T& x) {
+template<class T> T* registerTile(const T& x) {
 
   int hsh = x.hash();
   
@@ -152,7 +158,7 @@ template<class T> int registerTile(const T& x) {
         y->previnhash = hso;
         *hso = y;
         }
-      return y->id; 
+      return y; 
       }
     else {
       hashcol++;
@@ -162,21 +168,25 @@ template<class T> int registerTile(const T& x) {
     
   T *xc = new T;
   *xc = x;
+  if(xc->refcount || xc->next_to_delete) printf("bad copy\n");
   xc->nextinhash = *hso;
   if(*hso) (*hso)->previnhash = &(xc->nextinhash);
   xc->previnhash = hso;
   *hso = xc;
-  int id = registerObject(xc);
+  registerObject(xc);
   xc->preprocess();
-  return id;
+  return xc;
   }
 
-int addTile(Image *i, int ox, int oy, int sx, int sy, int trans) {
+extern "C" {
+
+TileImage* addTile(Image *i, int ox, int oy, int sx, int sy, int trans) {
   if(sx == 0 || sy == 0) {
     if(logfile)
       fprintf(logfile, "WARNING: attept to create tile of size %dx%d", sx, sy);
     return 0;
     }
+  if(i == NULL) return NULL;
   TileImage T(sx, sy);
   T.i = i;
   T.ox = ox;
@@ -185,10 +195,10 @@ int addTile(Image *i, int ox, int oy, int sx, int sy, int trans) {
   return registerTile(T);
   }
 
-int addMerge(int t1, int t2, bool over) {
+Tile* addMerge(Tile *t1, Tile *t2, bool over) {
   // an optimization for merging zeros
-  if(t1 == 0) return t2;
-  if(t2 == 0) return t1;
+  if(t1 == NULL) return t2;
+  if(t2 == NULL) return t1;
 
   TileMerge T;
   T.t1 = t1;
@@ -198,23 +208,23 @@ int addMerge(int t1, int t2, bool over) {
   return registerTile(T);
   }
 
-int addLayer(int t1, int layerid) {
-  if(t1 == 0) return 0;
+TileLayer* addLayer(Tile *t1, int layerid) {
+  if(t1 == NULL) return NULL;
   TileLayer TL;
   TL.t1 = t1;
   TL.layerid = layerid;
   return registerTile(TL);
   }
 
-int addSpatial(int t1, int sf) {
-  if(t1 == 0) return 0;
+TileSpatial* addSpatial(Tile *t1, int sf) {
+  if(t1 == NULL) return NULL;
   TileSpatial TSp;
   TSp.t1 = t1;
   TSp.sf = sf;
   return registerTile(TSp);
   }
 
-int addTransform(int t1, double dx, double dy, double sx, double sy, double dz, double rot) {
+TileTransform* addTransform(Tile *t1, double dx, double dy, double sx, double sy, double dz, double rot) {
   TileTransform TT;
   TT.t1 = t1;
   TT.dx = dx; TT.dy = dy;
@@ -223,22 +233,29 @@ int addTransform(int t1, double dx, double dy, double sx, double sy, double dz, 
   return registerTile(TT);
   }
 
-int addFreeform(int t1, FreeFormParam *p) {
-  if(t1 == 0) return 0;
+TileFreeform* addFreeform(Tile *t1, FreeFormParam *p) {
+  if(t1 == NULL) return NULL;
   TileFreeform TFF;
   TFF.t1 = t1;
   TFF.par = p;
   return registerTile(TFF);
   }
 
-int cloneTransform(int t1, TileTransform *example) {
-  if(t1 == 0) return 0;
-  TileTransform TT = *example;
+TileTransform* cloneTransform(Tile *t1, TileTransform *example) {
+  if(t1 == NULL) return NULL;
+  TileTransform TT;
   TT.t1 = t1;
+  TT.dx = example->dx;
+  TT.dy = example->dy;
+  TT.sx = example->sx;
+  TT.sy = example->sy;
+  TT.dz = example->dz;
+  TT.rot = example->rot;
   TT.nextinhash = NULL;
   TT.previnhash = NULL;
   return registerTile(TT);
   }
+}
 
 //--
 
@@ -247,9 +264,8 @@ int cloneTransform(int t1, TileTransform *example) {
 void TileRecolor::recache() {
   if(!cache) return;
   Get(TileImage, TIC, t1);
-  Get(TileImage, CACHE, cache);
   int sx = TIC->sx, sy = TIC->sy;
-  Image *i = CACHE->i;
+  Image *i = cache->i.base;
   for(int y=0; y<sy; y++) for(int x=0; x<sx; x++) {
     noteyecolor pix = qpixel(TIC->i->s, TIC->ox+x, TIC->oy+y);
     if(istrans(pix, TIC->trans)) continue;
@@ -258,19 +274,27 @@ void TileRecolor::recache() {
     }
   }
 
+TileRecolor::~TileRecolor() {
+  if(cache) {
+    Get(TileImage, TIC, t1);
+    totalimagecache -= TIC->sx * TIC->sy;
+    IMGOBSERVE ( printf("... DEL tilerecolor cache %p %s\n", TIC->i.base, TIC->i->title.c_str()); )
+    }
+  }
+  
 void TileRecolor::preprocess() {
   Get(TileImage, TIC, t1);
   if(TIC) {
     int sx = TIC->sx, sy = TIC->sy;
     Image *i = new Image(sx, sy, TIC->trans == transAlpha ? 0 : rectrans);
     totalimagecache += sx * sy;
-    i->id = -1;
     char buf[256];
     sprintf(buf, "[%08x %d] ", color, mode);
     i->title = buf + TIC->i->title;
     cache = addTile(i, 0, 0, sx, sy, TIC->trans == transAlpha ? transAlpha : rectrans);
     cachechg = TIC->i->changes;
     recache();
+    IMGOBSERVE ( printf("... %p tilerecolor cache %s\n", i, i->title.c_str()); )
     }
   else
     cache = 0;
@@ -278,17 +302,9 @@ void TileRecolor::preprocess() {
 
 #include <typeinfo>
 
-TileRecolor::~TileRecolor() {
-  // if(cache) printf(":%d: cache #%d [%s]\n", id, cache, typeid(*objs[cache]).name());
-  TileImage *Cache = dbyId<TileImage> (cache);
-  if(Cache) {
-    totalimagecache -= Cache->sx * Cache->sy;
-    delete Cache->i;
-    deleteobj(Cache->id);
-    }  
-  }
+extern "C" {
 
-int addFill(int color, int alpha) {
+TileFill *addFill(noteyecolor color, noteyecolor alpha) {
   TileFill TF;
   TF.color = color;
   TF.alpha = alpha;
@@ -296,16 +312,16 @@ int addFill(int color, int alpha) {
   return registerTile(TF);
   }
 
-int addRecolor(int t1, int color, int mode) {
+Tile *addRecolor(Tile *t1, noteyecolor color, int mode) {
 
   // optimizations first
-  if(color == -1) return t1;
-  if(t1 == 0) return 0;
+  if(color == noteyecolor(-1)) return t1;
+  if(t1 == NULL) return NULL;
   
-  Get(TileRecolor, TR, t1);
-  if(TR && TR->mode == mode) return addRecolor(TR->t1, color, mode);
+  auto TR = dynamic_cast<TileRecolor*> (t1);
+  if(TR && TR->mode == mode) return addRecolor(TR->t1.base, color, mode);
 
-  Get(TileFill, TF, t1);
+  auto TF = dynamic_cast<TileFill*> (t1);
   if(TF) return addFill(color, TF->alpha);
 
   TileRecolor T;
@@ -317,11 +333,11 @@ int addRecolor(int t1, int color, int mode) {
   return registerTile(T);
   }
 
-int getCol(int x) {
-  if(!x) return -1;
+noteyecolor getCol(Tile *x) {
+  if(!x) return noteyecolor(-1);
   
   Get(TileImage, TI, x);
-  if(TI) return -1;
+  if(TI) return noteyecolor(-1);
 
   Get(TileRecolor, TR, x);
   if(TR) return TR->color;
@@ -332,41 +348,41 @@ int getCol(int x) {
   return 0;
   }
 
-int getImage(int x) {
-  if(!x) return 0;
+Image *getImage(Tile *x) {
+  if(!x) return NULL;
   
   Get(TileImage, TI, x);
-  if(TI) return TI->i->id;
+  if(TI) return TI->i.base;
 
   Get(TileRecolor, TR, x);
-  if(TR) return getImage(TR->t1);
+  if(TR) return getImage(TR->t1.base);
   
   Get(TileMerge, TM, x);
   if(TM) {
-    int u = getImage(TM->t2);
+    Image *u = getImage(TM->t2.base);
     if(u) return u;
-    return getImage(TM->t1);
+    return getImage(TM->t1.base);
     }
   
   return 0;
   }
 
-int getChar(int x) {
+int getChar(Tile *x) {
   if(!x) return -1;
   
   Get(TileImage, TI, x);
   if(TI) return TI->chid;
 
   Get(TileRecolor, TR, x);
-  if(TR) return getChar(TR->t1);
+  if(TR) return getChar(TR->t1.base);
   
   Get(TileMerge, TM, x);
-  if(TM) return getChar(TM->over ? TM->t1 : TM->t2);
+  if(TM) return getChar(TM->over ? TM->t1.base : TM->t2.base);
   
   return 0;
   }
 
-int getBak(int x) {
+noteyecolor getBak(Tile *x) {
   //Get(TileRecolor, TR, x);
   //if(TR) return TR->color;
   
@@ -374,30 +390,30 @@ int getBak(int x) {
   if(TF) return TF->color;
   
   Get(TileMerge, TM, x);
-  if(TM) return getBak(TM->t1);
+  if(TM) return getBak(TM->t1.base);
   
-  return -1;
+  return noteyecolor(-1);
   }
 
-void tileSetChid(int x, int chid) {
-  TileImage *TI = dbyId<TileImage> (x);
+void tileSetChid(Tile *x, int chid) {
+  Get(TileImage, TI, x);
   if(TI) TI->chid = chid;
   }
 
-int tileSetFont(int x, Font *f) {
+Tile *tileSetFont(Tile *x, Font *f) {
   Get(TileImage, TI, x);
   if(TI && TI->chid >= 0 && TI->chid < 256) return f->gettile(TI->chid);
 
   Get(TileRecolor, TR, x);
-  if(TR) return addRecolor(tileSetFont(TR->t1, f), TR->color, TR->mode);
+  if(TR) return addRecolor(tileSetFont(TR->t1.base, f), TR->color, TR->mode);
   
   Get(TileMerge, TM, x);
-  if(TM) return addMerge(tileSetFont(TM->t1,f), tileSetFont(TM->t2,f), TM->over);
+  if(TM) return addMerge(tileSetFont(TM->t1.base, f), tileSetFont(TM->t2.base, f), TM->over);
   
   return x;
   }
 
-int distillLayer(int x, int layerid) {
+Tile *distillLayer(Tile *x, int layerid) {
   Get(TileMerge, TM, x);
   if(TM) return 
     addMerge( distillLayer(TM->t1, layerid), distillLayer(TM->t2, layerid), TM->over);
@@ -423,7 +439,7 @@ int distillLayer(int x, int layerid) {
   return 0;
   }
 
-int distill(int x, int sp) {
+Tile *distill(Tile *x, int sp) {
 
   Get(TileImage, TI, x);
   if(TI) return x;
@@ -446,7 +462,7 @@ int distill(int x, int sp) {
     }
   if(TR && TR->cache) return TR->cache;
   if(TR) {
-    int ds = distill(TR->t1, sp);
+    Tile *ds = distill(TR->t1, sp);
     Get(TileMerge, TM, ds);
     if(TM) {
       return addMerge( distill(addRecolor(TM->t1, TR->color, TR->mode), sp), distill(addRecolor(TM->t2, TR->color, TR->mode), sp), TM->over);
@@ -454,13 +470,13 @@ int distill(int x, int sp) {
     
     Get(TileTransform, TT, ds);
     if(TT) {
-      int t1 = distill(addRecolor(TT->t1, TR->color, TR->mode), sp);
+      Tile *t1 = distill(addRecolor(TT->t1, TR->color, TR->mode), sp);
       return cloneTransform(t1, TT);
       }
 
     Get(TileFreeform, TFF, ds);
     if(TFF) {
-      int t1 = distill(addRecolor(TFF->t1, TR->color, TR->mode), sp);
+      Tile *t1 = distill(addRecolor(TFF->t1, TR->color, TR->mode), sp);
       return addFreeform(t1, TFF->par);
       }
 
@@ -469,7 +485,7 @@ int distill(int x, int sp) {
       return addRecolor(TRe->cache, TR->color, TR->mode);
       }
 
-    int i = addRecolor(ds, TR->color, TR->mode);
+    Tile *i = addRecolor(ds, TR->color, TR->mode);
     return distill(i, sp);
     }
   
@@ -492,85 +508,80 @@ int distill(int x, int sp) {
   
   Get(TileFreeform, TFF, x);
   if(TFF) {
-    int di = distill(TFF->t1, sp);
+    Tile *di = distill(TFF->t1, sp);
     return addFreeform(di, TFF->par);
     }
   
   return 0;
   }
-
-#ifdef USELUA
-
-int addMerge0(int t1, int t2) { return addMerge(t1, t2, false); }
-int addMerge1(int t1, int t2) { return addMerge(t1, t2, true); }
-
-int addTileID(int id, int ox, int oy, int sx, int sy, int trans) {
-  Image* img = dbyId<Image> (id);
-  if(!img) {
-    if(logfile) fprintf(logfile, "addTileID with invalid image\n");
-    fprintf(stderr, "addTileID with invalid image\n");
-    return 0;
-    }
-  return addTile(img, ox, oy, sx, sy, trans);
-  }
+}
 
 char tab[4] = {0,0,0,0};
 
-const char* getChar2(int i) { i = getChar(i); if(i==-1) return tab; else return utf8_encode(i); }
+extern "C" {
 
-int lh_gp2(lua_State *L) {
-  Get(TileMerge, T, luaInt(1));
-  if(!T) return noteye_retInt(L, -1);
-  return noteye_retInt(L, T->t2);
+TileMapping *get_tmlayer(int layer) { return tmLayer[layer]; }
+
+Tile *addMerge0(Tile *t1, Tile *t2) { return addMerge(t1, t2, false); }
+Tile *addMerge1(Tile *t1, Tile *t2) { return addMerge(t1, t2, true); }
+
+const char* getChar2(Tile *t) { int i = getChar(t); if(i==-1) return tab; else return utf8_encode(i); }
+
+Tile *gp2(Tile *x) {
+  Get(TileMerge, T, x);
+  if(!T) return NULL;
+  return T->t2;
   }
 
-int lh_gavcoba(lua_State *L) {
-  noteye_retInt(L, getChar(luaInt(1)));
-  noteye_retInt(L, getCol(luaInt(1)));
-  noteye_retInt(L, getBak(luaInt(1)));
-  return 3;
+struct avcoba { int chr, col, bak; };
+
+avcoba gavcoba(Tile *x) {
+  avcoba res;
+  res.chr = getChar(x);
+  res.col = getCol(x);
+  res.bak = getBak(x);
+  return res;
   }
 
-int lh_tileavcobaf(lua_State *L) {
-  int kv = luaInt(1);
-  Font *F = luaO(4, Font);
-  return noteye_retInt(L, 
-    addMerge(addFill(luaInt(3), 0xFFFFFF), addRecolor(F->gettile(kv), luaInt(2), recDefault), false)
-    );
+Tile *tileavcobaf(int kv, noteyecolor color, noteyecolor back, Font *F) {
+  if(!F) return NULL;
+  return addMerge(addFill(back, 0xFFFFFF), addRecolor(F->gettile(kv), color, recDefault), false);
   }
 
-int lh_freeformparam(lua_State *L) {
-  checkArg(L, 16, "freeformparam");
+FreeFormParam *freeformparam(double x00, double x01, double x02, double x03, double x10, double x11, double x12, double x13, double x20, double x21, double x22, double x23, double x30, double x31, double x32, double x33) {
   FreeFormParam *P = new FreeFormParam;
-  int i=1;
-  for(int y=0; y<4; y++) for(int x=0; x<4; x++)
-    P->d[y][x] = luaNum(i++);
+  P->d[0][0] = x00;
+  P->d[0][1] = x01;
+  P->d[0][2] = x02;
+  P->d[0][3] = x03;
+  P->d[1][0] = x10;
+  P->d[1][1] = x11;
+  P->d[1][2] = x12;
+  P->d[1][3] = x13;
+  P->d[2][0] = x20;
+  P->d[2][1] = x21;
+  P->d[2][2] = x22;
+  P->d[2][3] = x23;
+  P->d[3][0] = x30;
+  P->d[3][1] = x31;
+  P->d[3][2] = x32;
+  P->d[3][3] = x33;
   P->side = 4;
   P->shiftdown = false;
-  return noteye_retInt(L, registerObject(P));
+  return registerObject(P);
   }
   
-int lh_freeformparamflags(lua_State *L) {
-  checkArg(L, 3, "freeformparamflags");
-  FreeFormParam *P = luaO(1, FreeFormParam);
-  P->side = luaInt(2);
-  P->shiftdown = luaBool(3);
-  return 0;
+void freeformparamflags(FreeFormParam* P, int side, bool shiftdown) {
+  P->side = side;
+  P->shiftdown = shiftdown;
   }
   
-int lh_tileFreeform(lua_State *L) {
-  checkArg(L, 2, "tilefreeform");
-  return noteye_retInt(L, addFreeform(
-    luaInt(1), luaO(2, FreeFormParam)));
-  }
-  
-int lh_tiledebug(lua_State *L) {
-  checkArg(L, 1, "tilemerge");
-  luaO(1, Tile)->debug();
-  return 0;
+void tiledebug(Tile *T) {
+  if(!T) { fprintf(stderr, "null\n"); }
+  else T->debug();
   }
 
-#endif
+}
 
 TileImage::TileImage(int _sx, int _sy) {
   sx = _sx; sy = _sy; chid = '?';
@@ -578,6 +589,7 @@ TileImage::TileImage(int _sx, int _sy) {
   gltexture = NULL;
   sdltexture = NULL;
   bcurrent = -1;
+  all_images.insert(this);
   }
 
 TileImage::TileImage() {
@@ -586,6 +598,7 @@ TileImage::TileImage() {
   gltexture = NULL;
   sdltexture = NULL;
   bcurrent = -1;
+  all_images.insert(this);
   }
 
 void provideBoundingBox(TileImage *T) {
@@ -613,78 +626,78 @@ int getFppDown(TileImage *T) {
   return T->sy - T->by;
   }
 
-#ifdef USELUA
-int lh_getobjectinfo(lua_State *L) {
-  checkArg(L, 1, "getobjectinfo");
+#define Info(x, y, z) if(id++ == i) return z;
 
-  lua_newtable(L);
-  
-  int id = luaInt(1);
+extern "C" {
 
-  Get(TileImage, TI, id);
+int getobjectinfo(Object *o, int i) {
+  int id = 0;
+  Get(TileImage, TI, o);
   if(TI) {
-    noteye_table_setInt(L, "type", 0x11);
-    noteye_table_setInt(L, "ox", TI->ox);
-    noteye_table_setInt(L, "oy", TI->oy);
-    noteye_table_setInt(L, "sx", TI->sx);
-    noteye_table_setInt(L, "sy", TI->sy);
-    noteye_table_setInt(L, "ch", TI->chid);
-    noteye_table_setInt(L, "trans", TI->trans);
-    noteye_table_setInt(L, "i", TI->i->id);
-    noteye_table_setInt(L, "bottom", getFppDown(TI));
-    return 1;
+    Info(L, "type", 0x11);
+    Info(L, "ox", TI->ox);
+    Info(L, "oy", TI->oy);
+    Info(L, "sx", TI->sx);
+    Info(L, "sy", TI->sy);
+    Info(L, "ch", TI->chid);
+    Info(L, "trans", TI->trans);
+    Info(L, "i", noteye_assign_handle(TI->i));
+    Info(L, "bottom", getFppDown(TI));
+    return id;
     }
 
-  Get(TileRecolor, TR, id);
+  Get(TileRecolor, TR, o);
   if(TR) {
-    noteye_table_setInt(L, "type", 0x21);
-    noteye_table_setInt(L, "t1", TR->t1);
-    noteye_table_setInt(L, "mode", TR->mode);
-    noteye_table_setInt(L, "color", TR->color);
-    return 1;
+    Info(L, "type", 0x21);
+    Info(L, "t1", noteye_assign_handle(TR->t1));
+    Info(L, "mode", TR->mode);
+    Info(L, "color", TR->color);
+    return id;
     }
   
-  Get(TileMerge, TM, id);
+  Get(TileMerge, TM, o);
   if(TM) {
-    noteye_table_setInt(L, "type", TM->over ? 0x18 : 0x12);
-    noteye_table_setInt(L, "t1", TM->t1);
-    noteye_table_setInt(L, "t2", TM->t2);
-    return 1;
+    Info(L, "type", TM->over ? 0x18 : 0x12);
+    Info(L, "t1", noteye_assign_handle(TM->t1));
+    Info(L, "t2", noteye_assign_handle(TM->t2));
+    return id;
     }
   
-  Get(TileSpatial, TSp, id);
+  Get(TileSpatial, TSp, o);
   if(TSp) {
-    noteye_table_setInt(L, "type", 0x14);
-    noteye_table_setInt(L, "t1", TSp->t1);
-    noteye_table_setInt(L, "sf", TSp->sf);
-    return 1;
+    Info(L, "type", 0x14);
+    Info(L, "t1", noteye_assign_handle(TSp->t1));
+    Info(L, "sf", TSp->sf);
+    return id;
     }
   
-  Get(TileLayer, TL, id);
+  Get(TileLayer, TL, o);
   if(TL) {
-    noteye_table_setInt(L, "type", 0x19);
-    noteye_table_setInt(L, "t1", TL->t1);
-    noteye_table_setInt(L, "sf", TL->layerid);
-    return 1;
+    Info(L, "type", 0x19);
+    Info(L, "t1", noteye_assign_handle(TL->t1));
+    Info(L, "sf", TL->layerid);
+    return id;
     }
   
-  Get(TileFill, TF, id);
+  Get(TileFill, TF, o);
   if(TF) {
-    noteye_table_setInt(L, "type", 0x20);
-    noteye_table_setInt(L, "color", TF->color);
-    noteye_table_setInt(L, "alpha", TF->alpha);
-    return 1;
+    Info(L, "type", 0x20);
+    Info(L, "color", TF->color);
+    Info(L, "alpha", TF->alpha);
+    return id;
     }
   
-  Get(Tile, TX, id);
+  Get(Tile, TX, o);
   if(TX) {
-    noteye_table_setInt(L, "type", 0x10);
-    return 1;
+    Info(L, "type", 0x10);
+    return id;
     }
 
-  noteye_table_setInt(L, "type", 0);
-  return 1;
+  Info(L, "type", 0);
+  return id;
   }
-#endif
+}
+
+#undef Info
 
 }

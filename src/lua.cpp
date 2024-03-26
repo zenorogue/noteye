@@ -1,3 +1,4 @@
+
 // Necklace of the Eye v6.2
 // roguelike frontend
 // Copyright (C) 2010-2012 Zeno Rogue, see 'noteye.h' for details
@@ -28,15 +29,26 @@ void noteye_globalfun(const char *name, int f(lua_State *L)) {
   lua_register(LS, name, f);
   }
 
+static set<smartptr<Object>> eventobjs;
+
+void add_event_listener(Object *o) {
+  noteye_assign_handle(o);
+  eventobjs.insert(o);
+  }
+
+void remove_event_listener(Object *o) {
+  noteye_free_handle(o);
+  eventobjs.erase(o);
+  }
+
 int lh_getevent(lua_State *L) {
 
   if(checkEventSDL(L, 0)) return 1;
   
-  for(int i=0; i<size(eventobjs); i++) {
-    if(objs[eventobjs[i]] && objs[eventobjs[i]]->checkEvent(L)) {
+  for(auto eo: eventobjs)
+    if(eo->checkEvent(L)) {
       return 1;
       }
-    }
 
   lua_newtable(L);
   noteye_table_setInt(L, "type", 0);
@@ -46,11 +58,11 @@ int lh_getevent(lua_State *L) {
 int lh_getevent_timeout(lua_State *L) {
 
   checkArg(L, 1, "lh_getevent_timeout");
-  for(int i=0; i<size(eventobjs); i++) {
-    if(objs[eventobjs[i]] && objs[eventobjs[i]]->checkEvent(L)) {
+
+  for(auto eo: eventobjs)
+    if(eo->checkEvent(L)) {
       return 1;
       }
-    }
 
   if(checkEventSDL(L, luaInt(1))) return 1;
   
@@ -119,17 +131,14 @@ int lh_vgaset(lua_State *L) {
 int lh_delete(lua_State *L) {
   // luamapstate = L;
   checkArg(L, 1, "delete");
+
   int i = luaInt(1);
-  if(i < 0 || i > size(objs)) {
-    noteyeError(17, "delete: no such object", NULL, i);
-    return 0;
-    }
-  deleteobj(i); // todo: reuse this index?
+  printf("delete called on %d\n", i);
   return 0;
   }
 
 int lh_objcount(lua_State *L) {
-  return noteye_retInt(L, size(objs));
+  return noteye_retInt(L, objcount);
   }
 
 int lh_logprint(lua_State *L) {
@@ -154,21 +163,22 @@ int lh_argv(lua_State *L) {
   return noteye_retStr(L, gargv[i]);
   }
 
-int lh_setfont(lua_State *L) {
-  checkArg(L, 2, "setfont");
-  Font *f = luaO(2, Font);
-  Process *p = dluaO(1, Process);
+extern "C" {
+Tile *setfont(Object *o, Font *f) {
+  Get(Process, p, o);
   if(p) {
     p->f = f;
+    return NULL;
     }
-  Screen *s= p ? p->s : dluaO(1, Screen);
+  Get(Screen, s, o);
   if(s) {
     for(int y=0; y<s->sx * s->sy; y++)
       s->v[y] = tileSetFont(s->v[y], f);
+    return NULL;
     }
-  Tile *t = dluaO(1, Tile);
-  if(t) return noteye_retInt(L, tileSetFont(t->id, f));
-  return noteye_retInt(L, 0);
+  Get(Tile, t, o);
+  if(t) return tileSetFont(t, f);
+  return NULL;
   }
 
 char *noteyeStats() {
@@ -179,7 +189,7 @@ char *noteyeStats() {
     "Write compression: %d B -> %d B\n"
     "Read compression: %d B -> %d B\n"
     "Total size of images: %d %06d pixels (including %d %06d pixels in cache)\n",
-    size(objs), hashcol, hashok, writeUnc, writeCmp, 
+    objcount, hashcol, hashok, writeUnc, writeCmp, 
     readUnc, readCmp, 
     int(totalimagesize/1000000), 
     int(totalimagesize%1000000), 
@@ -189,6 +199,7 @@ char *noteyeStats() {
 
   return buf;
   }
+}
 
 int lh_noteyestats(lua_State *L) {
   return noteye_retStr(L, noteyeStats());
@@ -234,64 +245,6 @@ void initLua() {
     exit(-1);
     }
  
-  noteye_globalfun("loadimage", lh_loadimage);
-  noteye_globalfun("newimage", lh_newimage);
-  noteye_globalfun("imagetitle", lh_imagetitle);
-  noteye_globalfun("fillimage", lh_fillimage);
-  noteye_globalfun("imgcopy", lh_imgcopy);
-  noteye_globalfun("imggetsize", lh_imggetsize);
-  
-  noteye_globalfun("tilefreeform", lh_tileFreeform);
-
-  noteye_globalfun("tiledebug", lh_tiledebug);
-
-  noteye_globalfun("freeformparam", lh_freeformparam);
-  noteye_globalfun("freeformparamflags", lh_freeformparamflags);
-
-  noteye_globalfun("gavcoba", lh_gavcoba);
-  noteye_globalfun("tileavcobaf", lh_tileavcobaf);
-  noteye_globalfun("getobjectinfo", lh_getobjectinfo);
-
-  noteye_globalfun("newfont", lh_newfont);
-  noteye_globalfun("newdynamicfont", lh_newdynamicfont);
-  noteye_globalfun("fget", lh_getchar);
-  noteye_globalfun("fgetav", lh_getcharav);
-
-#ifndef NOTTF
-  noteye_globalfun("newttfont", lh_newttfont);
-  noteye_globalfun("ttfgetsize", lh_ttfgetsize);
-  noteye_globalfun("ttfrender", lh_ttfrender);
-#endif
-
-  noteye_globalfun("newscreen", lh_newScreen);
-  noteye_globalfun("scrwrite", lh_scrwrite);
-  noteye_globalfun("scrcopy", lh_scrcopy);
-  noteye_globalfun("scrfill", lh_scrfill);
-  noteye_globalfun("uselayer", lh_uselayer);
-  noteye_globalfun("drawscreen", lh_drawScreen);
-  noteye_globalfun("drawscreenx", lh_drawScreenX);
-  noteye_globalfun("drawscreenIso", lh_drawScreenIso);
-  noteye_globalfun("drawtile", lh_drawTile);
-  noteye_globalfun("scrsave", lh_scrsave);
-  noteye_globalfun("scrsetsize", lh_scrsetsize);
-  noteye_globalfun("scrgetsize", lh_scrgetsize);
-  noteye_globalfun("newmapping", lh_newmapping);
-  noteye_globalfun("mapapply", lh_mapapply);
-
-  noteye_globalfun("newwindow", lh_newwindow);
-  noteye_globalfun("openwindow", lh_openwindow);
-  noteye_globalfun("closewindow", lh_closewindow);
-  noteye_globalfun("windowusetex", lh_windowusetex);
-  noteye_globalfun("SDL_GetRendererInfoName", lh_SDL_GetRendererInfoName);
-  noteye_globalfun("setwindowtitle", lh_setwindowtitle);  
-  noteye_globalfun("setwindowicon", lh_setwindowicon);
-  noteye_globalfun("renderwindow", lh_renderwindow);
-  noteye_globalfun("findvideomode", lh_findvideomode);
-  noteye_globalfun("origvideomode", lh_origvideomode);
-  noteye_globalfun("enablejoysticks", lh_enablejoysticks);
-  noteye_globalfun("enablekeyrepeat", lh_enablekeyrepeat);
-  noteye_globalfun("messagebox", lh_messagebox);
-
   noteye_globalfun("SDL_GetKeyFromName", lh_SDL_GetKeyFromName);
   noteye_globalfun("SDL_GetScancodeFromName", lh_SDL_GetScancodeFromName);
   noteye_globalfun("SDL_GetKeyName", lh_SDL_GetKeyName);
@@ -307,15 +260,8 @@ void initLua() {
   noteye_globalfun("SDL_StopTextInput", lh_SDL_StopTextInput);
 #endif
   
-#ifdef NOCONSOUT
-  noteye_globalint("NOCONSOUT", 1);
-#else
-  noteye_globalfun("openconsole", lh_openconsole);
-  noteye_globalfun("refreshconsole", lh_refreshconsole);
-#endif
   
 #ifndef INTERNALONLY
-  noteye_globalfun("newprocess", lh_newProcess);
 #ifdef LINUX
   noteye_globalfun("ansidebug", lh_ansidebug);
 #endif
@@ -344,56 +290,7 @@ void initLua() {
   noteye_globalfun("logprint", lh_logprint);
   noteye_globalfun("logopen", lh_logopen);
 
-  noteye_globalfun("fpp", lh_fpp);
-
-  noteye_globalfun("isoparam", lh_isoparam);
-  noteye_globalfun("isosizes", lh_isosizes);
-  noteye_globalfun("isoproject", lh_iso);
-
-  noteye_globalfun("imagealias", lh_imagealias);
-  
-  noteye_globalfun("nwritefile", lh_writefile);
-  noteye_globalfun("nreadfile", lh_readfile);
-  noteye_globalfun("nopenstringstream", lh_openstringstream);
-  noteye_globalfun("ngetstringstream", lh_getstringstream);
-  noteye_globalfun("nsetstringstream", lh_setstringstream);
-  noteye_globalfun("nresetknownin", lh_resetknownin);
-  noteye_globalfun("nresetknownout", lh_resetknownout);
-  noteye_globalfun("nwriteint", lh_writeint);
-  noteye_globalfun("nreadint", lh_readint);
-//noteye_globalfun("nwritenum", lh_writenum);
-//noteye_globalfun("nreadnum", lh_readnum);
-  noteye_globalfun("nwritebyte", lh_writebyte);
-  noteye_globalfun("nreadbyte", lh_readbyte);
-  noteye_globalfun("nwritestr", lh_writestr);
-  noteye_globalfun("nreadstr", lh_readstr);
-  noteye_globalfun("nwritescr", lh_writescr);
-  noteye_globalfun("nreadscr", lh_readscr);
-  noteye_globalfun("neof", lh_eof);
-  noteye_globalfun("nflush", lh_flush);
-  noteye_globalfun("nfinish", lh_finish);
-  noteye_globalfun("nready", lh_ready);
-  noteye_globalfun("nserver", lh_server);
-  noteye_globalfun("naccept", lh_accept);
-  noteye_globalfun("nconnect", lh_connect);
-
-#ifndef NOAUDIO  
-  noteye_globalfun("loadsound", lh_loadsound);
-  noteye_globalfun("playsound", lh_playsound);
-  noteye_globalfun("playsoundloop", lh_playsoundloop);
-  noteye_globalfun("mixsetdistance", lh_mixsetdistance);
-  noteye_globalfun("mixsetpanning", lh_mixsetpanning);
-  noteye_globalfun("mixunregisteralleffects", lh_mixunregisteralleffects);
-
-  noteye_globalfun("loadmusic", lh_loadmusic);
-  noteye_globalfun("playmusic", lh_playmusic);
-  noteye_globalfun("playmusicloop", lh_playmusicloop);
-  noteye_globalfun("musicon", lh_musicon);
-  noteye_globalfun("musicvolume", lh_musicvolume);
-  noteye_globalfun("musichalt", lh_musichalt);
-  noteye_globalfun("fadeoutmusic", lh_fadeoutmusic);
-
-#endif
+  noteye_globalfun("refreshconsole", lh_refreshconsole);
 
   noteye_globalfun("uicreate", lh_uicreate);
   noteye_globalfun("uisleep", lh_uisleep);
@@ -405,6 +302,12 @@ void initLua() {
   noteye_globalfun("setcrashstring", lh_setcrashstring);
   noteye_globalfun("getcrashstring", lh_getcrashstring);
   noteye_globalfun("geterrormsg", lh_geterrormsg);
+  noteye_globalfun("findvideomode", lh_findvideomode);
+
+  noteye_globalfun("enablejoysticks", lh_enablejoysticks);
+  noteye_globalfun("enablekeyrepeat", lh_enablekeyrepeat);
+
+  noteye_globalfun("uselayer", lh_uselayer);
   
   obsolete();
 
@@ -425,12 +328,8 @@ void initLua() {
   noteye_globalint("opengl", 1);
   #endif
 
-  noteye_globalfun("internal", lh_internal);
   noteye_globalint("network", NETWORK);
 
-  noteye_globalint("TMAP_COPY", 0);
-  noteye_globalint("TMAP_LAYER", tmLayer[0]->id);
-  
   noteye_globalint("transAlpha", transAlpha);
   noteye_globalint("transNone", transNone);
 
@@ -474,8 +373,6 @@ void initLua() {
   noteye_globalint("evKeyConsole", evKeyConsole);
   noteye_globalint("evMultiGesture", evMultiGesture);
 
-  noteye_globalfun("gp2", lh_gp2);
-  
   noteye_globalstr("noteyeversion", NOTEYEVERSION);
   noteye_globalint("NOTEYEVER", NOTEYEVER);
   noteye_globalstr("noteyepatch", NOTEYEPATCHSTR);

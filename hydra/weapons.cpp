@@ -103,6 +103,9 @@ void vorpalCredit() {
 void vorpalRegenerate() {
   int l = P.curlevel+1; if(l>99) l = 99;
   P.vorpalc = (P.vorpalc * l) / 100;
+  
+  int l2 = P.curlevel+1; if(l>399) l = 399;
+  P.timemushlimit = (P.timemushlimit * l2) / 400;
   }
 
 string addAdj(string name, int id) {
@@ -320,6 +323,11 @@ string weapon::name() {
     if(size>1) name = "+" + its(size)+" "+name;
     return name;
     }
+  else if(type == WT_COLL) {
+    name = "Syracuse Blade";
+    if(size>0) name = "+" + its(size)+" "+name;
+    return name;
+    }
   else if(type == WT_QUAKE) {
     name = "titanic club";
     }
@@ -521,7 +529,7 @@ void playAttackSound(weapon *w, hydra *who, bool tiny = false, int delay = 0) {
     else
       playSound("weapons/axeAttack-heavy", vol, delay);
     }
-  else if(w->cuts() || w->xcuts() || w->axe()) {
+  else if(w->cuts() || w->xcuts() || w->axe() || w->type == WT_COLL) {
     if(w->size < 2 + hrand(4)) 
       playSound("weapons/swordAttack-small", vol, delay);
     else if(w->size < 6 + hrand(6)) 
@@ -550,6 +558,13 @@ void playSwitchSound(weapon *w) {
   }
 
 void addAnimation(cell *c, int headid, int cutcount, int color);
+
+void collapse(hydra *h, hydra *whoh) {
+  stats.owncrush++;
+  addMessage("The "+h->name()+" collapses under the weight of its own heads!");
+  achievement("COLLAPSE");
+  M[h->pos].hydraDead(whoh);
+  }
 
 void cell::attack(weapon *w, int power, sclass *who) {
 
@@ -724,6 +739,13 @@ void cell::attack(weapon *w, int power, sclass *who) {
   
   int grow = h->res[w->color];
 
+  if(h->color == HC_EVOLVE) {
+    if(w->type == WT_TIME)
+      h->res[w->color]--, grow--;
+    else
+      h->res[w->color]++;
+    }
+
   if(!w->stuns() && h->heads && grow) {
     if(grow < 0) {
       grow = -grow*cutcount;
@@ -796,12 +818,7 @@ void cell::attack(weapon *w, int power, sclass *who) {
     hydraDead(whoh);
     }
 
-  else if(h->heads >= COLLAPSE) {
-    stats.owncrush++;
-    addMessage("The "+h->name()+" collapses under the weight of its own heads!");
-    achievement("COLLAPSE");
-    hydraDead(whoh);
-    }
+  else if(h->heads >= COLLAPSE)  collapse(h, whoh);
 
   }
 
@@ -990,12 +1007,19 @@ int ambiAttack(cell *c, int virt) {
       addstr("KILL");
     else if(mystery)
       addstr("???");
-    else addstri("="+its(nheads-hcut-hacut+hgrow+hsgrow+hdub));
+    else {
+      int q = nheads-hcut-hacut+hgrow+hsgrow+hdub;
+      addstri("="+its(q));
+      int q2 = nheads-nsheads-hcut-hacut-hstun;
+      if(q2<0) q2 = 0;
+      q2 += hgrow;
+      if(drainpower(c->h)) displayDrain(c->h, q2);
+      }
     //addMessage("nh "+its(nheads)+" c "+its(hcut)+" ac "+its(hacut)+" g "+its(hgrow)+" sg "+its(hsgrow)+ " d"+its(hdub));
     return 1;
     }
   
-  if(target) for(int b=0; b<COLORS; b++) 
+  if(!virt) if(target) for(int b=0; b<COLORS; b++)
     if(have[b] || haveaxe[b] || hvdiv[b]>1 || hvera[b])
       target->dirty &= ~(1<<b);
 
@@ -1032,6 +1056,10 @@ int ambiAttack(cell *c, int virt) {
   
   if(!virt) stats.ws[MOT_AMBI].sc[WS_USE] ++;
   
+  if(target && target->color == HC_EVOLVE && !virt) for(int b=0; b<COLORS; b++)
+    if(have[b] || haveaxe[b] || hvdiv[b]>1 || hvera[b]) 
+      target->res[b]++;
+
   if(nheads == 0 && hdub == 0) {
     if(virt == 2) {
       target->heads = 0;
@@ -1049,7 +1077,7 @@ int ambiAttack(cell *c, int virt) {
   
   if(!virt) stats.ws[MOT_AMBI].sc[WS_GROW] += hgrow+hsgrow;
   
-  if(!target) {
+  if(!target && !virt) {
     c->mushrooms = nheads;
     return true;
     }
@@ -1071,12 +1099,7 @@ int ambiAttack(cell *c, int virt) {
     M[target->pos].hydraDead(NULL);
     }
 
-  else if(target->heads >= COLLAPSE) {
-    stats.owncrush++;
-    addMessage("The "+target->name()+" collapses under the weight of its own heads!");
-    achievement("COLLAPSE");
-    M[target->pos].hydraDead(NULL);
-    }
+  else if(target->heads >= COLLAPSE) collapse(target, NULL);
 
   return true;
   }
@@ -1295,7 +1318,7 @@ void weapon::grow() {
       addMessage("The "+lname+" twists itself!");
       break;
     
-    case WT_GOLD:
+    case WT_GOLD: case WT_COLL:
       addMessage("The "+lname+" looks even more impressive now!");
       break;
     
@@ -1364,6 +1387,13 @@ bool transmute(weapon *w) {
     return false;
     }
   string lname = w->name();
+
+  if(P.race == R_ATLANTEAAN && w->type != WT_ORB && w->type != WT_GOLD) {
+    w->color = atlantean_xmut_color;
+    addMessage("You now got a "+w->name()+"!");
+    return true;
+    }
+
   wpnset++;
   if(w->type == WT_GOLD) {
     addMessage("The "+lname+" glows blindingly and changes both its color and shape!");
@@ -1442,6 +1472,90 @@ bool wpnfirst(int w1, int w2) {
 
 #define HINF 20000
 
+// Calculate the effect of using weapon W on a variant of hydra h
+// with hd heads, sh stunned heads.
+
+bool calcWeaponEffect(weapon *W, hydra *h, int &hd, int &sh) {
+  int ws = W->size;
+  int hr = h->res[W->color];
+
+  bool isBlade = W->cuts();
+  if(W->type == WT_VORP) ws = 1;
+
+  if(W->type != WT_BOW && !W->xcuts())
+  if(W->activeonly() ? hd-sh < ws : hd<ws)
+    return false;
+    
+  if(W->type == WT_TIME) {
+    if(hr < 0) hr = -hr * ws;
+    if(hd-sh > hr || (hd-sh == hr && sh))
+      hd = hd - hr + ws;
+    else return false;
+    return true;
+    }
+
+  else if(W->stuns()) {
+    sh += ws;
+    return true;
+    }
+
+  else if(W->doubles()) {
+    int siz = min(hd, ws);
+    if(h->noregrow()) {
+      hd -= ws;
+      if(hd <= 0) { hd = 0; return true; }
+      }
+    else {
+      hd += siz; sh += siz; sh += siz; if(sh>hd) sh=hd;
+      }
+    return true;
+    }
+
+  else if(W->xcuts()) {
+    int cut = W->cutoff(hd, false);
+    if(cut < 0) return false;
+    hd -= cut;
+    sh -= W->cutoff(sh, true);
+
+    if(W->type == WT_GOLD) for(int u=1; u<W->size; u++) {
+      if(W->cutoff(hd, false) >= 0) {
+        int c = W->cutoff(hd, false);
+        cut += c;
+        hd -= c;
+        sh -= W->cutoff(sh, false);
+        }
+      }
+
+    if(hd == 0) {
+      return true;
+      }
+
+    if(hr < 0) hd -= hr * cut;
+    else hd += hr;
+
+    if(W->type == WT_PSLAY && hd >= sh + ws) {
+      sh += ws;
+      }
+    
+    return true;
+    }
+
+  else if(isBlade && (hd == ws)) {
+    hd = 0;
+    return true;
+    }
+
+  else if(isBlade) {
+    hd -= ws; if(sh > hd) sh = hd;
+    int gr = hr < 0 ? -hr*ws : hr;
+    hd += gr;
+    if(W->axe()) sh += gr;
+    return true;
+    }
+
+  else return true;
+  }
+
 struct hydraAnalyzer {
   hydra *h;
   
@@ -1449,7 +1563,10 @@ struct hydraAnalyzer {
   
   void setDamh() {
     damh.resize(AMAXS);
-    if(h->color >= 0) {
+    if(h->color == HC_SHADOW) {
+      for(int i=0; i<AMAXS; i++) damh[i] = min(i, 3);
+      }
+    else if(h->color >= 0) {
       SI.prepare(AMAXS, h);
       for(int i=0; i<AMAXS; i++) damh[i] = SI.dampost(i);
       }
@@ -1465,6 +1582,7 @@ struct hydraAnalyzer {
   
   struct cfrom {
     int from, wpn, next;
+    int wounds;
     };
   
   struct woundrec {
@@ -1480,11 +1598,11 @@ struct hydraAnalyzer {
   int lcf[CODES];
   vector<cfrom> cf;
   
-  void addEdge(int y, int hd, int sh, int w) {
+  void addEdge(int y, int hd, int sh, int w, int wnd) {
     int y2;
     if(encode(hd, sh, y2) > 0) {
-      int i = size(cf);
-      cfrom c; c.from = y; c.wpn = w; c.next = lcf[y2];
+      int i = isize(cf);
+      cfrom c; c.from = y; c.wpn = w; c.next = lcf[y2]; c.wounds = wnd;
       cf.push_back(c);
       lcf[y2] = i;
       }
@@ -1502,7 +1620,7 @@ struct hydraAnalyzer {
     if(wnd[code] > neww) {
       wnd[code] = neww;
 
-      int i = size(wrec);
+      int i = isize(wrec);
       woundrec wr; wr.next = -1; wr.code = code;
       wrec.push_back(wr);
       
@@ -1521,7 +1639,7 @@ struct hydraAnalyzer {
     goal[code] = gol; 
     usew[code] = wpn;
     }
-  
+
   void buildGraph() {
     for(int y=0; y<CODES; y++) for(int w=-2; w<P.arms; w++) if(w < 0 || wpn[w]) {
       int hd, sh;
@@ -1536,94 +1654,26 @@ struct hydraAnalyzer {
         weapon *W = wpn[w];
     
         if(W->msl()) continue;
+        
+        if(!calcWeaponEffect(W, h, hd, sh)) continue;
 
-        int ws = W->size;
-        int hr = h->res[W->color];
-      
-        bool isBlade = W->cuts();
-        if(W->type == WT_VORP) ws = 1;
-      
-        if(W->type != WT_BOW && !W->xcuts())
-        if(W->activeonly() ? hd-sh < ws : hd<ws)
-          continue;
-          
-        if(W->type == WT_TIME) {
-          if(hr < 0) hr = -hr * ws;
-          if(hd-sh > hr || (hd-sh == hr && sh))
-            hd = hd - hr + ws;
-          else continue;
-          }
-
-        else if(W->stuns()) {
-          sh += ws;
-          }
-      
-        else if(W->doubles()) {
-          int siz = min(hd, ws);
-          if(h->noregrow()) {
-            hd -= ws;
-            if(hd <= 0) 
-              addWoundRec(y, 0, 0, 1, w);
-            }
-          else {
-            hd += siz; sh += siz; sh += siz; if(sh>hd) sh=hd;
-            }
-          }
-      
-        else if(W->xcuts()) {
-          int cut = W->cutoff(hd, false);
-          if(cut < 0) continue;
-          hd -= cut;
-          sh -= W->cutoff(sh, true);
-
-          if(W->type == WT_GOLD) for(int u=1; u<W->size; u++) {
-            if(W->cutoff(hd, false) >= 0) {
-              int c = W->cutoff(hd, false);
-              cut += c;
-              hd -= c;
-              sh -= W->cutoff(sh, false);
-              }
-            }
-
-          if(hd == 0) {
-            decode(hd, sh, y);
-            addWoundRec(y, 0, 0, 1, w);
-            continue;
-            }
-
-          if(hr < 0) hd -= hr * cut;
-          else hd += hr;
-
-          if(W->type == WT_PSLAY && hd >= sh + ws) {
-            sh += ws;
-            }
-          }
-      
-        else if(isBlade && (hd == ws)) {
+        if(hd == 0) {
           if(wnd[y] == 0 && wpnfirst(usew[y], w)) continue;
           addWoundRec(y, 0, 0, 1, w);
           }
-      
-        else if(isBlade) {
-          hd -= ws; if(sh > hd) sh = hd;
-          int gr = hr < 0 ? -hr*ws : hr;
-          hd += gr;
-          if(W->axe()) sh += gr;
-          }
-      
-        else continue;
         }
-        
-      if(w == -1 && h->color != HC_VAMPIRE) 
+
+      if(w == -1 && !drainpower(h)) 
         continue;
 
-      if(w == -2) { if(!sh) continue; sh = 0; }
-      else if(h->color == HC_VAMPIRE) {
-        if(hd-sh < AMAXS) hd += damh[hd-sh];
-        }
+      if(sh>hd) sh=hd;
+      int hwound = hd-sh < AMAXS ? damh[hd-sh] : damh[AMAXS-1];
+
+      if(w == -2) { if(!sh) continue; sh = 0; hwound = 0; }
+      else hd += hwound * drainpower(h);
 
       // fprintf(, "%3d %3d (%d) %3d %3d\n", y%AMAX, y/AMAX, w, hd, sh);
-      addEdge(y, hd, sh, w);
+      addEdge(y, hd, sh, w, hwound);
       }
     }
   
@@ -1648,12 +1698,18 @@ struct hydraAnalyzer {
       if(h->sheads > h->heads) continue;
       P.ambiArm = w;
       if(ambiAttack(&c, 2)) {
-        if(h->color == HC_VAMPIRE) {
-          if(h->heads-h->sheads < AMAXS) 
-            h->heads += damh[h->heads-h->sheads];
+        /* if(h->heads - h->sheads < 0) {
+          printf("heads=%d sheads=%d\n", oheads, osheads);
+          printf("y=%d heads=%d sheads=%d w=%d\n", y, h->heads, h->sheads, w);
+          } */
+        if(h->sheads > h->heads) h->sheads = h->heads;
+        int hwound = h->heads-h->sheads < AMAXS ? damh[h->heads-h->sheads] : damh[AMAXS-1];
+
+        if(h->heads) {
+          h->heads += hwound * drainpower(h);
           }
         if(h->heads)
-          addEdge(y, h->heads, h->sheads, w | AMBIWPN);
+          addEdge(y, h->heads, h->sheads, w | AMBIWPN, hwound);
         else
           addWoundRec(y, 0, 0, 1, w | AMBIWPN);
         }
@@ -1720,15 +1776,16 @@ struct hydraAnalyzer {
       // note: for HC_GROW pos is ungrown pos, even if the hydra will grow
       // this allows giveHint to check whether the hydra should grow or not
       
-      int oldw = wnd[pos0], neww = oldw + damh[hd-sh];
+      int oldw = wnd[pos0];
       int newt = wtime[pos0]+1;
-      if(neww >= WMAX) continue;
     
       int cfi = lcf[pos];
     
       while(cfi >= 0) {
         int wp = cf[cfi].wpn;
-        addWoundRec(cf[cfi].from, wp == -2 ? oldw : neww, pos, newt, wp);
+        int neww = oldw + cf[cfi].wounds;
+        if(neww < WMAX) 
+          addWoundRec(cf[cfi].from, neww, pos, newt, wp);
         cfi = cf[cfi].next;
         }
       }
@@ -1746,7 +1803,7 @@ struct hydraAnalyzer {
     if(P.active[IT_PAMBI]) buildAmbiGraph();
 
     // update the damager array for vampires
-    if(h->color == HC_VAMPIRE)  vampireUpdate();
+    if(drainpower(h))  vampireUpdate();
     
     for(int wc=0; wc<WMAX; wc++) {
       int wap = wwnd[wc];     
@@ -2552,6 +2609,24 @@ string weapon::describe() {
       "the distribution will be. Does not work against very large hydras.";
     }
   
+  if(type == WT_COLL) {
+    s =
+      "This weird "+info().wname+" blade is a "
+      "yet another approach to a weapon which could kill any hydra effectively. "
+      "The smiths who created it were not sure whether they have succeeded, though...\n"
+      "Against even-headed hydras, it "
+      "works as a standard Bisector, "
+      "not causing any heads to regrow. It is also able to kill all 1-headed "
+      "hydras. Against other odd-headed "
+      "hydras (but not zombies and mushrooms), "
+      "it works by multiplying their head count by three, and growing "
+      "one extra head.\n"
+
+      "This blade may be overenchanted. One attack with a +3 blade will work as "
+      "two attacks with the standard version, +7 blade will work as "
+      "three, and +27 blade will work as four.\n";
+    }
+
   if(type == WT_SUBD) {
     s =
       "A strange divisor sword which ignores one head on its target for some "
@@ -2689,6 +2764,59 @@ bool chooseAutoAttack(hydra *h) {
   return false;
   }
 
+void collatz(weapon *w, hydra *h) {
+  long long hc = h->heads;
+  long long sh = h->heads - h->sheads;
+  string s = its(hc);
+  bool next = false;
+
+  int qty =
+    w->size < 3 ? 1 :
+    w->size < 7 ? 2 :
+    w->size < 27 ? 3 :
+    4;
+
+  while(qty--) {
+    if(hc == 1) { hc = 0, s += next ? "; kill" : " kill"; break; }
+
+    if(next) s += "; ";
+
+    if(hc&1) {
+      if(h->color == HC_MUSH) { s += " (mushroom ignores)"; break; }
+      if(h->zombie) { s += " (zombie ignores)"; break; }
+      else hc = 3 * hc + 1, s += "*3+1=" + its(hc);
+      }
+    else hc /= 2, s += "/2=" + its(hc);
+    if(!sh) sh = 0; else if(sh&1) sh = 3 * sh + 1; else sh /= 2;
+    next = true;
+    }
+  addMessage("You slice the "+h->name()+"! " + s);
+  if(hc >= COLLAPSE) {
+    w->addStat(WS_HKILL, 1, 0);
+    if(h->color != HC_MUSH)
+    collapse(h, NULL);
+    }
+  else if(hc == 0) {
+    w->addStat(WS_HKILL, 1, 0);
+    if(h->color != HC_MUSH)
+      M[h->pos].hydraDead(NULL);
+    else
+      h->heads = 0;
+    }
+  else {
+    if(sh > hc) sh = hc;
+    if(hc > h->heads)
+      w->addStat(WS_GROW, hc-h->heads, 0);
+    else if(hc < h->heads)
+      w->addStat(WS_HHEAD, h->heads-hc, 0);
+    h->heads = hc;
+    h->sheads = hc - sh;
+    }
+
+  w->addStat(WS_USE, 1, 0);
+  cancelspeed();
+  }
+
 void mersenneTwist(weapon *w, hydra *h) {
 
   if(P.flags & dfBackups) {
@@ -2713,13 +2841,22 @@ void mersenneTwist(weapon *w, hydra *h) {
     }
   
   int bsm = WMAX + 10, bbi = WMAX + 10, vsm = 0, vbi = 0, spos;
+
+  int vul = drainpower(h);
+  if((P.phase+1) & ((1<<P.active[IT_PFAST])-1))
+    vul = 0;
+
+  SI.prepare(h->heads*2+1, h);
   
   for(int i=0; i<w->size; i++) {
     int v = 1 + hrand(limit);
-    encode(h->heads - v, h->sheads, spos);
+    int hv = h->heads - v;
+    
+    encode(hv + vul * SI.dampost(hv-h->sheads), h->sheads, spos);
     if(wnd[spos] < bsm) bsm = wnd[spos], vsm = v;
 
-    encode(h->heads + v, h->sheads, spos);
+    hv = h->heads + v;
+    encode(hv + vul * SI.dampost(hv-h->sheads), h->sheads, spos);
     if(wnd[spos] < bbi) bbi = wnd[spos], vbi = v;
     }
   

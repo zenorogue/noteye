@@ -204,9 +204,9 @@ void viewMultiLine(string s, int& cy, int narrow) {
     move(cy, cx);
     if(s[0] == '\b') { col(s[1] - 'a' + 1); s = s.substr(2); }
     
-    cut = size(s);
+    cut = isize(s);
 
-    for(int x=0; x<MAXLINE-narrow*2 && x < size(s); x++) 
+    for(int x=0; x<MAXLINE-narrow*2 && x < isize(s); x++) 
       if(s[x] == '\n' || s[x] == '\r') { cut = x; break; } 
       else if(s[x] == ' ' ) cut = x;
     
@@ -230,7 +230,8 @@ void viewMultiLine(string s, int& cy, int narrow) {
 vec2 playerposScreen, stunnedHydraPosScreen;
 
 void adddig(int n, int d) {
-  while(d--) n /= 10; addch('0'+n%10);
+  while(d--) n /= 10;
+  addch('0'+n%10);
   }
 
 void drawMap() {
@@ -329,8 +330,7 @@ int squareRootSign() {
   Font* F = P ? P->f : NULL;
   // Unicode square root sign for dynamic fonts
   if(dynamic_cast<DynamicFont*>(F)) return 8730;
-  int i = F ? F->gettile(64) : 0;
-  TileImage *ti = dynamic_cast<TileImage*> (noteye_getobj(i));
+  TileImage *ti = F ? dynamic_cast<TileImage*> (F->gettile(64)) : nullptr;
   if(ti && ti->i && ti->i->title.find("cp437") != string::npos) return 251;
   if(ti && ti->i && ti->i->title.find("fantasy") != string::npos) return 251;  
   if(ti && ti->i && ti->i->title.find("ttf") != string::npos) return 8730;
@@ -448,8 +448,18 @@ void cursorOnPlayer() {
 
 #define SDIV (MSX+1)
 
+void displayDrain(hydra *h, int hd) {
+  if(hd < 0) hd = 0;
+  SI.prepare(hd, h);
+  col(5);
+  addstri(" V"+its(drainpower(h) * SI.dampost(hd)));
+  }
+
 void showResistanceHydraWeapon(hydra *h, weapon *w) {
-  if(!w) return;
+  if(!w) {
+    if(drainpower(h)) displayDrain(h, h->heads - h->sheads);
+    return;
+    }
 
   col(w->gcolor());
   
@@ -466,17 +476,27 @@ void showResistanceHydraWeapon(hydra *h, weapon *w) {
       else
         s = "+" + its(val);
 
-      if(size(s) < 4) s += " ";
-      if(size(s) > 4) s.resize(4);
+      if(isize(s) < 4) s += " ";
+      if(isize(s) > 4) s.resize(4);
       addstri(s);
       }
   
     if(w->type == WT_BOW)
       addstri(its(bowpower(w) / min(w->size, h->heads) / 2));
+
+    else if(drainpower(h)) {
+      int hd = h->heads;
+      int sh = h->sheads;
+      if(calcWeaponEffect(w, h, hd, sh)) 
+        displayDrain(h, hd-sh);
+      }
+
     else if(w->stuns() || w->doubles() || (w->type == WT_PSLAY && w->size))
       addstri(its(w->info().stunturns));
+    
+    else if(w->protectAgainst(h)) addstri(" +1");
 
-    if(w->axe()) {
+    else if(w->axe()) {
       int grow = h->res[w->color];
       if(grow < 0) grow = 2 * w->size;
       if(grow) addstri(its(w->info().stunturns * (grow + w->size) / grow));
@@ -584,7 +604,7 @@ void drawScreen() {
   
   int cy = MAXARMS+1;
   
-  for(int i=0; i<size(hydras); i++) if(hydras[i]->aware()) {
+  for(int i=0; i<isize(hydras); i++) if(hydras[i]->aware()) {
     hydra* h = hydras[i];
     col(h->gcolor());
     move(cy, SDIV);
@@ -654,8 +674,8 @@ void drawScreen() {
 #endif
 
   col(deadcol);
-  move(SY, 0); addstri(msgs[size(msgs)-2]);
-  move(SY+1, 0); addstri(msgs[size(msgs)-1]);
+  move(SY, 0); addstri(msgs[isize(msgs)-2]);
+  move(SY+1, 0); addstri(msgs[isize(msgs)-1]);
   
   cursorOnPlayer();
   }
@@ -694,6 +714,85 @@ void showResistances(hydra *h, int cy) {
     }
   }
 
+void viewWoundTable(hydra *h) {
+  vector<int> minhead;
+  
+  minhead.push_back(1);
+  
+  bool foundus = false;
+
+  SI.prepare(COLLAPSE+20, h);
+  while(true) {
+    if(isize(minhead) == 0) break;
+    int headhere = minhead[isize(minhead)-1];
+    int atx = 0;
+    
+    erase();
+    move(0, 0); col(15); addstri("Wounds caused by "+h->name()+":");
+    col(h->gcolor()); 
+    
+    bool haddots = false;
+
+    while(headhere < COLLAPSE) {
+      int digleft = digitcount(headhere + 20);
+      int digright = 0;
+      
+      int compare_dp;
+      bool alleq;
+      
+      for(int i=0; i<20; i++) {
+        int dp = SI.dampost_true(headhere+i);
+        if(i == 0) compare_dp = dp, alleq = true;
+        else if(dp != compare_dp) alleq = false;
+        digright = max(digright, digitcount(dp));
+        }
+      
+      if(alleq) {
+        if(atx >= 80) break;
+        if(!haddots) {
+          for(int i=0; i<20; i++) {
+            move(i+2, atx); addch('.');
+            }
+          haddots = true;
+          atx += 2;
+          }
+        headhere += 20;
+        continue;
+        }
+      haddots = false;
+      
+      if(atx + digleft + digright + 1 > 80) break;
+    
+      char buf[20];
+      for(int i=0; i<20; i++) {
+        sprintf(buf, "%*d:%*d", digleft, headhere+i, digright, SI.dampost_true(headhere+i));
+        move(i+2, atx); addstr(buf);
+        }
+      
+      atx += 2 + digleft + digright;
+      headhere += 20;
+      }
+    
+    if(!foundus) {
+      if(headhere < h->heads) { 
+        minhead.push_back(headhere);
+        continue;
+        }
+      else foundus = true;
+      }
+    
+    int ch = ghch(IC_WOUNDS);
+    
+    if(ch == D_PGDN || ch == D_RIGHT || ch == D_END || ch == '+')
+      minhead.push_back(headhere);
+
+    else if(ch == D_PGUP || ch == D_LEFT || ch == D_HOME || ch == '-')
+      minhead.pop_back();
+    
+    else break;
+    }
+  }
+
 void viewDescription(sclass *x) {
 
   if(useKnowledgeOn(x))
@@ -713,6 +812,7 @@ void viewDescription(sclass *x) {
     cy++; move(cy,0); 
     addstr("Resistances against weapon colors:");
     if(P.race == R_TROLL) addstr(" (press 'i' for inventory)");
+    else addstr(" (press 'w' for wounds table)");
     cy+=2; showResistances(h, cy);
     }
   
@@ -720,6 +820,9 @@ void viewDescription(sclass *x) {
   
   if(h && P.race == R_TROLL && (ch == 'i' || ch == 'I')) 
     viewTrollInventory(h);
+
+  if(h && (ch == 'w' || ch == 'W'))
+    viewWoundTable(h);
   }
 
 void showMenuOption(int cy, char letter, bool selected, int cx = 0) {
@@ -767,7 +870,7 @@ void fullHydraInfo() {
   
   sclass * infos[MAXINF];
 
-  for(int i=0; i<size(hydras); i++) if(hydras[i]->aware()) {
+  for(int i=0; i<isize(hydras); i++) if(hydras[i]->aware()) {
     if(cy >= MAXINF) break;
     if(cy>=scrollval && cy<scrollval+MAXINFSCR)  {
       showMenuOption(cy+2-scrollval, 'a'+cy, cy==selection);
@@ -888,8 +991,124 @@ bool viewHelpForItem(int ii) {
   else 
     addMessage("Use the "+iinf[ii].name+"? (y/n)");
   
-  col(15); move(23, 0); addstri(msgs[size(msgs)-1]);
+  col(15); move(23, 0); addstri(msgs[isize(msgs)-1]);
   return yesno(IC_MYESNO);
+  }
+
+// for Atlanteans
+bool selectTransmuteColor(bool cheating = false) {
+  int validcolorfrom[COLORS];
+  for(int i=0; i<COLORS; i++) 
+    validcolorfrom[i] = 0;
+  
+  int count_other = 0, count_normal = 0;
+
+  for(int i=0; i<P.arms; i++) if(P.ambifresh ? havebit(P.ambiArm, i) : i == P.cArm) {
+    if(!wpn[i])
+      count_other ++;
+    else if(wpn[i]->type == WT_ORB)
+      count_other ++;
+    else if(wpn[i]->type == WT_GOLD) {
+      count_other ++;
+      }
+    else {
+      count_normal++;
+      for(int c=0; c<COLORS; c++) {
+        int vc = cheating ? 0 : checkValidColor(wpn[i], c);
+        if(vc > validcolorfrom[c]) 
+          validcolorfrom[c] = vc;
+        }
+      }
+    }
+  
+  if(count_normal == 0) return true;
+  
+  int selection = 0;
+
+  while(true) {
+    erase();
+    
+    move(0, 0); col(15); addstri("Select the material...");
+    
+    move(2, 2); addstri("name");
+    move(2, 30); addstri("stun/weak hydras/*strong hydras");
+    move(2, 65); addstri("validity");
+    
+    for(int y=0; y<COLORS; y++) {
+      showMenuOption(y+4, 'a'+y, selection == y);
+      col(cinf[y].color);
+      
+      if(wpn[P.cArm]) {
+        int col = wpn[P.cArm]->color;
+        wpn[P.cArm]->color = y;
+        addstri(wpn[P.cArm]->name());
+        wpn[P.cArm]->color = col;
+        }
+      else addstri(cinf[y].wname);
+
+      move(y+4, 30);
+
+      if(wpn[P.cArm]->doubles() || wpn[P.cArm]->stuns())      
+        addstri("(S" + its(cinf[y].stunturns)+") ");
+
+      if(wpn[P.cArm]->type == WT_SHLD) {
+        for(int hy=0; hy<HYDRAS; hy++) {
+          col(hyinf[hy].color);
+          if(hyinf[hy].weakness == y || hyinf[hy].suscept == y)
+            addstri(hyinf[hy].hname);
+          else if(hyinf[hy].weakness == y)
+            addstri("(" + hyinf[hy].hname+"weak) ");
+          else if(hyinf[hy].suscept == y)
+            addstri("(" + hyinf[hy].hname+"suscept) ");
+          }
+        }
+
+      if(wpn[P.cArm]->cuts() || wpn[P.cArm]->xcuts()) {
+        if(y < HCOLORS) {
+          for(int hy=0; hy<HYDRAS; hy++) {
+            col(hyinf[hy].color);
+            if(hyinf[hy].suscept == y)
+              addstri(hyinf[hy].hname);
+            }
+          for(int hy=0; hy<HYDRAS; hy++) {
+            col(hyinf[hy].color);
+            if(hyinf[hy].strength == y)
+              addstri(" *" + hyinf[hy].hname);
+            }
+          }
+        else if(y == COLORS-1) {
+          addstri("all except ");
+          col(hyinf[HC_ALIEN].color);
+          addstri("alien");
+          }
+        }
+      
+
+      move(y+4, 65);
+
+      col(cinf[y].color);
+      if(validcolorfrom[y] == XMUT_INVALID) 
+        addstr("(invalid)");
+
+      else if(validcolorfrom[y] > P.curlevel) 
+        addstri("(from Lv " + its(validcolorfrom[y]+1)+")");
+      
+      }
+
+    int ch = ghch(IC_XMUT);
+    
+    if(ch == 10 || ch == 13)
+      ch = 'a' + selection;
+  
+    if(ch >= 'a' && ch < 'a'+COLORS) {
+      selection = ch - 'a';
+      if(validcolorfrom[selection] <= P.curlevel) {
+        atlantean_xmut_color = selection;
+        return true;
+        }
+      }
+    else if(!changeSelection(ch, selection, COLORS)) return false;
+    }
   }
 
 int viewInventory() {
@@ -1128,12 +1347,14 @@ void giveHint(hydra *h) {
     showdam = true;
 
     col(h->gcolor());
-    if(h->invisible()) {
+    if(false && h->invisible()) {
       move(cy, 0); addstr("??? ??? ???");
       }
     else {
       move(cy, 0); addstri(its(hd)); 
-      move(cy, 4); addstri(its(hd - sh));
+      if(hd <= AMAX) {
+        move(cy, 4); addstri(its(hd - sh));
+        }
       move(cy, 8); addstri(its(wnd[spos]));
       }
     move(cy, 12);
@@ -1165,10 +1386,13 @@ void giveHint(hydra *h) {
       if(hr > 0) addstri(" +" + its(hr)); else if(hr < 0) addstri(" x" + its(-hr));
       }
     
-    if(h->color == HC_VAMPIRE && showdam && spos) {
+    int vammul = drainpower(h);
+
+    if(vammul && showdam && spos) {
       showdam = false;
-      int wn = wnd[ospos] - wnd[spos];
-      col(12); addstri(" W" + its(wn)); col(h->gcolor()); addstri(" +"+its(wn));
+      int qwnd = (wnd[ospos] - wnd[spos]);
+      int wn = vammul * qwnd;
+      col(12); addstri(" W" + its(qwnd)); col(h->gcolor()); addstri(" +"+its(wn));
       }
     
     cy++;
@@ -1186,7 +1410,7 @@ string sortorder = "tkbl";
 bool trollcmp(int a, int b) {
   weapon *wa = pinfo.trollwpn[a];
   weapon *wb = pinfo.trollwpn[b];
-  for(int i = 0; i < size(sortorder); i++) switch(sortorder[i]) {
+  for(int i = 0; i < isize(sortorder); i++) switch(sortorder[i]) {
     case 't':
       if(wa->type != wb->type) return wa->type > wb->type;
       break;
@@ -1213,7 +1437,7 @@ bool quickGet(weapon*& w) {
   // don't get traps
   if(w->wpnflags & wfTrap) return false;
   
-  int s = size(pinfo.trollwpn);
+  int s = isize(pinfo.trollwpn);
   for(int i=0; i<s; i++) {
     free[int(pinfo.trollkey[i])] = false;
     }
@@ -1244,7 +1468,7 @@ bool viewTrollInventory(hydra *resistancesOf) {
   move(0,45); col(8); addstr("Ctrl+FLBKT = change sort order");
   
   move(0,0); col(14); 
-  int s = size(pinfo.trollwpn);
+  int s = isize(pinfo.trollwpn);
   if(resistancesOf) 
      addstri("Resistances for: "+resistancesOf->name());
   else if(wpn[P.cArm])
@@ -1400,7 +1624,7 @@ void createTargetLines() {
       }
     }
 
-  for(int i=0; i<size(hydras); i++) {
+  for(int i=0; i<isize(hydras); i++) {
     hydra *H = hydras[i];
     if(M[H->pos].seen)
     if(H->color & HC_DRAGON) for(int d=0; d<DIRS; d++) breathAttack(H, d, false);
@@ -1417,7 +1641,7 @@ int headask() {
 
 hydra *enemyInSight() {
   
-  for(int i=0; i<size(hydras); i++)
+  for(int i=0; i<isize(hydras); i++)
     if(M[hydras[i]->pos].seen && !hydras[i]->zombie && hydras[i]->aware())
       return hydras[i];
 
@@ -1428,7 +1652,7 @@ int closestHydraDistance() {
   
   int hd = 5000;
 
-  for(int i=0; i<size(hydras); i++)
+  for(int i=0; i<isize(hydras); i++)
     if(M[hydras[i]->pos].seen && !hydras[i]->zombie && hydras[i]->aware()) {
       int dist = len(pickMinus(playerpos, hydras[i]->pos));
       if(dist < hd) hd = dist;
@@ -1654,7 +1878,6 @@ void mainloop() {
 
     wasDead = isDead;
     isDead = P.curHP <= 0;
-    if(isDead) printf("isDead!\n");
     if(isDead && !wasDead && !sceneid) {
       return;
       }
@@ -1851,7 +2074,7 @@ void mainloop() {
         col(15);
         for(int i=0; i<24; i++) {
           move(i, 0);
-          int xpos = size(msgs) + i - 24;
+          int xpos = isize(msgs) + i - 24;
           if(xpos >= 0) addstr(msgs[xpos].c_str());
           }
         ghch(IC_VIEWDESC);
@@ -1890,7 +2113,10 @@ void mainloop() {
           }
         else {
           ii = viewInventory();
-          if(ii < 0) break;
+
+          if(ii == IT_SXMUT && P.race == R_ATLANTEAAN && !selectTransmuteColor(false))
+            break;
+          else if(ii < 0) break;
           else if(P.curHP <= 0) 
             addMessage("It seems you are not yet used to being dead...");
           else if(useup(ii)) {
@@ -1922,7 +2148,7 @@ void mainloop() {
             continue;
             }
         
-          for(int i=0; i<size(hydras); i++) {
+          for(int i=0; i<isize(hydras); i++) {
             M[hydras[i]->pos].h = NULL;
             if(hydras[i]->color == HC_ETTIN) {
               stats.ettinsave++;
@@ -2179,7 +2405,7 @@ void mainloop() {
         break;
       
       case 'H': if(debugon()) {
-        addMessage("Summon what kind of hydra?"); drawScreen();
+        addMessage("Summon what kind of hydra? ('-' for weapon)"); drawScreen();
         int c = ghch(IC_CALL);
         hydra *h = NULL;
         
@@ -2195,6 +2421,7 @@ void mainloop() {
           }
         else switch(c) {
           case 'v': h = new hydra(HC_VAMPIRE, headask(), 10, 20); break;
+          case 'E': h = new hydra(HC_EVOLVE, headask(), 10, 20); break;
           case 'a': 
             h = new hydra(HC_ALIEN, headask(), 1, 20);
             for(int i=0; i<COLORS; i++) h->res[i] = i == HC_OBSID ? -2 : 0;
@@ -2225,6 +2452,19 @@ void mainloop() {
           case 'd':
             h = new hydra(HC_DRAGON | randHCol(), headask(), 1, 20);
             break;
+          case '-': {
+            addMessage("Summon what kind of weapon?"); drawScreen();
+            int c = ghch(IC_CALL);
+            weapon*& w  = wpn[P.cArm];
+            if(w) delete w;
+            w = new weapon(0, 0, 0);
+            w->size = headask();
+            w->type = c;
+            w->level = 0;
+            w->osize = w->size;
+            selectTransmuteColor(true);
+            w->color = w->ocolor = atlantean_xmut_color;
+            }
           }
         if(h) {h->put(); addMessage("Summoned "+h->name()+" to a random location.");}
         else addMessage("No such thing.");

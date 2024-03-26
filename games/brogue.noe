@@ -401,7 +401,7 @@ function gotgmessage(s)
   or mac("dispatch", SndDeath, 50)
   end
 
-setwindowtitle("Brogue")
+setwindowtitle(Gfx, "Brogue")
 defaultmodep(modeTiles, 6)
 
 axSemitransparent = {tmap_backshade88, tmap_bigblack, tmap_trans}

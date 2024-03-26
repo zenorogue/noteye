@@ -15,7 +15,7 @@ static SDL_Surface *exsurface;
 static bool sdlerror = false;
 #endif
 
-int origsx, origsy;
+vector<point> origs;
 
 SDL_Joystick *joysticks[8];
 
@@ -57,16 +57,21 @@ void initMode() {
   
   // IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 
+  origs.clear();
+  
 #ifdef SDL2
-  SDL_DisplayMode curr;
-  SDL_GetCurrentDisplayMode(0, &curr);
-  origsx = curr.w;
-  origsy = curr.h;
+  int displays = SDL_GetNumVideoDisplays();
+  for(int i=0; i<displays; i++) {
+    SDL_DisplayMode curr;
+    SDL_GetCurrentDisplayMode(i, &curr);
+    point p = {curr.w, curr.h};
+    origs.push_back(p);
+    }
 
 #else
   const SDL_VideoInfo *inf = SDL_GetVideoInfo();
-  origsx = inf->current_w;
-  origsy = inf->current_h;
+  point p = {inf->current_w, inf->current_h};
+  origs.push_back(p);
 
 #endif
 
@@ -116,13 +121,19 @@ int lh_findvideomode(lua_State *L) {
   noteye_table_setInt(L, "y", nsy);
   return 1;
   }
+#endif
 
-int lh_origvideomode(lua_State *L) {
-  lua_newtable(L);
-  noteye_table_setInt(L, "x", origsx);
-  noteye_table_setInt(L, "y", origsy);
-  return 1;
+#if 1
+extern "C" {
+point origvideomode(Window *w) {
+  
+  int displayid = 0;
+  
+  displayid = w ? SDL_GetWindowDisplayIndex(w->win) : SDL_GetWindowDisplayIndex(NULL);
+  
+  return origs[displayid];
   }
+}
 
 #ifdef USEGFXBUFFER
 SDL_Surface *gfxbuffer;
@@ -218,6 +229,10 @@ bool Window::open(int x, int y, int newflags, int newrenflags, int px, int py) {
   if(!ren && !(flags & SDL_WINDOW_OPENGL)) {
     ren = SDL_CreateRenderer(win, -1, renflags = newrenflags);
     if(!ren) return false;
+    /* Draw a black screen */
+    SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+    SDL_RenderClear(ren);
+    SDL_RenderPresent(ren);
     }
   
   #ifdef OPENGL
@@ -235,8 +250,9 @@ bool Window::open(int x, int y, int newflags, int newrenflags, int px, int py) {
   return true;
   }
 
-int lh_newwindow(lua_State *L) {
-  checkArg(L, 1, "newwindow");
+extern "C" {
+
+Window *newwindow(const char *title) {
   Window *s = new Window;
   s->win = NULL;
   s->ren = NULL;
@@ -244,25 +260,18 @@ int lh_newwindow(lua_State *L) {
   s->tex = NULL;
   s->gl = NULL;
   s->usetex = false;
-  s->title = luaStr(1);
-
-  return noteye_retObject(L, s);
-  }
-
-int lh_openwindow(lua_State *L) {
-  checkArg(L, 7, "openwindow");
-
-  return noteye_retBool(L, 
-    luaO(1, Window)->open(luaInt(2), luaInt(3), luaInt(4), luaInt(5), luaInt(6), luaInt(7))
-    );  
-  }
-
-int lh_windowusetex(lua_State *L) {
-  checkArg(L, 2, "windowusetex");
-
-  Window *w = luaO(1, Window);
+  s->title = title;
   
-  w->usetex = luaBool(2);
+  return registerObject(s);
+  }
+
+bool openwindow(Window *w, int x, int y, int newflags, int newrenflags, int px, int py) {
+  return w->open(x, y, newflags, newrenflags, px, py);
+  }
+
+bool windowusetex(Window *w, bool usetex) {
+
+  w->usetex = usetex;
   
   if(!w->usetex) {
     disableSDL(w);
@@ -276,52 +285,47 @@ int lh_windowusetex(lua_State *L) {
       if(!w->s) return false;
       }
     }
-    
-  return 0;
+  
+  return true;
   }
 
-int lh_SDL_GetRendererInfoName(lua_State *L) {
-  checkArg(L, 1, "SDL_GetRendererInfoName");
-  Window *w = luaO(1, Window);
-  
-  if(w->flags & SDL_WINDOW_OPENGL)
-    return noteye_retStr(L, "(NotEye's OpenGL)");
+const char *SDL_GetRendererInfoName(Window *w) {
 
+  if(w->flags & SDL_WINDOW_OPENGL)
+    return "(NotEye's OpenGL)";
+  
   SDL_RendererInfo info;
     
   SDL_GetRendererInfo(w->ren, &info);
   
-  return noteye_retStr(L, info.name);
+  return info.name;
   }
 
-int lh_closewindow(lua_State *L) {
-  checkArg(L, 1, "closewindow");
-
-  luaO(1, Window)->close();
-  return 0;
+void closewindow(Window *w) {
+  w->close();
   }
 
-int lh_setwindowtitle(lua_State *L) {
-  checkArg(L, 2, "setwindowtitle");
-  Window *w = luaO(1, Window);
-  w->title = luaStr(2);
+void setwindowtitle(Window *w, const char *title) {
+  w->title = title;
+  if(w->win) SDL_SetWindowTitle(w->win, title);
+  }
+
+void setwindowminsize(Window *w, int x, int y) {
   if(w->win)
-    SDL_SetWindowTitle(w->win, w->title.c_str());
-  return 0;
+    SDL_SetWindowMinimumSize(w->win, x, y);
   }
 
-int lh_setwindowicon(lua_State *L) {
-  checkArg(L, 2, "setwindowicon");
-  Window *w = luaO(1, Window);
-  Image *i = luaO(2, Image);
+void setwindowmaxsize(Window *w, int x, int y) {
   if(w->win)
-    SDL_SetWindowIcon(w->win, i->s);
-  return 0;
+    SDL_SetWindowMaximumSize(w->win, x, y);
   }
 
-int lh_renderwindow(lua_State *L) {
-  checkArg(L, 1, "renderwindow");
-  Window *w = luaO(1, Window);
+void setwindowicon(Window *w, Image *i) {
+  w->icon = i;
+  if(w->win) SDL_SetWindowIcon(w->win, i->s);
+  }
+
+int renderwindow(Window *w) {
   
 #ifdef OPENGL
   if(useGL(w)) {
@@ -342,6 +346,7 @@ int lh_renderwindow(lua_State *L) {
 
   return 0;
   }
+}
 
 int lh_enablejoysticks(lua_State *L) {
   checkArg(L, 1, "enablejoysticks");
@@ -423,6 +428,7 @@ bool checkEventSDL(lua_State *L, int timeout) {
       SDL_KeyboardEvent& kev(ev.key);
       lua_newtable(L);
       noteye_table_setInt(L, "type", ev.type == SDL_KEYDOWN ? evKeyDown : evKeyUp);
+      noteye_table_setInt(L, "timestamp", kev.timestamp);
       noteye_table_setInt(L, "scancode", kev.keysym.scancode);
       noteye_table_setInt(L, "keycode", kev.keysym.sym);
       // had to change name because "repeat" is reserved in Lua
@@ -443,6 +449,7 @@ bool checkEventSDL(lua_State *L, int timeout) {
     if(ev.type == SDL_WINDOWEVENT) {
       lua_newtable(L);
       noteye_table_setInt(L, "type", evWindowEvent);
+      noteye_table_setInt(L, "timestamp", ev.window.timestamp);
       noteye_table_setInt(L, "subtype", ev.window.event);
       noteye_table_setInt(L, "data1", ev.window.data1);
       noteye_table_setInt(L, "data2", ev.window.data2);
@@ -466,6 +473,11 @@ bool checkEventSDL(lua_State *L, int timeout) {
       noteye_table_setInt(L, "type", evMouseWheel);
       noteye_table_setInt(L, "dx", wev.x);
       noteye_table_setInt(L, "dy", wev.y);
+#if (SDL_MAJOR_VERSION<<16 | SDL_MINOR_VERSION<<8 | SDL_PATCHLEVEL) >= 0x020004
+      noteye_table_setInt(L, "direction", wev.direction == SDL_MOUSEWHEEL_NORMAL ? 1 : -1);
+#else
+      noteye_table_setInt(L, "direction", 1); // older versions of SDL don't have this property
+#endif
       return true;
       }
 
@@ -545,23 +557,13 @@ bool checkEventSDL(lua_State *L, int timeout) {
   }
 #endif
 
-#ifdef USELUA
-int lh_messagebox(lua_State *L) {
-  checkArg(L, 4, "messagebox");
-  return noteye_retInt(L,
-    noteye_messagebox(luaInt(1), luaStr(2), luaStr(3), luaInt(4))
-    );
-  }
-#endif
-
 #ifdef WINDOWS
 
 #include <SDL2/SDL_syswm.h>
 
 void *getNoteyeWindowHWND(int window_id) {
 
-  Window *win = dynamic_cast<Window*> (noteye_getobj(window_id));
-  
+  Window *win = dynamic_cast<Window*> (noteye_by_handle(window_id));
   if(!win) return NULL;
 
   SDL_Window *sdl_window = win->win;
@@ -578,15 +580,13 @@ void *getNoteyeWindowHWND(int window_id) {
 
 #endif
 
-}
-
 extern "C" {
 int noteye_messagebox(Uint32 flags, const char* title, const char* message, int window_id) {
-  noteye::Window *win = NULL;
-  if (window_id > 0) {
-    win = dynamic_cast<noteye::Window*> (noteye::noteye_getobj(window_id));
-  }
+  Window *win = dynamic_cast<Window*> (noteye_by_handle(window_id));
   SDL_Window *sdl_window = win ? win->win : NULL;
   return SDL_ShowSimpleMessageBox(flags, title, message, sdl_window);
   }
 }
+
+}
+

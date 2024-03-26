@@ -139,11 +139,11 @@ hex1000000 = tonumber("1000000", 16)
 
 function addmousecursor(C)
   if C == 0 then return 0 end
-  local av,co,ba = gavcoba(C)
-  ba = vgaget(bXOR(ba, hex7000000) / hex1000000)
-  co = vgaget(bXOR(co, hex7000000) / hex1000000)
+  local avcoba = gavcoba(C)
+  avcoba.bak = vgaget(bXOR(avcoba.bak, hex7000000) / hex1000000)
+  avcoba.col = vgaget(bXOR(avcoba.col, hex7000000) / hex1000000)
 --  print("ba = "..ba)
-  return tilemergeover(tilefill(ba), tilerecolor(fgetav(Font, av), co))
+  return tilemergeover(tilefill(avcoba.bak), tilerecolor(fgetav(Font, avcoba.chr), avcoba.col))
   end
 
 function addbigcursor(C)
@@ -161,18 +161,18 @@ clearmoveanimations()
 
 function backup_process_screen()
   if not ScreenSaver then
-    ScreenSaver = nopenstringstream("")
+    ScreenSaver = nopenstringstream()
     end
   nsetstringstream(ScreenSaver, "")
   nresetknownout(ScreenSaver)
   nwritescr(ScreenSaver, S)
   local s = ngetstringstream(ScreenSaver)
-  setcrashstring("screensaver", s)
+  setcrashstring("screensaver", tostring(s))
   end
 
 function restore_process_screen(s)
   if not ScreenSaver then
-    ScreenSaver = nopenstringstream("")
+    ScreenSaver = nopenstringstream()
     end
   if s ~= "" then
     logprint2("Screen restoring ("..s:len().." bytes)")
@@ -203,7 +203,6 @@ function copymap()
   cursor = pcursor
 
   findpc()
-  moveonwheel = true
 
   if mapon then
     -- yeah, there he is!
@@ -214,11 +213,11 @@ function copymap()
       oplayerpos = V.copy(playerpos)
       playermoved()
       end
-    scrset(IMG, 999, 999, 0) -- 0 outside the map
+    scrset(IMG, 999, 999, EMPTYTILE) -- EMPTYTILE outside the map
     V.scrcopy(S, D.map.top, MAP, 0, D.map.size, TMAP_COPY)
 
     if mode ~= modeASCII then
-      V.scrfill(IMG, rectTS(D.map.top, D.map.size), 0)
+      V.scrfill(IMG, rectTS(D.map.top, D.map.size), EMPTYTILE)
       end
     
     readgmessages()

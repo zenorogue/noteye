@@ -64,8 +64,8 @@ const char* tutorialTexts[13] = {
   
   "There are some mushrooms before you. Mushrooms block your way, so "
   "you have to cut them before you proceed. They also have many uses, "
-  "though. They block the way of Hydras, and also provide additional "
-  "\"heads\" which are useful with some of the special abilities, or "
+  "though. They block the way of Hydras and also provide additional "
+  "\"heads\" which are useful with some of the special abilities or "
   "for testing your weapons.\n"
   "However, the one before you simply blocks your way. You can cut it "
   "simply by moving into it. Make sure that you have selected your dagger "
@@ -85,10 +85,10 @@ const char* tutorialTexts[13] = {
   "or with so-called \"vi keys\" (around J on qwerty). In this tutorial, the map is composed "
   "out of squares, and you can move in four directions. But for a real "
   "game, you can also choose 8-directional movement (allow diagonal movements "
-  "for both you and hydras), or to have a map made of hexagonal cells. "
+  "for both you and hydras) or to have a map made of hexagonal cells. "
   ,
   
-  "There is a hydra before you! Not a big deal, since it only has one head. "
+  "There is a hydra in front of you! Not a big deal, since it only has one head. "
   "It will be as simple to kill it as to cut a mushroom. Again, make sure that "
   "the dagger is selected, and you will kill it simply by moving into it.\n",
   
@@ -102,11 +102,11 @@ const char* tutorialTexts[13] = {
   "(if you cut all its heads, the hydra is dead and does not regrow). Thus, "
   "select the machete, and you will be able to kill it easily.",
   
-  "There is a four-headed hydra before you! If you check both your weapons, "
+  "There is a four-headed hydra in front of you! If you check both your weapons, "
   "you will see that there is no way to kill this one. You will need to "
   "find a better weapon. Thanks to the mushrooms which block the hydra, you "
   "can try to explore the room to the North.\n",  
-  "There is a shortsword before you, and it is just what you need! It is able "
+  "There is a shortsword in front of you, and it is just what you need! It is able "
   "to cut four heads at once, so you will be able to slay that four-headed "
   "hydra easily.\n"
   "Select your machete, go to the shortsword, and press 'g' to get it. "
@@ -141,9 +141,9 @@ const char* tutorialTexts[13] = {
 
   "Alternatively, you can also drink the Potion of Knowledge while the hydra "
   "is in your sight. It will show you the combination of attacks that it "
-  "thinks is the best, and it will usually work correctly.\n",
+  "thinks is the best, and this combination will usually work correctly.\n",
   
-  "Hopefully you now know the basics of Hydra slaying.\nIn the next chamber, "
+  "Hopefully, you now know the basics of Hydra slaying.\nIn the next chamber, "
   "there is a display of some items that are commonly used by Hydra slayers. "
   "You can pick them up and read what they do from your inventory ('i'). "
   "You can also press 'f'/'l' to get a list of all items, weapons, and hydras "
@@ -162,7 +162,7 @@ const char* tutorialTexts[13] = {
   "grow more heads).\n",
   
   "There are more types of weapons available. The most successful slayers "
-  "will be even able to find rare artifact weapons, with very special "
+  "will be even able to find rare artifact weapons with very special "
   "hydra slaying powers.\n"
   "But there is a general rule that the more powerful the weapon is, "
   "the fewer hydras it is able to affect. A shortsword cuts 4 heads, but "
@@ -186,7 +186,7 @@ const char* tutorialTexts[13] = {
   "so far without taking any wounds, it is not possible in general. You "
   "will lose HP when hydras attack you; you lose the game if it drops "
   "down to 0. On the other hand, successfully slaying a hydra will heal "
-  "some of your HP, and also improve your maximum HP by 1. You do not "
+  "some of your HP and also improve your maximum HP by 1. You do not "
   "regenerate HP automatically, so you will need to fight hydras (there "
   "are several other ways of healing, but they are very limited).\n"
   };

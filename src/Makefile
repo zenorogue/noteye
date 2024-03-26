@@ -5,7 +5,7 @@ all: ../noteye
 #CC=g++-4.6
 
 #for release:
-CFLAGS=-O9 -Wall 
+CFLAGS=-O3 -Wall -std=c++0x -Wno-narrowing
 CC=g++
 
 TGT=

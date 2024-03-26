@@ -1,5 +1,5 @@
 -- which version of NotEye is this noe-file compatible with
-gamenoteyever = 0x750
+gamenoteyever = 0x900
 
 -- set the official Hydra Slayer colors
 setpalette(palettes.hydra, 7)
@@ -57,7 +57,7 @@ function ytilefloor(M)
 
 function xtilefloor(C)
 
-  if gp2(C) < 0 then return 0 end
+  if gp2(C) == nil then return nil end
 
   local ch = gch(C)
   local co = gco(C)
@@ -139,7 +139,7 @@ function ytileobj(M,x,y)
   
   local function hycolor(x) return tilerecolor(x, M.hcolor) end
   
-  local out = 0
+  local out = nil
   local function mergeout(x)
     out = tilemerge(out, x)
     end
@@ -232,6 +232,7 @@ function ytileobj(M,x,y)
   elseif M.iicon == av("g") then mergeoutit(BladeTrap)
   elseif M.iicon == av("h") then mergeoutit(DivTrap)
   elseif M.iicon == av("i") then mergeoutit(RockTrap)
+  elseif M.iicon == av("j") then mergeoutit(Scythe)
   end
   
   -- monsters etc
@@ -272,11 +273,18 @@ function ytileobj(M,x,y)
   elseif M.hicon == av("@") and M.hcolor == vgaget(14) then mergeout(shz(SlayerNaga))
   elseif M.hicon == av("@") and M.hcolor == vgaget(12) then mergeout(shz(SlayerCentaur))
   elseif M.hicon == av("@") and M.hcolor == vgaget(11) then mergeout(shz(SlayerTitan))
+  elseif M.hicon == av("@") and M.hcolor == vgaget(10) then mergeout(shz(SlayerAtlantean))
   elseif M.hicon == av("@") and M.hcolor == vgaget(13) then 
     mergeout(shz(Twin, "twin"))
   elseif M.hicon == av(" ") then mergeout(tilerecolor(Hydra[7], 0))
   elseif al and al>0 then
     if co == vgaget(8) then mergeout(shn(Mushroom[math.min(al,9)]))
+    elseif M.monkey then 
+      local m = Monkey[math.min(al,3)]
+      if M.monkey == 2 then m = tilemerge(m, MonkeyWpn) end
+      mergeout(shz(m, M.hid))
+    elseif co == vgaget(1) and al >= 5 then 
+      mergeout(shz(Ettin[4], M.hid))
     elseif co == vgaget(1) then 
       mergeout(shz(Ettin[math.min(al,3)], M.hid))
     else 
@@ -299,7 +307,7 @@ GoldenStar = tilerecolor(TinyStar, vgaget(14))
 for st=1,7 do
   stunanim[st] = {}
   for tu=0,99 do
-    local frame = 0
+    local frame = nil
     for u=1,st do
       local t = math.pi*2*(u/st + tu/100)
       frame = tilemerge(frame, tilexf(GoldenStar, 
@@ -322,6 +330,8 @@ function xinventory(C)
   else return C end
   end
 
+tm_inventory = newmapping(xinventory)
+
 function bloody(x)
   if violencelevel >= 75 then return tilemerge(Blood, x)
   elseif violencelevel >= 25 then return x
@@ -330,7 +340,7 @@ function bloody(x)
   
 function xtileobj(C)
 
-  if gp2(C) < 0 then return 0 end
+  if gp2(C) == nil then return nil end
   
   local ch = gch(C)
   local co = gco(C)
@@ -432,7 +442,7 @@ til = addtile(til, 0, 0, 32, 32, transAlpha)
 shadtable = {}
 
 for shad=0,15 do
-  local ytf = 0
+  local ytf = nil
   if bAND(shad, 1) > 0 then ytf = tilemerge(ytf, ShadowE) end
   if bAND(shad, 2) > 0 then ytf = tilemerge(ytf, ShadowW) end
   if bAND(shad, 4) > 0 then ytf = tilemerge(ytf, ShadowS) end
@@ -446,7 +456,7 @@ function xtile(C,x,y)
   global_y = y
   
   if inhex and (mode == modeFPP or mode == modeTPP) then
-    if (x+y)%2 == 1-inhexr then return 0 end
+    if (x+y)%2 == 1-inhexr then return nil end
     local M = hydramap(x,y,mode)
     local R0 = 
       oldhydra and xhex(C) or yhex(M)
@@ -479,7 +489,7 @@ function xtile(C,x,y)
     return OutOfMap
     end
   if M.cached then 
-    return M.cached 
+    return noteye_by_handle(M.cached)
     end
   local ytf = ytilefloor(M)
   local uu = M.uu
@@ -505,8 +515,8 @@ function xtile(C,x,y)
   --if bAND(M.shadow, 8) > 0 then ytf = tilemerge(ytf, ShadowN) end
   ytf = tilemerge(ytf, shadtable[bAND(M.shadow, 15)])
   ytf = tilemerge(ytf, ytileobj(M,x,y))
-  if M.cacheid then hydracache(M.cacheid, ytf) end
-  if M.animation then ytf = tilemerge(ytf, M.animation) end
+  if M.cacheid then hydracache(M.cacheid, noteye_assign_handle(ytf)) end
+  if M.animation then ytf = tilemerge(ytf, noteye_by_handle( M.animation )) end
   return ytf
   end
 
@@ -516,7 +526,7 @@ function xminimap(C)
   local co = gco(C)
   al = alnum(ch)
   
-  if gp2(C) < 0 or ch == (" ") or (ch == (".") and co == vgaget(12)) then b=0x181810
+  if gp2(C) == nil or ch == (" ") or (ch == (".") and co == vgaget(12)) then b=0x181810
   elseif ch == (".") or ch == (":") then b = 0x8404040
   elseif ch == ("#") then b = 0xC0C0C0
   elseif ch == ("%") then b = 0x8604040
@@ -624,7 +634,7 @@ function copymap()
 
     -- change to icons
     if ininv and mode ~= modeASCII then
-      scrcopy(IMG, 53, 5, IMG, 53, 5, 1, 19, xinventory)
+      scrcopy(IMG, 53, 5, IMG, 53, 5, 1, 19, tm_inventory)
       end
     
     -- move hydra stats to the top left corner
@@ -893,6 +903,34 @@ function mousesendstext(t, msg)
   mousemsg = msg
   end
 
+function playerpos_center()
+  if inhex and (mode == modeMini or mode == modeMed) then return playerpos + V(1,0.5)
+  elseif inhex and mode == modeTiles then return playerpos + V(1.5,0.5)
+  else return playerpos + 0.5
+  end
+  end
+
+do local lvectodir = vectodir
+function vectodir(v, mzero)
+  if inhex and math.abs(v.x) < math.abs(v.y) then
+    local ay = math.abs(v.y)
+    return lvectodir(V(v.x > 0 and ay or v.x < 0 and -ay or 0, v.y), mzero) 
+  else
+    return lvectodir(v, mzero)
+    end
+  end
+end
+
+do local lpixeltodir = pixeltodir
+function pixeltodir(v)
+  if inhex and mode ~= modeFPP and mode ~= modeTPP and hexround(pixeltoprocess(v)) == playerpos then
+    return -1
+  else
+    return lpixeltodir(v)
+    end
+  end
+end
+
 function checkmouse(ev)
   local d
   
@@ -937,6 +975,26 @@ function checkmouse(ev)
       local ch = gch(scrget(S, 0, my))
       if ch ~= "V" and ch ~= " " then
         mousesendstext(ch, "click for information")
+        end
+      return
+      end
+
+    if string.find(getline(0), "the material") then
+      mousesendstext(" ", "")
+      local ch = gch(scrget(S, 0, my))
+      if ch ~= "S" and ch ~= " " then
+        mousesendstext(ch, "click to select")
+        end
+      return
+      end
+
+    if string.find(getline(0), "Wounds caused by") then
+      mousesendstext(" ", "click here to exit this screen")
+      if mx < 20 then
+        mousesendstext("-", "click for less heads")
+        end
+      if mx > 60 then
+        mousesendstext("+", "click for more heads")
         end
       return
       end
@@ -1132,17 +1190,16 @@ function checkmouse(ev)
         nsendkey(eva)
       elseif eva.button > 1 and hydrainfo then
         evb = hexround(pixeltoprocess(eva))
-        print("ptp = "..tostring(evb))
         hydrainfo(evb.x, evb.y)
       else
         evb = hexround(pixeltoprocess(eva))
-        print("ev = "..tostring(evb))
-        hydraqueuetarget(evb.x, evb.y)
+        if hsmousepath then hydraqueuetarget(evb.x, evb.y) end
         nsendkey2(k, evKeyBothText)
         end
       end
     if mode ~= modeFPP then
       local dirnames = {"E ", "NE", "N ", "NW", "W ", "SW", "S ", "SE"}
+      ptp2 = hexround(ptp)
       mousemsg = "L = move or attack "..dirnames[d+1]..(hydrainfo and " R = info: "..
         hydralook(ptp.x, ptp.y) or "")
     else
@@ -1493,6 +1550,8 @@ function getminipos(size)
     end
   end
 
+noteye_config_variable("hsmousepath", true, "pathfinding with mouse in Hydra Slayer")
+
 noteye_config_variable("hsmousecfg", 2, "Hydra Slayer mouse tooltips", {options = gridoptions})
 
 addtomenu(mainmenu, "x", writechoicef(
@@ -1509,6 +1568,13 @@ addtomenu(mainmenu, "x", writechoicef(
     end
   )
 
+addtomenu(keysmenu, "p", writechoicef(
+  function() return "pathfinding with mouse in Hydra Slayer: \ve"..boolonoff(hsmousepath) end),
+  function()
+    pickbool("hsmousepath", not hsmousepath)
+    return true
+    end
+  )
 
 function mousetooltips()
   -- do return end
@@ -1611,7 +1677,7 @@ function mousetooltips()
 
   if not trailer and hsmousecfg ~= 0 then
     Mouseline = renewscreen(Mouseline, 80, 1)
-    scrfill(Mouseline, 0, 0, 80, 1, 0)
+    scrfill(Mouseline, 0, 0, 80, 1, nil)
     scrwrite(Mouseline, 0, 0, mousemsg, Font, vgaget(0))
     drawscreen(D.output, Mouseline, screen.top.x, Y1-fontsize.y, fontsize.x, fontsize.y)
     end
@@ -1630,18 +1696,25 @@ function readgmessages()
 
 if hydramain and not externalhydra then function rungamex(cmdline)
   P = internal(S, Font, cmdline)
+  Ph = noteye_assign_handle(P)
   hydrauserdir(userdir)
-  hydramain(P, mainloopcyc)
+  hydramain(Ph, mainloopcyc)
   end
   end
 
 local lpixeltoprocess = pixeltoprocess
 
 function hexround(v)
+  local rx = v.x
+  if mode == modeTiles then rx = rx-.5 end
   if not v then return v end
-  v = V(math.floor(v.x), math.floor(v.y))
+  v = V(math.floor(rx), math.floor(v.y))
   if v and inhex and (v.x+v.y+inhexr)%2 > 0.01 and not norounding then 
-    v.x = v.x-1
+    if mode == modeASCII then
+      if rx - v.x < .5 then v.x = v.x-1 else v.x = v.x+1 end
+    else
+      v.x = v.x-1
+      end
     end
   return v
   end
@@ -1678,7 +1751,7 @@ if sethydrabox and not hydrabox then
   local s = imggetsize(hydraheads)
   hydraheads2 = newimage(s.x, s.y)
   hydraheadskey = getpixel(hydraheads, 0, 0)
-  sethydrabox(hydrabox, hydraheads, hydraheads2)
+  sethydrabox(noteye_assign_handle(hydrabox), noteye_assign_handle(hydraheads), noteye_assign_handle(hydraheads2))
   animatedhydras = {}
   for u=0,63 do
     animatedhydras[u] = 
@@ -1854,7 +1927,7 @@ IsoParam = isoparam(32, 24, 32, 32)
 --  end
 mapextent = 1
 
-setwindowtitle("Hydra Slayer "..(hydraver or ""))
+setwindowtitle(Gfx, "Hydra Slayer "..(hydraver or ""))
 cmdline = caller3("Hydra Slayer", "hydra")
 defaultmodep(modeTiles, 3)
 
@@ -1929,7 +2002,7 @@ function handlespecialkeys(ev)
     return true
     end
 
-  if iskey(ev, KEYS.F8) and ev.type == evKeyDown then
+  if false and iskey(ev, KEYS.F8) and ev.type == evKeyDown then
     TileFullmap = V.renewscreen(TileFullmap, realmapsize)
     V.scrcopy(MAP, V(0,0), TileFullmap, 0, realmapsize, xtile)
     Img = newimage(tilesize.x * realmapsize.x, tilesize.y * realmapsize.y)
@@ -1940,7 +2013,7 @@ function handlespecialkeys(ev)
     print("saving the map")
     end
 
-  if iskey(ev, KEYS.F7) and ev.type == evKeyDown then
+  if false and iskey(ev, KEYS.F7) and ev.type == evKeyDown then
     TileFullmap = V.renewscreen(TileFullmap, V(60,45))
     Img = newimage(1920, 1440)
     for y=0,44 do for x=0,59 do 
@@ -1953,7 +2026,7 @@ function handlespecialkeys(ev)
     print("saving the empty map")
     end
   
-  if iskey(ev, KEYS.F6) and ev.type == evKeyDown then
+  if false and iskey(ev, KEYS.F6) and ev.type == evKeyDown then
     invoke_trailer()
     return
     end

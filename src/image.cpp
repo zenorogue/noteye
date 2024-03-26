@@ -9,8 +9,12 @@ long long totalimagesize = 0, totalimagecache = 0;
 #define SURFACETYPE SDL_SWSURFACE
 #define USEBLITS
 
+set<Image*> all_image_objects;
+
 Image::~Image() { 
+  all_image_objects.erase(this);
   if(s) {
+    IMGOBSERVE( printf("DEL %p image (%dx%d) title %sx\n", this, s->w, s->h, title.c_str()); )
     totalimagesize -= s->w * s->h;
     SDL_FreeSurface(s);
     }
@@ -63,6 +67,12 @@ void Image::convert() {
   s = s2;
   }
  
+int changecount = 0;
+
+void Image::upchange() {
+  changes = ++changecount;
+  }
+
 Image::Image(const char *fname) : locked(false) {
   title = fname;
   #ifndef LIBTCOD
@@ -73,9 +83,11 @@ Image::Image(const char *fname) : locked(false) {
     return;
     }
   totalimagesize += s->w * s->h;
+  all_image_objects.insert(this);
+  IMGOBSERVE( printf("NEW %p image (%dx%d) %s\n", this, s->w, s->h, title.c_str()); )
 
   convert();
-  changes = 0;
+  upchange();
   }
 
 void Image::setLock(bool lock) {
@@ -86,27 +98,27 @@ void Image::setLock(bool lock) {
   locked = lock;
   }
 
-Image::Image() : locked(false) { changes = 0; }
+Image::Image() : locked(false) { upchange(); }
 
 Image::Image(int sx, int sy, noteyecolor color) : locked(false) {
   s = SDL_CreateRGBSurface(SURFACETYPE, sx, sy, 32, 0xFF<<16,0xFF<<8,0xFF,0xFF<<24);
   totalimagesize += sx * sy;
+  IMGOBSERVE( printf("NEW %p image (%dx%d) color %08x\n", this, s->w, s->h, color); )
   SDL_LockSurface(s);
   SDL_UnlockSurface(s);
   SDL_FillRect(s, NULL, color);
-  changes = 0;
+  all_image_objects.insert(this);
+  upchange();
   }
 
-#ifdef USELUA
-int lh_loadimage(lua_State *L) {
-  checkArg(L, 1, "loadimage");
-  Image *o = new Image(luaStr(1));
-  if(!o->s) { delete o; return noteye_retInt(L, 0); }
-  return noteye_retObject(L, o);
+extern "C" {
+Image *loadimage(const char *fname) {
+  Image *o = new Image(fname);
+  if(!o->s) { delete o; return NULL; }
+  return registerObject(o);
   }
 
-void saveimage(int id, const char *fname) {
-  Image *o = dbyId<Image> (id);
+void saveimage(Image *o, const char *fname) {
   if(!o) {
     if(logfile) fprintf(logfile, "saveimage with invalid image\n");
     fprintf(stderr, "saveimage with invalid image\n");
@@ -117,54 +129,37 @@ void saveimage(int id, const char *fname) {
   else SDL_SaveBMP(o->s, fname);
   }
 
-int lh_newimage(lua_State *L) {
-  int params = lua_gettop(L);
-  if(params != 2 && params != 3) {
-    noteyeError(1, "Bad arg to newimage", NULL); 
-    return noteye_retInt(L, 0);
-    }
-  Image *i = new Image(luaInt(1), luaInt(2), params == 3 ? luaInt(3) : 0);
-  return noteye_retObject(L, i);
+Image *newimage(int x, int y) {
+  return registerObject(new Image(x, y, 0));
   }
 
-int lh_imagetitle(lua_State *L) {
-  checkArg(L, 2, "imagetitle");
-  luaO(1, Image) -> title = luaStr(2);
-  return 0;
+Image *newimage_color(int x, int y, noteyecolor color) {
+  return registerObject(new Image(x, y, color));
   }
 
-int lh_fillimage(lua_State *L) {
-  checkArg(L, 6, "fillimage");
+void imagetitle(Image *o, const char *title) {
+  if(o) o->title = title;
+  else fprintf(stderr, "null imagetitle\n"); // todo
+  }
+
+void fillimage(Image *img, int x, int y, int w, int h, noteyecolor col) {
+  if(!img) { fprintf(stderr, "null imagetitle\n"); return; }
   SDL_Rect rect;
-  rect.x = luaInt(2);
-  rect.y = luaInt(3);
-  rect.w = luaInt(4);
-  rect.h = luaInt(5);
-  int col = luaInt(6);
-  Image *img = luaO(1,Image);
+  rect.x = x;
+  rect.y = y;
+  rect.w = w;
+  rect.h = h;
 #ifdef OPENGL
   if(useGL(img)) fillRectGL(useGL(img), rect.x, rect.y, rect.w, rect.h, col); else
 #endif
   if(useSDL(img)) fillRectSDL(useSDL(img), rect.x, rect.y, rect.w, rect.h, col); else
   SDL_FillRect(img->s, &rect, col);
-  img->changes++;
-  return 0;
+  img->upchange();
   }
 
-int lh_imgcopy(lua_State *L) {
-  checkArg(L, 8, "fillimage");
-
-  Image *srcI = luaO(1, Image);
-  int srcX = luaInt(2);
-  int srcY = luaInt(3);
-
-  Image *tgtI = luaO(4, Image);
-  int tgtX = luaInt(5);
-  int tgtY = luaInt(6);
-  
-  int six = luaInt(7);
-  int siy = luaInt(8);
-  
+void imgcopy(Image *srcI, int srcX, int srcY, Image *tgtI, int tgtX, int tgtY, int six, int siy) {
+  if(!srcI) { fprintf(stderr, "null imagetitle\n"); return; }
+  if(!tgtI) { fprintf(stderr, "null imagetitle\n"); return; }
   srcI->setLock(false);
   tgtI->setLock(false);
   
@@ -172,11 +167,11 @@ int lh_imgcopy(lua_State *L) {
   SDL_Rect tgtR; tgtR.x = tgtX; tgtR.y = tgtY; 
   
   SDL_BlitSurface(srcI->s, &srcR, tgtI->s, &tgtR);
-  tgtI->changes++;
-  return 0;
+  tgtI->upchange();
   }
 
-int img_getpixel2(Image *srcI, int srcX, int srcY) {
+noteyecolor img_getpixel(Image *srcI, int srcX, int srcY) {
+  if(!srcI) { fprintf(stderr, "null imagetitle\n"); return 0; }
 #ifdef OPENGL
   if(useGL(srcI)) return getpixelGL((Window*)srcI, srcX, srcY);
 #endif
@@ -185,47 +180,23 @@ int img_getpixel2(Image *srcI, int srcX, int srcY) {
   return qpixel(srcI->s, srcX, srcY);
   }
 
-noteyecolor img_getpixel(int src, int srcX, int srcY) {
-  Image *srcI = dbyId<Image> (src);
-  if(!srcI) {
-    if(logfile) fprintf(logfile, "getpixel with invalid image\n");
-    fprintf(stderr, "getpixel with invalid image\n");
-    return 0;
-    }
-  return img_getpixel2(srcI, srcX, srcY);
-  }
-
-int img_setpixel2(Image *srcI, int srcX, int srcY, int pix) {
+void img_setpixel(Image *srcI, int srcX, int srcY, noteyecolor pix) {
+  if(!srcI) { fprintf(stderr, "null imagetitle\n"); return; }
 #ifdef OPENGL
-  if(useGL(srcI)) return 0;
+  if(useGL(srcI)) return;
 #endif
-  if(useSDL(srcI)) return 0; // todo
+  if(useSDL(srcI)) return; // todo
 
   srcI->setLock(true);
   qpixel(srcI->s, srcX, srcY) = pix;
-  srcI->changes++;
-  return 0;
+  srcI->upchange();
   }
 
-void img_setpixel(int src, int srcX, int srcY, noteyecolor pix) {
-  Image *srcI = dbyId<Image> (src);
-  if(!srcI) {
-    if(logfile) fprintf(logfile, "setpixel with invalid image\n");
-    fprintf(stderr, "setpixel with invalid image\n");
-    return;
-    }
-  img_setpixel2(srcI, srcX, srcY, pix);
+point imggetsize(Image *img) {
+  if(!img) { point p; p.x = 0; p.y = 0; return p; }
+  point p; p.x = img->s->w; p.y = img->s->h;
+  return p;
   }
-
-int lh_imggetsize(lua_State *L) {
-  checkArg(L, 1, "imggetsize");
-  Image *img = luaO(1, Image);
-  lua_newtable(L);
-  noteye_table_setInt(L, "x", img->s->w);
-  noteye_table_setInt(L, "y", img->s->h);
-  return 1;
-  }
-
-#endif
+}
 
 }

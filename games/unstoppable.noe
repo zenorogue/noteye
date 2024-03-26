@@ -90,5 +90,5 @@ function drawdisplay()
   end
   
 defaultmodep(modeTiles, 1)
-setwindowtitle("Unstoppable")
+setwindowtitle(Gfx, "Unstoppable")
 rungame(caller3("Unstoppable", "unstoppable"))

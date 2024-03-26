@@ -5,11 +5,11 @@ namespace noteye {
 struct TransCache : Tile {
   // WARNING: image in the cache is NOT indexed!
   // and thus it has to be removed together with TransCache
-  TileImage *orig, *cache;
+  smartptr<TileImage> orig, cache;
   int cachechg;
   int tx, ty, txy, tyx;
   int hash() const {
-    return (orig->id ^ (tx * 13157) ^ (ty * 71) ^ (txy * 5131) ^ (tyx * 61901)) & HASHMAX;
+    return (tohash(orig) ^ (tx * 13157) ^ (ty * 71) ^ (txy * 5131) ^ (tyx * 61901)) & HASHMAX;
     }
   ~TransCache();
   };
@@ -240,7 +240,7 @@ void drawTileImage(Image *dest, drawmatrix &M, TileImage *TI) {
     TransCache tc;
     tc.orig = TI;
     tc.tx = M.tx; tc.ty = M.ty; tc.txy = M.txy; tc.tyx = M.tyx;
-    tc.cache = 0; int rt = registerTile(tc);
+    tc.cache = NULL; Tile *rt = registerTile(tc);
     Get(TransCache, TC, rt);
 
     if(!TC->cache) {
@@ -279,9 +279,7 @@ void drawTileImage(Image *dest, drawmatrix &M, TileImage *TI) {
   }
 
 TileImage::~TileImage() {
-  for(int i=0; i<(int) caches.size(); i++) {
-    deleteobj(caches[i]->id);
-    }
+  all_images.erase(this);
 #ifdef OPENGL
   deleteTextureGL(this);
 #endif
@@ -291,12 +289,14 @@ TileImage::~TileImage() {
 TransCache::~TransCache() {
   if(cache) {
     totalimagecache -= cache->sx * cache->sy;
-    delete cache->i;
-    deleteobj(cache->id);
     }
   }
 
 Image *pcache; int pcachex = 0;
+
+TileFill::~TileFill() {
+  if(cache) totalimagecache -= 1024;
+  }
 
 TileImage *getFillCache(TileFill *TF) {
   if(!TF->cache) {
@@ -360,7 +360,7 @@ int roundint(long double d) {
   return int(d);
   }
 
-void drawTile(Image *dest, drawmatrix& M, int c) {
+void drawTile(Image *dest, drawmatrix& M, Tile *c) {
   if(c == 0) return;
 
   Get(TileImage, TI, c);

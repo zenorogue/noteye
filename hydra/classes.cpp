@@ -153,7 +153,8 @@ struct statstruct {
   
   int32_t waitturns;     // turns of rest
 
-  int32_t reserve[27];   // space reserved for new stats in new versions of Hydra Slayer
+  int32_t evolkill;      // kills of evolving Hydras
+  int32_t reserve[26];   // space reserved for new stats in new versions of Hydra Slayer
   };
 
 struct pstruct {
@@ -200,7 +201,8 @@ struct pstruct {
   char orbcharge, res1, res2, res3; // how many times an Orb has been partially charged
 
   int32_t oldversion;  // version when the game was started
-  int32_t reserve[6];  // reserved for future
+  int32_t timemushlimit; // limit on the usage of time-blade against mushrooms
+  int32_t reserve[5];  // reserved for future
   };
 #pragma pack(pop)
 
@@ -331,6 +333,7 @@ void twinswap();
 #define WT_RAND  '?'
 #define WT_QUI   ':'
 #define WT_ORB   'i'
+#define WT_COLL  'c'
 
 #define WS_USE   0
 #define WS_HHEAD 1
@@ -340,7 +343,7 @@ void twinswap();
 #define WS_MKILL 5
 #define WS_HSTUN 6
 
-#define MOT 31
+#define MOT 32
 #define MOT_BLADE  0
 #define MOT_OBSID  1
 #define MOT_BLUNT  2
@@ -372,6 +375,7 @@ void twinswap();
 #define MOT_TIME   28
 #define MOT_RAIN   29
 #define MOT_TRAP   30
+#define MOT_COLL   31
 
 string typenames[MOT] = { 
   "normal blade", "meteorite blade", "blunt weapon", "divisor", "eradicator", "missile", "shield",
@@ -379,7 +383,7 @@ string typenames[MOT] = {
   "decomposer", "logblade", "pickaxe", "primeslayer", "bow", "vorpal", 
   "axe", "stone", "blade disk", "spear", "phasewall",
   "golden sector", "silver sector", "sub-divisor",
-  "Mersenne twister", "timeblade", "rainbow blade", "trap"
+  "Mersenne twister", "timeblade", "rainbow blade", "trap", "Sword of Collatz"
   };
 
 #define wfTrap 1
@@ -428,6 +432,7 @@ struct weapon : sclass {
     else if(type == WT_PHASE) return MOT_PHASE;
     else if(type == WT_GOLD && color == 9) return MOT_GOLD;
     else if(type == WT_GOLD) return MOT_SILVER;
+    else if(type == WT_COLL) return MOT_COLL;
     else if(type == WT_SUBD) return MOT_SUBDIV;
     else if(type == WT_QUI) return MOT_SUBDIV;
     else if(type == WT_RAND) return MOT_RANDOM;
@@ -465,6 +470,7 @@ struct weapon : sclass {
     else if(type == WT_DECO) return ('\\');
     else if(type == WT_SUBD) return ('\\');
     else if(type == WT_GOLD) return ('\\');
+    else if(type == WT_COLL) return ('\\');
     else if(type == WT_PSLAY) return ('\\');
     else if(type == WT_QUAKE) return ('&');
     else if(type == WT_RAND) return ('&');
@@ -486,11 +492,12 @@ struct weapon : sclass {
       if(type == WT_BLUNT) return 'i';
       }
     if(type == WT_BLADE && size == 2) return 'a';
+    if(type == WT_BLADE && size > 0 && !(size % 7)) return 'j';
     if(type == WT_BLADE && size == 1) return 'b';
     if(type == WT_DIV   && size == 0) return 'c';
     if(type == WT_VORP  && size >= 0) return 'd';
     if(type == WT_BLADE && size >= 100) return 'e';
-    if(type == WT_GOLD) return 'f';
+    if(type == WT_GOLD || type == WT_COLL) return 'f';
     return icon();
     }
   
@@ -539,7 +546,7 @@ struct weapon : sclass {
   bool polewpn() { return type == WT_SPEAR; }
   
   bool ambivalid() {
-    if(type == WT_RAND || type == WT_TIME) return false;
+    if(type == WT_RAND || type == WT_TIME || type == WT_COLL) return false;
     if(msl() || type == WT_QUAKE || type == WT_DECO) return false;
     if(xcuts() && type != WT_DIV && type != WT_ROOT) return false;
     if(xcuts() && size == 0) return false;
@@ -575,6 +582,8 @@ weapon* wpn[MAXARMS];
 #define CODES (AMAXS+AMAX*AMAX)
 
 #define COLLAPSE 1000000
+
+#define TIME_MUSH_LIMIT 10
 
 int usew[CODES], goal[CODES], wnd[CODES], wtime[CODES];
 
@@ -721,6 +730,7 @@ struct shieldinfo {
   int ehcntx(int q);
   int dampre(int q);
   int dampost(int q);
+  int dampost_true(int q);
   int usize(int size);
   };
 
@@ -788,7 +798,8 @@ struct cell {
       else delete it;
       it = NULL;
       }
-    if(h) delete h; h = NULL;
+    if(h) delete h;
+    h = NULL;
     explored = false; seen = false;
     }
   int headsAt(weapon *w) { 
@@ -902,5 +913,16 @@ bool quitgame = false;  // should we quit
 #define IC_CHEATMENU 27 // cheat menu
 #define IC_VIEWACH   28 // view achievements
 #define IC_CHALLENGE 29 // challenge menu
+#define IC_XMUT      30 // Atlantean transmutation
+#define IC_WOUNDS    31 // wounds table
 
 bool gameExists;        // has the game been generated?
+
+int drainpower(hydra *h);
+
+#define XMUT_INVALID 1000000
+int atlantean_xmut_color; // atlantean "transmute-to" color
+
+// vulture growth multiplier (1 for vultures OR atlanteans, 2 for both at once)
+void displayDrain(hydra *h, int hd);
+bool invalidGame(playerinfo& pi = pinfo);

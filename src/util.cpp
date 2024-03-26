@@ -2,13 +2,14 @@
 // roguelike frontend
 // Copyright (C) 2010-2011 Zeno Rogue, see 'noteye.h' for details
 
+#ifdef LINUX
+#include <sys/time.h>
+#endif
+
 using namespace std;
 
 namespace noteye {
 
-static vector<int> eventobjs;
-
-static vector<Object*> objs;
 static const char *lastfn;
 
 // critical errors
@@ -25,19 +26,6 @@ extern noteyehandler noteyeErrorHandler;
 
 static void noteyeError(int id, const char *b1, const char *b2, int param = NOPARAM);
 
-Object* noteye_getobj(int id) {
-  if(id <= 0 || id > (int) objs.size()) {
-    noteyeError(20, "no such object", lastfn, id);
-    return NULL;
-    }
-  return objs[id];
-  }
-  
-Object* noteye_getobjd(int id) {
-  if(id <= 0 || id > (int) objs.size()) return NULL;
-  return objs[id];
-  }
-
 void noteye_wrongclass(int id, lua_State *L) {
 #ifdef USELUA
   if(L) {
@@ -48,20 +36,6 @@ void noteye_wrongclass(int id, lua_State *L) {
     }
 #endif
   noteyeError(2, "object of wrong class", lastfn, id);
-  }
-
-vector<int> deleted_objects;
-
-void deleteobj(int idx) {
-
-  if(objs[idx]) {
-    // printf("deleting object %d, will be reassigned\n", idx);
-    for(std::set<struct TileMapping*>::iterator it = all_mappings.begin(); it != all_mappings.end(); it++) 
-      (*it)->uncache(idx);
-    deleted_objects.push_back(idx);
-    delete objs[idx];
-    objs[idx] = NULL;
-    }
   }
 
 static noteyecolor ZZ;
@@ -217,28 +191,9 @@ noteyecolor vgacol[16] = {
   0x8555555, 0x95555ff, 0xA55ff55, 0xB55ffff, 0xCff5555, 0xDff55ff, 0xEffff55, 0xFffffff
   };
 
-#define Get(T, name, id) \
-  T* name = dbyId<T> (id)
-
 // #include <typeinfo>
 
 extern "C" {
-
-int registerObject(Object *o) {
-  if(deleted_objects.size()) {
-    o->id = deleted_objects[deleted_objects.size() - 1];
-    // printf("reusing object id: %d\n", o->id);
-    deleted_objects.pop_back();
-    objs[o->id] = o;
-    return o->id;
-    }
-  else {
-    int res = objs.size();
-    // printf("O:%d: %p [%s]\n", res, o, typeid(*o).name());
-    objs.push_back(o);
-    return o->id = res;
-    }
-  }
 
 #ifdef USELUA
 // lua utils
@@ -256,16 +211,6 @@ int noteye_retBool(lua_State *L, bool b) {
 int noteye_retStr(lua_State *L, const char *s) {
   lua_pushstring(L, s);
   return 1;
-  }
-
-int noteye_retObject(lua_State *L, Object *o) {
-  return noteye_retInt(L, registerObject(o));
-  }
-
-int retObjectEv(lua_State *L, Object *o) {
-  int id = registerObject(o);
-  eventobjs.push_back(id);
-  return noteye_retInt(L, id);
   }
 
 void checkArg(lua_State *L, int q, const char *fname) {
@@ -443,4 +388,106 @@ long double getfieldNum (lua_State *L, const char *key, long double def) {
   }
 #endif
 
+Object *first_to_delete = (Object*) &first_to_delete;
+int objcount = 0;
+
+extern long long totalimagesize, totalimagecache;
+
+extern "C" {
+void noteye_gc() {
+  int deletions = 0;
+  int false_alarms = 0;
+  while(first_to_delete != (Object*) &first_to_delete) {
+    auto f = first_to_delete;
+    if(f->refcount) {
+      first_to_delete = f->next_to_delete, f->next_to_delete = NULL;
+      false_alarms++;
+      }
+    else {
+      first_to_delete = f->next_to_delete;
+      delete f;
+      deletions++;
+      }
+    }
+//  printf("objcount %6d deletions %6d false_alarms %6d IP %12lld CP %12lld\n", objcount, deletions, false_alarms, totalimagesize, totalimagecache);
+  }
+}
+
+void increase_refcount(Object *o) { /* printf("refcount++ on %p\n", o); */ o->refcount++; }
+void decrease_refcount(Object *o) { /* printf("refcount-- on %p\n", o); */ o->refcount--; registerObject(o); }
+
+ALLOBJ ( std::set<struct Object*> all_objects; )
+
+extern "C" {
+
+void inform_all_objects() {
+  ALLOBJ ( for(auto o: all_objects) o->inform(); )
+  }
+
+void remove_transcaches() {
+  for(auto TI: all_images) TI->caches.clear();
+  }
+
+void remove_tilemapcaches() {
+  for(auto TM: all_mappings) TM->cache.clear();
+  }
+
+  
+}
+
+map<Object*, int> object_to_handle;
+map<int, pair<smartptr<Object>, int> > handle_to_object;
+
+int next_noteye_handle = 1;
+
+int noteye_assign_handle(Object *o) {
+  if(!o) return 0;
+  if(object_to_handle.count(o)) {
+    int handle = object_to_handle[o];
+    handle_to_object[handle].second++;
+    return handle;
+    }
+  else {
+    object_to_handle[o] = next_noteye_handle;
+    handle_to_object[next_noteye_handle] = make_pair(o, 1);
+    return next_noteye_handle++;
+    }
+  }
+
+Object *noteye_by_handle(int handle) {
+  if(!handle_to_object.count(handle)) return NULL;
+  return handle_to_object[handle].first;
+  }
+
+int noteye_get_handle(Object *o) {
+  if(object_to_handle.count(o)) 
+    return object_to_handle[o];
+  return 0;
+  }
+
+void noteye_free_handle(Object *o) {
+  if(!o) return;
+  if(object_to_handle.count(o)) {
+    int handle = object_to_handle[o];
+    handle_to_object[handle].second--;
+    if(handle_to_object[handle].second == 0) {
+      handle_to_object.erase(handle);
+      object_to_handle.erase(o);
+      }
+    }
+  }
+
+extern "C" {
+
+double noteye_precise_time() {
+#ifdef LINUX
+  struct timeval tim;
+  gettimeofday(&tim, NULL);
+  return tim.tv_sec + tim.tv_usec / 1000000.;
+#else
+  return 0;
+#endif
+  }
+  
+}
 }

@@ -155,7 +155,7 @@ void fillRectSDL(Window *dest, int x, int y, int w, int h, noteyecolor col) {
 
 extern viewpar V;
 
-static fpoint4 addShift(fpoint4 o, fpoint4 y, TileImage *w);
+extern "C" { static fpoint4 addShift(fpoint4 o, fpoint4 y, TileImage *w); }
 
 void initFPPSDL(Window *w, int& x0, int& y0) {
   
@@ -212,10 +212,8 @@ int getpixelSDL(Window *w, int x, int y) {
   }
 
 void disableSDL(Window *w) {
-  for(int i=0; i<(int) objs.size(); i++) {
-    TileImage *TI = dbyId<TileImage> (i);
-    if(TI) deleteTextureSDL(TI);
-    }
+  for(TileImage *TI: all_images)
+    deleteTextureSDL(TI);
   }
 
 }

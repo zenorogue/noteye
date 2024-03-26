@@ -305,19 +305,19 @@ void addAnimation(cell *c, int headid, int cutcount, int color = 0) {
   }
 
 Image *headimage;
-int headtile[ANIM_MAX];
+tileptr headtile[ANIM_MAX];
 
 double r64(double z) { return floor(z * 64 + .5) / 64; }
 
-int getAnimation(cell *c) {
-  int res = 0;
+tileptr getAnimation(cell *c) {
+  tileptr res = nullptr;
   int d = 0;
   int t = SDL_GetTicks();
-  for(; d<size(c->animations); d++) {
+  for(; d<isize(c->animations); d++) {
     animinfo& ai = c->animations[d];
     if(ai.t < t - 250) {
-      c->animations[d] = c->animations[size(c->animations)-1];
-      c->animations.resize(size(c->animations)-1);
+      c->animations[d] = c->animations[isize(c->animations)-1];
+      c->animations.resize(isize(c->animations)-1);
       d--; continue;
       }
     
@@ -331,7 +331,7 @@ int getAnimation(cell *c) {
       // printf("headtile %d = %d\n", ai.headid, headtile[ai.headid]);
       }
     
-    int h = headtile[ai.headid];
+    auto h = headtile[ai.headid];
     h = addLayer(h, 1);
     if(ai.color) h = addRecolor(h, getVGAcolor(ai.color), recDefault);
     h = addTransform(h, r64(ai.dx*tt), r64(ai.dy*tt), 1, 1, 0, 0);
@@ -420,7 +420,7 @@ void drawMapLua(lua_State *L, int x, int y, int mode) {
   bool hvis =
     (c.h && (c.h->visible() ? c.seen : seeallmode()));
     
-  int anim = getAnimation(&c);
+  tileptr anim = getAnimation(&c);
 
   if(!onplayer && !hvis && !anim && !(mode == 8 && (c.mushrooms || c.it || c.dead))) {
     long long cacheid = shadow&15;
@@ -449,7 +449,9 @@ void drawMapLua(lua_State *L, int x, int y, int mode) {
   if(wrap(v) == wrap(playerpos)) {
     noteye_table_setInt(L, "hicon", '@');
     int col = P.race == R_NAGA ? 14 : P.race == R_CENTAUR ? 12 : 
-      P.race == R_TROLL ? 11 : 15;
+      P.race == R_TROLL ? 11 :
+      P.race == R_ATLANTEAAN ? 10 :
+      15;
     noteye_table_setInt(L, "hcolor", getVGAcolor(col));
     }
   
@@ -463,7 +465,7 @@ void drawMapLua(lua_State *L, int x, int y, int mode) {
     noteye_table_setInt(L, "target", 1);
   
   if(anim)
-    noteye_table_setInt(L, "animation", anim);
+    noteye_table_setInt(L, "animation", noteye_assign_handle(anim));
 
   if(c.explored) {
   
@@ -471,6 +473,8 @@ void drawMapLua(lua_State *L, int x, int y, int mode) {
       noteye_table_setInt(L, "hcolor", getVGAcolorX(c.h->gcolor()));
       noteye_table_setInt(L, "hicon", c.h->icon());
       noteye_table_setInt(L, "hid", c.h->uid);
+      if(c.h->color == HC_MONKEY)
+        noteye_table_setInt(L, "monkey", c.h->ewpn ? 2 : 1);
       if(c.h->sheads)
         noteye_table_setInt(L, "stun", 1 + 6 * c.h->sheads / c.h->heads);
 
@@ -541,7 +545,7 @@ void sendAttackEvent(int hid, vec2 from, vec2 to) {
 
 int lh_getSounds(lua_State *L) {
   noteye_table_new(L);
-  for(int i=0; i<size(soundqueue); i++) {
+  for(int i=0; i<isize(soundqueue); i++) {
     soundtoplay& P(soundqueue[i]);
     noteye::noteye_table_opensubAtInt(L, i);
     if(P.type == 0) {

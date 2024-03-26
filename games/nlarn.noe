@@ -232,6 +232,6 @@ function drawAsciiTransparent()
   end
 end
 
-setwindowtitle("NLarn")
+setwindowtitle(Gfx, "NLarn")
 defaultmodep(modeTiles, 5)
 rungame(caller3("nlarn", "nlarn"))

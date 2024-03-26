@@ -90,13 +90,13 @@ struct WinProcess : Process {
     for(int x=0; x<xsize; x++) {
       CHAR_INFO& nc = charAt(x,y);
 
-      int C = addMerge(
+      Tile *C = addMerge(
         addFill(vgacol[nc.Attributes >> 4], 0xFFFFFF),
         addRecolor(f->gettile((unsigned char) nc.Char.AsciiChar), vgacol[nc.Attributes & 15], recDefault),
         false
         );
 
-      int &OC = s->get(x,y);
+      tileptr& OC = s->get(x,y);
 
       if(C != OC) {
         OC = C;
@@ -123,10 +123,10 @@ struct WinProcess : Process {
     KEY_EVENT_RECORD krec;
     krec.bKeyDown = down;
     krec.wRepeatCount = 1;
-    DWORD& cks(krec.dwControlKeyState);
-    CHAR& ac(krec.uChar.AsciiChar);
-    WORD& vkc(krec.wVirtualKeyCode);
-    WORD& vsc(krec.wVirtualScanCode);
+    DWORD cks;
+    CHAR ac;
+    WORD vkc;
+    WORD vsc;
     
     krec.uChar.UnicodeChar = 0;    
     vsc = scancode;
@@ -235,13 +235,18 @@ struct WinProcess : Process {
       ac = sym - 96;
       }
 
+    krec.dwControlKeyState = cks;
+    krec.uChar.AsciiChar = ac;
+    krec.wVirtualKeyCode = vkc;
+    krec.wVirtualScanCode = vsc;
+    
     if(keycode >= 32 && keycode <= 255 && !(mod & (KMOD_LCTRL|KMOD_RCTRL))) {
       // wait for the sendtext event
       if(down) {
         ksave = krec;
         return;
         }
-      else ac = savedkey;
+      else krec.uChar.AsciiChar = savedkey;
       }
     
     addKeyEvent(krec);
@@ -290,8 +295,8 @@ struct WinProcess : Process {
     hStdout = GetStdHandle(STD_OUTPUT_HANDLE); 
   
     if(xsize != -1 && ysize != -1) {
-      SMALL_RECT rect = {0, 0, xsize-1, ysize-1};
-      COORD bufSize = {xsize, ysize};
+      SMALL_RECT rect = {0, 0, SHORT(xsize-1), SHORT(ysize-1)};
+      COORD bufSize = {SHORT(xsize), SHORT(ysize)};
       int err = SetConsoleScreenBufferSize(hStdout, bufSize);
       // printf("(%d,%d), err = %d : %d\n", xsize, ysize, err, GetLastError());
       err = SetConsoleWindowInfo(hStdout, TRUE, &rect);
@@ -362,7 +367,7 @@ struct WinProcess : Process {
       isActive = false;
       lua_newtable(L);
       noteye_table_setInt(L, "type", evProcQuit);
-      noteye_table_setInt(L, "obj", id);
+      noteye_table_setInt(L, "obj", noteye_get_handle(this));
       noteye_table_setInt(L, "exitcode", 0);
       return true;
       }
@@ -370,7 +375,7 @@ struct WinProcess : Process {
     if(copyScreen()) {
       lua_newtable(L);
       noteye_table_setInt(L, "type", evProcScreen);
-      noteye_table_setInt(L, "obj", id);
+      noteye_table_setInt(L, "obj", noteye_get_handle(this));
       return true;
       }
     

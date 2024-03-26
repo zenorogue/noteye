@@ -485,10 +485,10 @@ function handlePendingAnimations(sup, stat)
   elseif sup > 0 then
     copymapall()
     drawandrefresh()
-    tic = getticks() + maxAnimation
+    tic = getticks_real() + maxAnimation
     while pendingAnimations do
-      if getticks() > tic then
-        print("Warning: animations pending for too much time")
+      if getticks_real() > tic then
+        logprint2("Warning: animations pending for too much time")
         break
         end
       speedupState = stat
