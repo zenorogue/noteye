@@ -530,7 +530,9 @@ void drawScreen() {
     bool amb = havebit(P.ambiArm, i);
     bool bro = havebit(P.twinarms, i);
     col(dead ? 12 : showamb ? (amb ? (bro ? 13 : 14) : 8) : bro ? 13 : 15);
-    move(i, SDIV+1-(i&1)); addch('0' + (i+1)%10);
+    char key = '0' + (i+1)%10;
+    move(i, SDIV+1-(i&1)); addch(key);
+    line_webkey(string("") + key);
     
     if(P.flags & dfAutoON) {
       col(12); move(i, SDIV+(i&1)), addch('*');
@@ -834,7 +836,7 @@ void viewDescription(sclass *x, void_continuation vcon) {
 
 void showMenuOption(int cy, char letter, bool selected, int cx = 0) {
   col(selected ? 14 : 7);
-  move(cy, cx); addch(letter); addch(' ');
+  move(cy, cx); line_webkey(string("") + letter); addch(letter); addch(' ');
   }
 
 bool changeSelection(int dir, int& sel, int qty) {
@@ -1151,8 +1153,8 @@ void viewInventory(int_continuation icon, int selection = 2) {
     move(0, X); col(14); 
     addstr("Inventory: (Enter to select)");
 
-    move(2, X); col(selection == 0 ? 14 : 8); addstr("i - exit");
-    move(3, X); col(selection == 1 ? 14 : 8); 
+    move(2, X); line_webkey("i"); col(selection == 0 ? 14 : 8); addstr("i - exit");
+    move(3, X); line_webkey("h"); col(selection == 1 ? 14 : 8);
     addstr("h - quick mode "); addstr(P.quickmode ? "on" : "off");
   
     for(int i=2; i<kinds; i++) {

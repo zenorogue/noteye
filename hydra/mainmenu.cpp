@@ -906,28 +906,35 @@ void mainmenu(void_continuation vcon) {
     
     int cy = 4;
     if(!gameExists) {
-      move(cy++, 2); addstr("(T) start the Tutorial");
-      move(cy++, 2); addstr("(N) start a new game");
-      move(cy++, 2); addstr("(W) start a new random/daily challenge");
-      move(cy++, 2); addstr("(Q) quit the game");
+      move(cy++, 2); line_webkey("t"); addstr("(T) start the Tutorial");
+      move(cy++, 2); line_webkey("n"); addstr("(N) start a new game");
+      move(cy++, 2); line_webkey("w"); addstr("(W) start a new random/daily challenge");
+      #ifndef EMS
+      move(cy++, 2); line_webkey("q"); addstr("(Q) quit the game");
+      #endif
       }
     else {
-      move(cy++, 2); addstr("(Z) Return to game (also Space/Enter/Esc)");
-      move(cy++, 2); addstr(stats.endtype%3 ? "(S) Save the game and quit" : "(S) Save the body and quit");
+      move(cy++, 2); line_webkey("z"); addstr("(Z) Return to game (also Space/Enter/Esc)");
+      move(cy++, 2); line_webkey("s");
+      #if EMS
+      addstr("(S) the game is saved automatically when in this menu");
+      #else
+      addstr(stats.endtype%3 ? "(S) Save the game and quit" : "(S) Save the body and quit");
+      #endif
       
       if(P.flags & dfChallenge) {
-        move(cy++, 2); addstr("(Q) Quit the random challenge");
+        move(cy++, 2); line_webkey("q"); addstr("(Q) Quit the random challenge");
         }
       else {
-        move(cy++, 2); if(!debugon()) addstr("(Q) Quit this character");
-        move(cy++, 2); addstr("(X) Quit without recording to Hall of Fame");
+        move(cy++, 2); line_webkey("q"); if(!debugon()) addstr(stats.endtype % 3 ? "(Q) Quit this character" : "(Q) quit this character (to start a new game)");
+        move(cy++, 2); line_webkey("x"); addstr("(X) Quit without recording to Hall of Fame");
         }
       }
 
     if(gameExists && !(P.flags & dfChallenge)) {
-      move(cy++, 2); addstri("(D) Cheats");
+      move(cy++, 2); line_webkey("d"); addstri("(D) Cheats");
       }
-    move(cy++, 2); 
+    move(cy++, 2); line_webkey("a");
     if(gameExists && (P.flags & dfChallenge)) {
       if(P.flags & dfDaily)
         addstr("(A) View scores for the Daily Challenge");
@@ -937,26 +944,28 @@ void mainmenu(void_continuation vcon) {
     else {
       addstr("(A) View Achievements and the Hall of Fame");
       }
-    move(cy++, 2); addstr("(O) open another savefile");
-    if(gameExists) { move(cy++, 2); addstr("(R) rename the current savefile"); }
+    #ifndef EMS
+    move(cy++, 2); line_webkey("o"); addstr("(O) open another savefile");
+    if(gameExists) { move(cy++, 2); line_webkey("r"); addstr("(R) rename the current savefile"); }
+    #endif
 
     if(P.flags & dfBackups) {
-      move(cy++, 2);
+      move(cy++, 2); line_webkey("b");
       addstri("(B) Backup your game");
 
-      move(cy++, 40);
+      move(cy++, 40); line_webkey("B");
       addstri("(Shift+B) Reload the game from the backup");
       }
-    
-    move(cy++, 2);
+
+    move(cy++, 2); line_webkey("p");
     addstri("(P) Player name: " + pinfo.username);
-    
-    move(cy++, 2);
+
+    move(cy++, 2); line_webkey("c");
     addstri("(C) Character name: " + pinfo.charname);
-        
+
     if(P.race == R_TWIN && gameExists) {
       col(7);
-      move(cy++, 2);
+      move(cy++, 2); line_webkey("t");
       if(P.twinsNamed)
         addstr("(T) twins are named:");
       else
@@ -966,7 +975,9 @@ void mainmenu(void_continuation vcon) {
         addstri("(1) "+pinfo.twin[0]+" (2) "+pinfo.twin[1]);
       }
     
-    move(cy++, 2); addstr("(L) open the directory with logs and saves");
+    #ifndef EMS
+    move(cy++, 2); line_webkey("l"); addstr("(L) open the directory with logs and saves");
+    #endif
 
     #ifdef NOTEYE
     move(cy++, 2); addstr("(F4) NotEye settings (sounds, graphics, etc.)");
@@ -1321,25 +1332,26 @@ void selectRace(bool rchal, bool_continuation bcon) {
     int cy = 3;
     col(7); viewMultiLine(rinf[P.race].desc, cy, 2);
 
-    move(21, 2); col(7); 
+    move(21, 2); col(7); line_webkey("d");
     addstri("Geometry: (D) " + geometryName(P.geometry));
     
-    move(20, 2); col(7);
+    move(20, 2); col(7); line_webkey("s");
     if(fixedseed)
       addstri("Seed: (S) "+its(P.gameseed));
     else
       addstr("Seed: (S) random");
 
-    move(19, 2);
+    move(19, 2); line_webkey("n");
     addstri("(N) Character name: " + pinfo.charname);
     
     if(P.race == R_TWIN) {
-      move(19, 40);
+      move(19, 40); line_webkey("0");
       if(!P.twinsNamed) addstr("(0) give names to twins");
       else addstri("(1) "+pinfo.twin[0]+" (2) "+pinfo.twin[1]);
       }
 
-    move(23, 2); col(15); addstri("Press Enter to start playing as "+pinfo.charname+" the "+rinf[P.race].rname+"!");
+    move(23, 2); col(15); line_webkey("Enter");
+    addstri("Press Enter to start playing as "+pinfo.charname+" the "+rinf[P.race].rname+"!");
 
     move(0, 75);
 
