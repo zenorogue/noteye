@@ -42,13 +42,15 @@ void loop_until_continued(const cont_continuation& f) {
   }
 #endif
 
+void ignore_value(int) {}
+
 #ifdef EMS
 #define NOCURSES
 #include "emscurses.cpp"
 #else
 #define NOEMS(x) x
 #define ONEMS(x)
-#define KH(c,x) for(int kh_dummy: {0}) if(int c = ghch(x))
+#define KH(c,x) for(int kh_dummy: {0}) if(int c = kh_dummy + ghch(x))
 void line_webkey(const std::string& s) {}
 void set_value(const std::string& a, const std::string& b) {}
 void websync() {}

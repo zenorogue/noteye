@@ -1337,12 +1337,12 @@ void giveHint(hydra *h, void_continuation vcon) {
   
   if(h->heads >= AMAXS) {
     move(2, 2); col(15); addstri("Your magic cannot analyze this gigantic "+h->name()+" currently."); 
-    KH(ch, IC_VIEWDESC) {vcon(); };
+    KH(ch, IC_VIEWDESC) { ignore_value(ch); vcon(); };
     return;
     }
   if(wnd[spos] == WMAX) {
     move(2, 2); col(12); addstri("It seems you cannot kill "+h->name()+" with only your current weapons.");
-    KH(ch, IC_VIEWDESC) { vcon(); };
+    KH(ch, IC_VIEWDESC) { ignore_value(ch); vcon(); };
     return;
     }
   move(1, 0); col(13); addstr("HD  AC  WND weapon, growth & wounds");
@@ -1440,7 +1440,7 @@ void giveHint(hydra *h, void_continuation vcon) {
     move(23, 0); col(7); addstr("HD = heads, AC = active heads, WND = total wounds from this moment");
     }  
   
-  KH(ch, IC_VIEWDESC) { vcon(); };
+  KH(ch, IC_VIEWDESC) { ignore_value(ch); vcon(); };
   }
 
 string sortorder = "tkbl";
@@ -2155,7 +2155,7 @@ void mainloop(continuation vcon) {
           int xpos = isize(msgs) + i - 24;
           if(xpos >= 0) addstr(msgs[xpos].c_str());
           }
-        KH(ch, IC_VIEWDESC) { back(); };
+        KH(ch, IC_VIEWDESC) { ignore_value(ch); back(); };
         return;
         }
       

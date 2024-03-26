@@ -195,7 +195,7 @@ void viewNumAchievements(const vector<playerinfo>& pi, bool global, void_continu
   if(maxchrg > 1)
     addstri("You managed to kill "+its(maxchrg)+" Hydras with one power charge!\n");
   
-  KH(c, IC_VIEWDESC) { vcon(); };
+  KH(c, IC_VIEWDESC) { ignore_value(c); vcon(); };
   }
 
 long long getAchievementId(const char* s) {
