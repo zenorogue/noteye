@@ -1062,7 +1062,7 @@ int ambiAttack(cell *c, int virt) {
 
   if(nheads == 0 && hdub == 0) {
     if(virt == 2) {
-      target->heads = 0;
+      if(target) target->heads = 0;
       return true;
       }
     if(target) addMessage("You slay the "+target->name()+" with your ambidextrous attack!");
