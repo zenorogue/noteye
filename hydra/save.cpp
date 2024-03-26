@@ -33,7 +33,7 @@ string loadString() {
   return ret;
   }
 
-void deleteGame(string sav = savename) { unlink(sav.c_str()); }
+void deleteGame(string sav = savename) { unlink(sav.c_str()); websync(); }
 
 void saveGame(string sav = savename) {
 
@@ -107,6 +107,8 @@ void saveGame(string sav = savename) {
   save(r);
   
   fclose(savefile);
+
+  websync();
   }
 
 sclass *loadS() {
@@ -298,7 +300,7 @@ void loadGame(string sav = savename) {
   
   char x; if(error || fread(&x, 1, 1, savefile) != 0) error = true;
 
-  fclose(savefile);
+  fclose(savefile); websync();
   stats.savecount++;
   
   if(error) { 

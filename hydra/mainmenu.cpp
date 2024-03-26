@@ -381,7 +381,7 @@ void recordToHall() {
     save(stats);
     saveString(pinfo.charname);
     saveString(pinfo.username);
-    fclose(savefile);
+    fclose(savefile); websync();
     }
   if(validChallengeGame()) {
     P.version = VERSION;
@@ -393,7 +393,7 @@ void recordToHall() {
     saveString(pinfo.charname);
     saveString(pinfo.username);
     save(pinfo.cdata);
-    fclose(savefile);
+    fclose(savefile); websync();
     }
   }
 
