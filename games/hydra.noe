@@ -1705,6 +1705,7 @@ if hydramain and not externalhydra then function rungamex(cmdline)
 local lpixeltoprocess = pixeltoprocess
 
 function hexround(v)
+  if not inhex then return v end
   local rx = v.x
   if mode == modeTiles then rx = rx-.5 end
   if not v then return v end
