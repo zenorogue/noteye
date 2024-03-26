@@ -1991,7 +1991,8 @@ void mainloop(continuation vcon) {
     #if EMS
     KH(ch, IC_GAME)
     #else
-    if(!ch) ch = ghch(IC_GAME); if(1)
+    if(!ch) ch = ghch(IC_GAME);
+    if(1)
     #endif
     {
 
@@ -2027,8 +2028,6 @@ void mainloop(continuation vcon) {
         }
       }
 
-    int ii;
-    
     switch(ch) {
       case PANIC:
         saveGame();

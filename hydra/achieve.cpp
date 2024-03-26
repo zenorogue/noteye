@@ -244,8 +244,6 @@ void viewAchievements(const vector<playerinfo>& pi, bool global, void_continuati
 
   static int basey = 0;
   
-  replay:
-  
   uint64_t total = 0;
 
   for(int i=0; i<isize(pi); i++) {
