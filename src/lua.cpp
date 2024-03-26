@@ -253,8 +253,6 @@ void initLua() {
   noteye_globalfun("SDL_GetScancodeFromKey", lh_SDL_GetScancodeFromKey);
   noteye_globalfun("SDL_ShowCursor", lh_SDL_ShowCursor);
 #ifdef SDL2
-  noteye_globalfun("SDL_HasScreenKeyboardSupport", lh_SDL_HasScreenKeyboardSupport);
-  noteye_globalfun("SDL_IsScreenKeyboardShown", lh_SDL_IsScreenKeyboardShown);
   noteye_globalfun("SDL_IsTextInputActive", lh_SDL_IsTextInputActive);
   noteye_globalfun("SDL_StartTextInput", lh_SDL_StartTextInput);
   noteye_globalfun("SDL_StopTextInput", lh_SDL_StopTextInput);
@@ -266,13 +264,6 @@ void initLua() {
   noteye_globalfun("ansidebug", lh_ansidebug);
 #endif
 #endif
-
-  noteye_globalfun("processactive", lh_processActive);
-  noteye_globalfun("sendkey", lh_sendkey);
-  noteye_globalfun("sendtext", lh_sendtext);
-  noteye_globalfun("sendclick", lh_sendclick);
-  noteye_globalfun("proccur", lh_proccur);
-  noteye_globalfun("setfont", lh_setfont);
 
   noteye_globalfun("getevent", lh_getevent);
   noteye_globalfun("getevent_timeout", lh_getevent_timeout);

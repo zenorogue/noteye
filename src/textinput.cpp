@@ -8,15 +8,15 @@
 namespace noteye {
 
 #ifdef USELUA
-int lh_SDL_HasScreenKeyboardSupport(lua_State *L) {
-  return noteye_retBool(L, SDL_HasScreenKeyboardSupport() == SDL_TRUE);
+extern "C" {
+bool SDL_HasScreenKeyboardSupport() {
+  return ::SDL_HasScreenKeyboardSupport() == SDL_TRUE;
   }
 
-int lh_SDL_IsScreenKeyboardShown(lua_State *L) {
-  checkArg(L, 1, "SDL_IsScreenKeyboardShown");
-  Window *w = luaO(1, Window);
-  return noteye_retBool(L, SDL_IsScreenKeyboardShown(w->win) == SDL_TRUE);
+bool SDL_IsScreenKeyboardShown(Window *w) {
+  return ::SDL_IsScreenKeyboardShown(w->win) == SDL_TRUE;
   }
+}
 
 int lh_SDL_IsTextInputActive(lua_State *L) {
   return noteye_retBool(L, SDL_IsTextInputActive() == SDL_TRUE);

@@ -267,6 +267,10 @@ ffi.cdef[[
   int noteye_messagebox(Uint32 flags, const char* title, const char* message, int window_id);
   Tile *getIso(Tile *ti, IsoParam *P);
   Process *newProcess(Screen *s, Font *f, const char *str);
+
+  int sendclick(Process *P, int x, int y, int button);
+  bool SDL_HasScreenKeyboardSupport();
+  return SDL_HasScreenKeyboardSupport(Window*);
   ]]
 end
 
