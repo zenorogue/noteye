@@ -1249,7 +1249,7 @@ function playerpos_center()
 
 function pixeltodir(ev)
   if mode == modeFPP or mode == modeTPP then
-    return vectodir(V(ev.x - fppvar.vxm, ev.y - fppvar.vym), 32)
+    return vectodir(V(ev.x - fppvar.xm, ev.y - fppvar.ym), 32)
   elseif playerpos then
     local e = pixeltoprocess(ev)
     if not e then return end
