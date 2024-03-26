@@ -341,7 +341,7 @@ extern std::set<struct TileMapping*> all_mappings;
 struct TileMappingLua : TileMapping {
   tilemapper tm;
   TileMappingLua(tilemapper _tm) : tm(_tm) {}
-  Tile* applyRaw(Tile *t) { return t; } // tm(t); }
+  Tile* applyRaw(Tile *t) { return tm(t); }
   };
 #endif
 
