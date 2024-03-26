@@ -646,7 +646,7 @@ function copymap()
         end
       scrcopy(IMG, 51, topy, IMG, 0, 0, 29, 11, TMAP_COPY)
       scrcopy(IMG, 51, 11, IMG, 0, 1, 29, 11, TMAP_COPY)
-      scrfill(IMG, 51, topy, 29, 22-topy, 0)
+      scrfill(IMG, 51, topy, 29, 22-topy, nil)
       end
 
     -- we need to check if we are in the hex mode
