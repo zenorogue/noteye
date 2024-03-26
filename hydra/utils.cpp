@@ -131,6 +131,7 @@ vec2 operator+ (vec2 a, vec2 b) { return vec2(a.x+b.x, a.y+b.y); }
 vec2 operator- (vec2 a, vec2 b) { return vec2(a.x-b.x, a.y-b.y); }
 vec2& operator+= (vec2& a, vec2 b) { a.x += b.x; a.y += b.y; return a; }
 
+const int MAX_DIRS = 64;
 int DIRS;
 vec2 *dirs;
 

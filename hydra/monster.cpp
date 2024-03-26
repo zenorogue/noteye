@@ -690,7 +690,7 @@ void trapHitPlayer() {
 
 void moveHydra(hydra* H) {
   vec2 playerwrap = wrap(playerpos);
-  int morder[DIRS];
+  int morder[MAX_DIRS];
   for(int i=0; i<DIRS; i++) morder[i] = i;
   for(int i=0; i<DIRS; i++) swap(morder[i], morder[hrand(i+1)]);
 
@@ -1294,7 +1294,7 @@ bool specialMove(hydra *H) {
   
   if(H->color & HC_DRAGON) {
     // vec2 playerwrap = wrap(playerpos);
-    int morder[DIRS];
+    int morder[MAX_DIRS];
     for(int i=0; i<DIRS; i++) morder[i] = i;
     for(int i=0; i<DIRS; i++) swap(morder[i], morder[hrand(i+1)]);
     
