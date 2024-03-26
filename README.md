@@ -1,4 +1,4 @@
-#NotEye
+# NotEye
 Necklace of the Eye (NotEye in short) is a roguelike frontend. It can
 modify the output of console and libtcod roguelikes, and it also works
 as a library which allows to easily port old ASCII roguelikes like ADOM 
@@ -7,7 +7,7 @@ it is constantly in development, and not documented very well. This README
 contains just the basic information; see http://roguetemple.com/z/noteye.php
 for many more details.
 
-#Hydra Slayer
+# Hydra Slayer
 Hydra Slayer is a Roguelike game focused on one thing: slaying Hydras. It
 is inspired by Greek mythology, Dungeon Crawl, MathRL seven day roguelike,
 and some mathematical puzzles about brave heroes slaying many headed beasts.
@@ -20,8 +20,8 @@ start the Tutorial.
 Since Hydra Slayer is a flagship roguelike for NotEye, the two are
 distributed together.
 
-#Compilation, installation, and usage
-##For Windows users
+# Compilation, installation, and usage
+## For Windows users
 
 If you just want to play Hydra Slayer, download the NotEye+Hydra Slayer package
 from [the official site](http://www.roguetemple.com/z/noteye/download.php). 
@@ -44,7 +44,7 @@ If you want to use NotEye for the game you are developing, please read the
 packages (depending on your OS and the number of working examples you want). Please
 remember about the licensing secion in the dev guide!
 
-##For Linux (Ubuntu)
+## For Linux (Ubuntu)
 
 Clone the GitHub project with:
 ~~~~
@@ -79,8 +79,7 @@ If you want to use NotEye for the game you are developing, please read the
 [dev guide](http://www.roguetemple.com/z/noteye/dev.php). Also, please
 remember about the licensing secion in the dev guide!
 
-
-#Credits
+# Credits
 NotEye is distributed under GNU General Public License version 3 or later.
 It comes with absolutely no warranty; see the file COPYING for details.
 
