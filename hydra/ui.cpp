@@ -357,11 +357,14 @@ void queueTarget(int x, int y) {
   }
 
 string helpAbout(int x, int y, bool lng) {
+  auto view_descr = [] (sclass *s) {
+    loop_until_continued([s] (const void_continuation& ss) { viewDescription(s, ss); });
+    };
   if(x == 100) {
     if(y<0 || y >= 30) return "error";
     sclass *s = things[y];
     if(s) {
-      if(lng) viewDescription(s);
+      if(lng) view_descr(s);
       else return s->name();
       }
     else if(!lng) return "nothing";
@@ -372,7 +375,7 @@ string helpAbout(int x, int y, bool lng) {
     printf("y = %d\n", y);
     weapon *w = wpn[y];
     if(w) {
-      if(lng) viewDescription(w);
+      if(lng) view_descr(w);
       else return w->name();
       }
     else if(!lng) return "nothing";
@@ -385,7 +388,7 @@ string helpAbout(int x, int y, bool lng) {
   cell& c(M[v]);
   
   if(c.it && c.explored) {
-    if(lng) viewDescription(c.it);
+    if(lng) view_descr(c.it);
     else return c.it->fullname();
     }
   else if(!c.seen) {
@@ -393,16 +396,16 @@ string helpAbout(int x, int y, bool lng) {
     else return "cannot see";
     }
   else if(c.h && !c.h->invisible()) {
-    if(lng) viewDescription(c.h);
+    if(lng) view_descr(c.h);
     else return c.h->name();
     }
   else if(c.mushrooms) {
     hydra h(HC_MUSH, c.mushrooms, 1, 0);
-    if(lng) viewDescription(&h);
+    if(lng) view_descr(&h);
     else return "mushrooms: " + its(c.mushrooms);
     }
   else if(c.it) {
-    if(lng) viewDescription(c.it);
+    if(lng) view_descr(c.it);
     else return c.it->fullname();
     }
   else if(c.type == CT_WALL) {
