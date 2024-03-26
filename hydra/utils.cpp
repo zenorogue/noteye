@@ -4,6 +4,7 @@
 #define ANSI
 #define CPLUSPLUS
 
+#ifndef NOTEYE
 #ifndef DBASE
 #define DBASE (512*6)
 
@@ -16,6 +17,7 @@
 #define D_HOME  DBASE+3
 #define D_END   DBASE+5
 #define D_CTR   DBASE+8
+#endif
 #endif
 
 #define ESC     27
