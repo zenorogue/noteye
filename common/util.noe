@@ -113,7 +113,7 @@ tmap_trans = newmapping(celltrans)
 
 function celltransorshade(x)
   local ba = gba(x)
-  if x == 0 or gchv(x) == 0 then
+  if x == nil or gchv(x) == 0 then
     return x
   elseif ba < 0 or ba == vgaget(0) then
     return fixgp2(x)
@@ -166,19 +166,19 @@ function cellbigaux(x)
 
 
 function cellbackshade(x)
-  if x==0 then return 0 end
+  if x==nil then return nil end
   return tileshade(gba(x))
   end
 
 tmap_backshade = newmapping(cellbackshade)
 
 function cellbackshade75(x)
-  if x==0 then return 0 end
+  if x==nil then return nil end
   return tilealpha(gba(x), hexC0C0C0)
   end
 
 function cellbackshade88(x,dx,dy)
-  if x==0 then return 0 end
+  if x==nil then return nil end
   return tilealpha(gba(x), hexE0E0E0)
   end
 
@@ -187,7 +187,7 @@ tmap_backshade75 = newmapping(cellbackshade75)
 tmap_backshade88 = newmapping(cellbackshade88)
 
 function cellbackfull(x)
-  if x==0 then return 0 end
+  if x==nil then return nil end
   return tilefill(gba(x))
   end
 
