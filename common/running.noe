@@ -779,15 +779,17 @@ function handlemouse2(ev)
 
 -- == start the game process ==
 
-function caller(name, dir, uname, wname)
+function caller(name, dir, uname, wname, wparams, uparams)
+  wparams = wparams or ""
+  uparams = uparams or ""
   if manualcall and linux then
     return "sh -l"
   elseif manualcall then
     return "cmd"
   elseif linux then
-    return "sh "..noteyedir.."caller.sh "..dir.." "..uname.." \""..name.."\""
+    return "sh "..noteyedir.."caller.sh "..dir.." "..uname.." \""..name.."\"".." "..uparams
   else
-    return ".\\caller.bat "..dir.." "..wname.." \""..name.."\""
+    return ".\\caller.bat "..dir.." "..wname.." \""..name.."\"".. " "..wparams
     end
   end
 
