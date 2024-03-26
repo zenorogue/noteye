@@ -270,7 +270,7 @@ ffi.cdef[[
 
   int sendclick(Process *P, int x, int y, int button);
   bool SDL_HasScreenKeyboardSupport();
-  return SDL_HasScreenKeyboardSupport(Window*);
+  bool SDL_IsScreenKeyboardShown(Window*);
   ]]
 end
 
