@@ -1471,7 +1471,7 @@ function drawMiniMap()
   if trailer then return end
   if ininv then
   elseif inhex and minimode == modeBlock then
-    scrcopy(MAP, 0,0, Minimap, 1,1, map.size.x, map.size.y, xminimap)
+    scrcopy_f(MAP, 0,0, Minimap, 1,1, map.size.x, map.size.y, xminimap)
     for x=1,50 do
       for y=1,22 do
         if (x+y+1)%2 == inhexr then
