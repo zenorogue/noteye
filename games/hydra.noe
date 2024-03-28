@@ -1393,14 +1393,14 @@ function hex_drawdisplayTiles()
   dy1 = math.ceil((maparea.bot.y - tcs.y) / tilesize.y)
   
   for dx=dx0,dx1 do for dy=dy0,dy1 do if((dx+dy+mcf.x+mcf.y)%2 == inhexr) then
-    drawtile(Gfx, 
+    drawtile(D.output,
       oldhydra and xhex(scrget(MAP, mcf.x+dx, mcf.y+dy)) 
       or yhex(hydramap(mcf.x+dx, mcf.y+dy, mode)),
       tcs.x + (dx-1.5) * tilesize.x, tcs.y + (dy-.75) * tilesize.y, tilesize.x*3, tilesize.y*1.5)
     end end end
 
   for dx=dx0,dx1 do for dy=dy0,dy1 do if((dx+dy+mcf.x+mcf.y)%2 == inhexr) then
-    drawtile(Gfx, 
+    drawtile(D.output,
       oldhydra
       and xtileobj(scrget(MAP, mcf.x+dx, mcf.y+dy), mcf.x+dx, mcf.y+dy)
       or ytileobj(hydramap(mcf.x+dx, mcf.y+dy, mode), mcf.x+dx, mcf.y+dy),
@@ -1453,9 +1453,9 @@ function hex_drawdisplayISO()
     local sg = 
       oldhydra and scrget(MAP, mcf.x+dx, mcf.y+dy)
       or hydramap(mcf.x+dx, mcf.y+dy, mode)
-    drawtile(Gfx, yiso(sg),
+    drawtile(D.output, yiso(sg),
       tcs.x + (dx-1) * tilesize.x, tcs.y + (dy-2) * tilesize.y, tilesize.x*3, tilesize.y*3)
-    drawtile(Gfx, ytileobj(sg, mcf.x+dx, mcf.y+dy),
+    drawtile(D.output, ytileobj(sg, mcf.x+dx, mcf.y+dy),
       tcs.x + (dx-.5) * tilesize.x, tcs.y + (dy-1.5) * tilesize.y, tilesize.x*2, tilesize.y*2)
     end end end
   
