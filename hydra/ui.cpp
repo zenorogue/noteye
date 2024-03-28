@@ -931,10 +931,15 @@ void fullHydraInfo(void_continuation vcon) {
       selection = ch - 'a';
       viewDescription(infos[selection], [=] { fullHydraInfo(vcon); });
       }
-    else if(ch == 10 || ch == 13)
+    else if(ch == 10 || ch == 13) {
       viewDescription(infos[selection], [=] { fullHydraInfo(vcon); });
-    else if(!changeSelection(ch, selection, cy)) vcon();
+      }
+    else if(!changeSelection(ch, selection, cy)) {
+      vcon();
+      }
     ONEMS( else fullHydraInfo(vcon); )
+    NOEMS( else continue; )
+    return;
     };
   }
   }
@@ -1039,7 +1044,7 @@ void selectTransmuteColor(bool_continuation vcon, bool cheating = false, int sel
   
   if(count_normal == 0) return vcon(true);
   
-  while(true) {
+  NOEMS(while(true)) {
     erase();
     
     move(0, 0); col(15); addstri("Select the material...");
@@ -1119,13 +1124,17 @@ void selectTransmuteColor(bool_continuation vcon, bool cheating = false, int sel
         if(validcolorfrom[selection] <= P.curlevel) {
           atlantean_xmut_color = sel;
           vcon(true);
+          NOEMS( return; )
           }
-        else selectTransmuteColor(vcon, cheating, sel);
+        ONEMS( else selectTransmuteColor(vcon, cheating, sel); )
         }
       else {
         int sel = selection;
-        if(!changeSelection(ch, sel, COLORS)) vcon(false);
-        else selectTransmuteColor(vcon, cheating, sel);
+        if(!changeSelection(ch, sel, COLORS)) {
+          vcon(false);
+          NOEMS( return; )
+          }
+        ONEMS( else selectTransmuteColor(vcon, cheating, sel); )
         }
       };
     }
@@ -2159,13 +2168,13 @@ void mainloop(continuation vcon) {
         }
       
       case 'f':
-        fullHydraInfo([=] { mainloop(vcon); });
+        fullHydraInfo(back);
         return;
       
       case 'v':
         if(wpn[P.cArm]) {
           shareBe("wielding the " + wpn[P.cArm]->name());
-          viewDescription(wpn[P.cArm], [=] { mainloop(vcon); });
+          viewDescription(wpn[P.cArm], back);
           return;
           }
         else
@@ -2509,16 +2518,19 @@ void mainloop(continuation vcon) {
 
         if(c >= '0' && c <= '9') {
           headask([&] (int ha) {
+            printf("new hydra is being created =%d\n", ha);
             h = new hydra(c - '0', ha, 10, 20);
             if(ha == 145) {
               h->res[0] = 5;
               h->res[1] = 6;
               }
+            h->put(); addMessage("Summoned "+h->name()+" to a random location.");
             #if EMS
-            mainloop(vcon);
+            back();
             #endif
             });
-          return;
+          ONEMS( return; )
+          NOEMS( break; )
           }
         else switch(c) {
           case 'v': h = new hydra(HC_VAMPIRE, headask(), 10, 20); break;
@@ -2566,6 +2578,8 @@ void mainloop(continuation vcon) {
             selectTransmuteColor([w] (bool b) {
               w->color = w->ocolor = atlantean_xmut_color;
               }, true);
+            ONEMS( return; )
+            NOEMS( break; )
             }
           }
         if(h) {h->put(); addMessage("Summoned "+h->name()+" to a random location.");}
