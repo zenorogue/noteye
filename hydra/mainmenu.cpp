@@ -953,7 +953,7 @@ void mainmenu(void_continuation vcon) {
       move(cy++, 2); line_webkey("b");
       addstri("(B) Backup your game");
 
-      move(cy++, 40); line_webkey("B");
+      move((cy-1), 30); line_webkey("B");
       addstri("(Shift+B) Reload the game from the backup");
       }
 
@@ -1086,7 +1086,7 @@ void mainmenu(void_continuation vcon) {
       case 'w':
         if(gameExists) break;
         randomChallengeMenu(back);
-        break;
+        return;
 
       case 's': case 'S': case 'q': case 'Q': case 'x': case 'X': {
         if(!gameExists) return vcon();
@@ -1164,7 +1164,7 @@ void mainmenu(void_continuation vcon) {
             }
           back();
           });
-        break;
+        return;
         }
       
       case 'r': case 'R': {
@@ -1174,7 +1174,7 @@ void mainmenu(void_continuation vcon) {
           if(savename == "") savename = s;
           back();
           });
-        break;
+        return;
         }
       
       case 'b':
@@ -1256,14 +1256,15 @@ void randomChallengeMenu(void_continuation vcon) {
       fixedseed = true;
       P.gameseed = challenge_id + (c-'a')-9;
       P.flags = dfChallenge | dfDaily | dfRaceSeeded;
-      initGame(); mainloop([] {});
-      vcon();
+      initGame();
+      mainloop(vcon);
+      return;
       }
     
     else switch(c) {
 
       case 'q': case 27:
-        vcon();
+        ONEMS( vcon(); )
         return;
       
       case 'r': {
@@ -1276,7 +1277,7 @@ void randomChallengeMenu(void_continuation vcon) {
           return;
           }
         back();
-        break;
+        return;
         }
       
       case 't': 
@@ -1292,7 +1293,7 @@ void randomChallengeMenu(void_continuation vcon) {
             else back();
             });
           });
-        break;
+        return;
       }
     };
     }
