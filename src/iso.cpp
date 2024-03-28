@@ -107,6 +107,7 @@ void drawScreenIso(Image *dest, Screen *scr, IsoParam *P, double x0, double y0, 
   int dmaxx = (int) ceil(x1 + y1) + 2;
   int dmaxy = (int) ceil(y1 - x0) + 2;
 
+  dest->changes++;
   drawmatrix M;
   M.tx = P->sx; M.ty = P->sy;
   M.txy = M.tyx = M.tzx = M.tzy = 0;
