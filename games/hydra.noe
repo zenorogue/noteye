@@ -1430,9 +1430,9 @@ function getisorot()
   end
 
 function hex_drawdisplayISO()
-  
+
   isi = nil
-  fillimage(Gfx, 0, 0, xscrsize.x, xscrsize.y, vgaget(0))
+  fillimage(D.output, 0, 0, xscrsize.x, xscrsize.y, vgaget(0))
   
   loadheximages()
   setmaparea()
