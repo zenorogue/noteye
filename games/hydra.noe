@@ -47,7 +47,7 @@ function ytilefloor(M)
   if not M.floor then
     return Unseen
   elseif M.floor == " " then
-    return 0
+    return nil
   elseif M.floor == av("#") then
     return Wall
   else
@@ -515,7 +515,7 @@ function xtile(C,x,y)
   --if bAND(M.shadow, 8) > 0 then ytf = tilemerge(ytf, ShadowN) end
   ytf = tilemerge(ytf, shadtable[bAND(M.shadow, 15)])
   ytf = tilemerge(ytf, ytileobj(M,x,y))
-  if M.cacheid then hydracache(M.cacheid, noteye_assign_handle(ytf)) end
+  if M.cacheid and not inhex then hydracache(M.cacheid, noteye_assign_handle(ytf)) end
   if M.animation then ytf = tilemerge(ytf, noteye_by_handle( M.animation )) end
   return ytf
   end
@@ -1197,7 +1197,7 @@ function checkmouse(ev)
         nsendkey2(k, evKeyBothText)
         end
       end
-    if mode ~= modeFPP then
+    if mode ~= modeFPP and mode ~= modeTPP then
       local dirnames = {"E ", "NE", "N ", "NW", "W ", "SW", "S ", "SE"}
       ptp2 = hexround(ptp)
       mousemsg = "L = move or attack "..dirnames[d+1]..(hydrainfo and " R = info: "..
@@ -1338,7 +1338,7 @@ function yiso(M)
     return M.seen and WallIso or tilerecolor(WallIso, 0x101010)
   elseif c == Lightfloor then 
     return M.seen and FloorIso or tilerecolor(FloorIso, 0x202020)
-  else return 0
+  else return nil
     end
   end
 
@@ -1705,7 +1705,7 @@ if hydramain and not externalhydra then function rungamex(cmdline)
 local lpixeltoprocess = pixeltoprocess
 
 function hexround(v)
-  if not inhex then return v end
+  if not inhex or not v then return v end
   local rx = v.x
   if mode == modeTiles then rx = rx-.5 end
   if not v then return v end

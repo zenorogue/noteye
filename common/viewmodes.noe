@@ -649,7 +649,9 @@ function miniFPP()
     local u = (mousepos - D.screen.top) / D.fontsize
     if inrect(u, D.map) then
       local upr = pixeltoprocess(mousepos)
-      fd = V.atan2(upr-playerpos-D.map.top-V(.5,.5)) * 180 / math.pi - 90
+      if upr then
+        fd = V.atan2(upr-playerpos-D.map.top-V(.5,.5)) * 180 / math.pi - 90
+        end
       end
     end
   
@@ -675,7 +677,7 @@ function miniReal()
   if minimode == modeASCII then
     V.scrcopy(MAP, 0, Minimap, (minimap_haveborder() and V(1,1) or V(0,0)), D.map.size, tm_minifont_pick())
   else
-    V.scrcopy_f(MAP, 0, Minimap, (minimap_haveborder() and V(1,1) or V(0,0)), D.map.size, tm_minimap)
+    V.scrcopy(MAP, 0, Minimap, (minimap_haveborder() and V(1,1) or V(0,0)), D.map.size, tm_minimap)
     end
   
   if actualRenderer == rendererSurface then
