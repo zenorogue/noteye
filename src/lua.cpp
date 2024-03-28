@@ -265,6 +265,10 @@ void initLua() {
 #endif
 #endif
 
+#ifdef INTERNALONLY
+  noteye_globalint("INTERNALONLY", 1);
+#endif
+
   noteye_globalfun("getevent", lh_getevent);
   noteye_globalfun("getevent_timeout", lh_getevent_timeout);
   noteye_globalfun("sleep", lh_sleep);

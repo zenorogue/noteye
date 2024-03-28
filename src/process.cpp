@@ -15,14 +15,15 @@
 
 namespace noteye {
 
-#ifndef INTERNALONLY
-
 extern "C" {
+
+#ifndef INTERNALONLY
 Process *newProcess(Screen *s, Font *f, const char *str) {
   Process *p = startProcess(s, f, str);
   add_event_listener(registerObject(p));  
   return p;
   }
+#endif
 
 point noteye_getcursor(Process *P) {
   point res;
@@ -58,7 +59,5 @@ bool processActive(Process *P) {
   }
 
 }
-
-#endif
 
 }

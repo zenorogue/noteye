@@ -498,13 +498,9 @@ gp2 = protected1(noteyelib.gp2, "gp2")
 newfont = protected4(noteyelib.newFont)
 
 tilefreeform = protected2(noteyelib.addFreeform)
-noteye_getcursor = noteyelib.noteye_getcursor
-noteye_getcursorsize = noteyelib.noteye_getcursorsize
 
 gavcoba = noteyelib.gavcoba
 
-sendtext = noteyelib.sendtext
-processActive = noteyelib.processActive
 function sendkey(P, f) return noteyelib.sendkey(P, f.scancode or 0, f.keycode or 0, f.mod or 0, f.type or 0) end
 
 imgcopy = noteyelib.imgcopy
@@ -545,10 +541,18 @@ openconsole = protected0(noteyelib.openconsole)
 
 messagebox = protected4(noteyelib.noteye_messagebox)
 isoproject = protected2(noteyelib.getIso)
-newprocess = protected3(noteyelib.newProcess)
 
 function unhandle(X)
   local Y = noteye_by_handle(X)
   noteye_free_handle(Y)
   return Y
   end
+
+if not INTERNALONLY then
+  newprocess = protected3(noteyelib.newProcess)
+end
+
+noteye_getcursor = noteyelib.noteye_getcursor
+noteye_getcursorsize = noteyelib.noteye_getcursorsize
+sendtext = noteyelib.sendtext
+processActive = noteyelib.processActive
