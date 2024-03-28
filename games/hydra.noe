@@ -1928,7 +1928,7 @@ IsoParam = isoparam(32, 24, 32, 32)
 --  end
 mapextent = 1
 
-setwindowtitle(Gfx, "Hydra Slayer "..(hydraver or ""))
+setmainwindowtitle("Hydra Slayer "..(hydraver or ""))
 cmdline = caller3("Hydra Slayer", "hydra")
 defaultmodep(modeTiles, 3)
 

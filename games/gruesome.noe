@@ -38,5 +38,5 @@ function xtileaux2(ch, co, av, ba)
   end
 
 defaultmodep(modeTiles, 1)
-setwindowtitle(Gfx, "Gruesome")
+setmainwindowtitle("Gruesome")
 rungame(caller3("Gruesome", "gruesome"))

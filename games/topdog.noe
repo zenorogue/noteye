@@ -91,7 +91,7 @@ function xtileaux2(ch, co, av, ba)
     end
   end
 
-setwindowtitle(Gfx, "TopDog")
+setmainwindowtitle("TopDog")
 
 dirkeys = keytabs.numpad
 

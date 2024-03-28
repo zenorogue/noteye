@@ -50,7 +50,7 @@ addtomenu(graphmenu, addshift(KEYS.d), writechoicef(
 map = rectXY(0,2,80,22)
 minipos = V(1, 0.1)
 
-setwindowtitle(Gfx, "Sample libnoteye Roguelike")
+setmainwindowtitle("Sample libnoteye Roguelike")
 defaultmodep(modeASCII, 1)
 
 lnoteyesleep = noteyesleep

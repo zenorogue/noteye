@@ -16,5 +16,5 @@ function xtileaux2(ch, co, av, ba)
   end
 
 defaultmodep(modeTiles, 1)
-setwindowtitle(Gfx, "Toby the Trapper")
+setmainwindowtitle("Toby the Trapper")
 rungame(caller3("Toby the Trapper", "trapper"))

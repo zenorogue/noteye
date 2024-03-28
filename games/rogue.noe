@@ -102,6 +102,6 @@ function xminimap(C)
   return tilefill(b)
   end
   
-setwindowtitle(Gfx, "Rogue")
+setmainwindowtitle("Rogue")
 defaultmodep(modeTiles, 3)
 rungame(caller3("Rogue", "rogue"))

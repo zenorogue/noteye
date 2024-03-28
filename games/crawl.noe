@@ -21,5 +21,5 @@ function findpc()
 
 defaultmodep(modeMed, 3)
 
-setwindowtitle(Gfx, "Dungeon Crawl")
+setmainwindowtitle("Dungeon Crawl")
 rungame(caller3("Dungeon Crawl", "crawl"))

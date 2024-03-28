@@ -30,5 +30,5 @@ function xtileaux2(ch, co, av, ba)
 needfill = true
 
 defaultmodep(modeTiles, 1)
-setwindowtitle(Gfx, "ChessRogue")
+setmainwindowtitle("ChessRogue")
 rungame(caller3("ChessRogue", "chessrogue"))

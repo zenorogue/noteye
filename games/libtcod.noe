@@ -13,4 +13,4 @@ function sendmouse(ev)
 defaultmodep(modeTiles, 1)
 rungame(0)
 
-setwindowtitle(Gfx, "LibTCOD roguelike")
+setmainwindowtitle("LibTCOD roguelike")
