@@ -27,6 +27,7 @@
 #define NOTEYEPATCH 0
 #define NOTEYEPATCHSTR "P0"
 
+#define _USE_MATH_DEFINES
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
