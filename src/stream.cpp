@@ -472,6 +472,9 @@ bool nready(NCompressedStream *S) {
 #define NETWORK 0
 
 extern "C" {
+struct TCPServer;
+struct TCPStream;
+
 TCPServer *nserver(int argument) { return NULL; }
 TCPStream *naccept(TCPServer *SERV) { return NULL; }
 TCPStream *nconnect(const char *addr, int port) { return NULL; }

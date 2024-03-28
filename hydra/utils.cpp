@@ -64,6 +64,7 @@ void websync() {}
 #include <map>
 #include <algorithm>
 #include <complex>
+#include <initializer_list>
 using namespace std;
 #endif
 
