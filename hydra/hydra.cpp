@@ -18,8 +18,8 @@
 #define VER "16.1"
 #define VERSION 1600
 #else
-#define VER "18.0c"
-#define VERSION 1803
+#define VER "18.1"
+#define VERSION 1810
 #endif
 
 #include "utils.cpp"
