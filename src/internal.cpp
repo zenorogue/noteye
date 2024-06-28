@@ -372,14 +372,14 @@ InternalProcess::~InternalProcess() {
   }
 
 void InternalProcess::sendText(const string& s) {
-  for(int i=0; i<size(s); i++) {
+  for(int i=0; i<isize(s); i++) {
     int neve = (eve + 1) % EVENTBUFFER;
     if(neve != evs) {
       SDL_Event *ev = new SDL_Event;
       ev->type = SDL_TEXTINPUT;
       ev->key.keysym.sym = s[i];
-      ev->key.keysym.mod = (i == size(s) - 1) ? 1 : 0;
-      ev->key.keysym.scancode = SDL_Scancode(size(s) * 256 + i);
+      ev->key.keysym.mod = (i == isize(s) - 1) ? 1 : 0;
+      ev->key.keysym.scancode = SDL_Scancode(isize(s) * 256 + i);
       evbuf[eve] = ev;
       eve = neve;
       }

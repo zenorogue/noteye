@@ -522,7 +522,7 @@ void drawFPPat(double wax, double way, double facedir, Screen *s) {
   int iwax = int(wax + .5);
   int iway = int(way + .5);
   
-  for(int i=0; i<(int) fpporder.size(); i++) {
+  for(int i=0; i<isize(fpporder); i++) {
     int X = fpporder[i].x;
     int Y = fpporder[i].y;
     Tile *g = s->get(iwax+X,iway+Y);
@@ -691,7 +691,7 @@ void drawFPP_GL(double wax, double way, double facedir, Screen *s) {
   int iwax = int(wax + .5);
   int iway = int(way + .5);
   
-  for(int ph=0; ph<2; ph++) for(int i=0; i<(int) fpporder.size(); i++) {
+  for(int ph=0; ph<2; ph++) for(int i=0; i<isize(fpporder); i++) {
     int X = fpporder[i].x;
     int Y = fpporder[i].y;
     Tile *g = s->get(iwax+X,iway+Y);

@@ -66,13 +66,13 @@ TTFont *newTTFont(const char *fname) {
 #endif
 
 TTFont::~TTFont() {
-  for(int i=0; i<size(sizes); i++) if(sizes[i]) TTF_CloseFont(sizes[i]);
+  for(int i=0; i<isize(sizes); i++) if(sizes[i]) TTF_CloseFont(sizes[i]);
   }
 
 #ifndef LIBTCOD
 TTF_Font* TTFont::getsize(int s) {
   if(s < 0 || s >= 1024) return NULL;
-  while(size(sizes) <= s) sizes.push_back(NULL);
+  while(isize(sizes) <= s) sizes.push_back(NULL);
   if(sizes[s] == NULL) {
     sizes[s] = TTF_OpenFont(fname.c_str(), s);
     if(errfile && !sizes[s]) 
@@ -214,7 +214,7 @@ int ttfrender(TTFont *f, int s, const char *bstr, noteyecolor color, Image *i, i
 
   int colorstack[128], qcolorstack = 1;
   
-  for(int ii=0; ii<int(str.size()); ii++) {
+  for(int ii=0; ii<isize(str); ii++) {
     if(str[ii] != '\v' && str[ii] != '\n') buf[bufpos++] = str[ii];
     else {
       if(bufpos) {

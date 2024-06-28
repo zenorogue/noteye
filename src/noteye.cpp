@@ -26,7 +26,7 @@ using namespace noteye;
 
 int noteyeStats() {
   fprintf(logfile, "NOTEYE STATS\n");
-  fprintf(logfile, "Objects allocated: %d\n", size(objs));
+  fprintf(logfile, "Objects allocated: %d\n", isize(objs));
   fprintf(logfile, "Hashtable collisions: %d/%d\n", hashcol, hashok);
   fprintf(logfile, "Compression stats for streams:\n");
   fprintf(logfile, "  write %9d B -> %9d B\n", writeUnc, writeCmp);

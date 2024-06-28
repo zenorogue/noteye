@@ -353,7 +353,7 @@ void TCOD_noteye_check() {
         SDL_KeyboardEvent& kev(ev.key);
         string s = client[i]->readStr();
         kev.keysym.mod = SDLMod(0);
-        for(int i=0; i<size(s); i++) {
+        for(int i=0; i<isize(s); i++) {
           kev.keysym.unicode = s[i]; ev.type = SDL_KEYDOWN; 
           // kev.keysym.sym = SDLKey(s[i]);
           SDL_PushEvent(&ev);

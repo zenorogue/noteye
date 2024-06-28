@@ -112,7 +112,7 @@ struct WinProcess : Process {
   
   void sendText(const string& s) { 
     // todo: sendText Windows
-    for(int i=0; i<size(s); i++) {
+    for(int i=0; i<isize(s); i++) {
       ksave.uChar.UnicodeChar = savedkey = s[i];
       addKeyEvent(ksave);
       }

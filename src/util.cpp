@@ -18,7 +18,7 @@ static FILE *errfile;
 // log file
 static FILE *logfile;
 
-template<class T> int size(T& x) { return x.size(); }
+template<class T> int isize(T& x) { return x.size(); }
 
 extern "C" {
 

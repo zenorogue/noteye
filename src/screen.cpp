@@ -221,7 +221,7 @@ void drawScreen(Image *dest, Screen *s, int ox, int oy, int tx, int ty) {
     }
   else {
     layerstodraw.push_back(-1);
-    for(int pos = 0; pos < (int) layerstodraw.size(); pos++) { 
+    for(int pos = 0; pos < isize(layerstodraw); pos++) {
       for(int y=0; y<s->sy; y++) {
         for(int p=pos; layerstodraw[p] != -1; p++) {
           int lr = layerstodraw[p];
