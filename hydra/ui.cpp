@@ -1504,6 +1504,13 @@ bool quickGet(weapon*& w) {
   return true;
   }
 
+/* to prevent the 'strict aliasing rule' broken warning */
+weapon*& as_wpn(sclass*& item) {
+  sclass** a = &item;
+  weapon** b = (weapon**) a;
+  return *b;
+  }
+
 void viewTrollInventory(hydra *resistancesOf, bool_continuation bcon) {
 
   int selection = -1;
@@ -1895,7 +1902,7 @@ void waitmode() {
       if(P.race != R_TROLL && c.it && c.it->sct() == SCT_ITEM)
         pickupItemAt(&c, [] {});
       if(P.race == R_TROLL && c.it && c.it->sct() == SCT_WPN)
-        quickGet((weapon*&) c.it);
+        quickGet(as_wpn(c.it));
       
       for(int i=0; i<DIRS; i++)
         if(M[v+dirs[i]].type != CT_WALL)
@@ -2301,7 +2308,7 @@ void mainloop(continuation vcon) {
           addMessage("Nothing to get or use here.");
           }
         else if(M[playerpos].it && M[playerpos].it->sct() == SCT_WPN) {
-          weapon*& w ((weapon*&) M[playerpos].it);
+          weapon*& w = as_wpn(M[playerpos].it);
           if(w->type == WT_ORB && P.race == R_TROLL) {
             activateOrb(w);
             cancelspeed(); //xyz
