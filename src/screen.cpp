@@ -309,6 +309,14 @@ void TileMapping::uncache(Tile *t) {
   cache.erase(t);
   }
 
+TileMapping::~TileMapping() {
+  for(auto& p: cache) {
+    auto& m = p.first->in_maps;
+    for(int i=0; i<int(m.size()); i++) if(m[i] == this) { m[i] = m.back(); m.pop_back(); }
+    }
+  all_mappings.erase(this);
+  }
+
 Tile *TileMapping::apply(Tile *t) {
   if(cache.count(t)) {
     auto res = cache[t];
@@ -317,6 +325,7 @@ Tile *TileMapping::apply(Tile *t) {
     }
   auto res = applyRaw(t);
   cache[t] = res == t ? cache_identity.base : res;
+  if(t) t->in_maps.push_back(this);
   return res;
   }
 

@@ -312,6 +312,7 @@ struct Font;
 struct Tile : Object {
   virtual void preprocess() {}
   Tile *nextinhash, **previnhash;
+  std::vector<struct TileMapping*> in_maps;
   Tile() : nextinhash(0), previnhash(0) {}
   ~Tile();
   virtual void debug() { printf("Tile\n"); }
@@ -556,7 +557,7 @@ struct TileMapping : Object {
   virtual void uncache(Tile*);
   virtual Tile* applyRaw(Tile*) = 0;
   TileMapping() { all_mappings.insert(this); }
-  ~TileMapping() { all_mappings.erase(this); }
+  ~TileMapping();
   virtual void inform() { 
 #ifndef _WIN32
     inform_base("tilemapping"); 

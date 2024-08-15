@@ -138,7 +138,7 @@ Tile::~Tile() {
   if(nextinhash) nextinhash->previnhash = previnhash;
   if(previnhash) *previnhash = nextinhash; 
 
-  for(auto mapping: all_mappings)
+  for(auto& mapping: in_maps)
     mapping->uncache(this);
   }
 
