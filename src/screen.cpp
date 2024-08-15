@@ -311,6 +311,7 @@ void TileMapping::uncache(Tile *t) {
 
 TileMapping::~TileMapping() {
   for(auto& p: cache) {
+    if(!p.first) continue;
     auto& m = p.first->in_maps;
     for(int i=0; i<int(m.size()); i++) if(m[i] == this) { m[i] = m.back(); m.pop_back(); }
     }
