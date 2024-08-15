@@ -259,13 +259,13 @@ extern "C" {
   
 template<class T> struct smartptr {
   T* base;
-  T& operator *() { return *base; }
-  T* operator ->() { return base; }
+  T& operator *() const { return *base; }
+  T* operator ->() const { return base; }
   smartptr(T* b) { base = b; if(b) increase_refcount(base); }
   smartptr() { base = NULL; }
   bool operator == (smartptr<T> right) const { return base == right.base; }
   bool operator ! () const { return !base; }
-  operator T* () { return base; }
+  operator T* () const { return base; }
   bool operator < (const smartptr<T>& right) const { return base < right.base; }
   ~smartptr() { if(base) decrease_refcount(base); }
   smartptr<T>& operator= (const smartptr& x) {
