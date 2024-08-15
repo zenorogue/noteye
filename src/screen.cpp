@@ -198,16 +198,7 @@ void drawScreen(Image *dest, Screen *s, int ox, int oy, int tx, int ty) {
         M.x = ox+x*tx; M.y = oy+y*ty;
 
         auto t = tmFlat->apply(s->get(x,y));
-
-        auto TM = dynamic_cast<TileMerge*> (t);
-        if(ph == 0) {
-          if(TM) t = TM->t1;
-          else continue;
-          }
-        else {
-          if(TM) t = TM->t2;
-          }
-
+        if(t) t = t->optimize_merge(ph);
         drawTile(dest, M, t);
         }
     }

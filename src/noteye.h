@@ -329,6 +329,7 @@ struct Tile : Object {
     return (layerid == 0) ? this : nullptr;
     }
   virtual void draw(Image *dest, drawmatrix& M) {}
+  virtual Tile *optimize_merge(int ph) { return ph == 1 ? this : nullptr; }
   };
 
 extern std::set<struct TileImage*> all_images;
@@ -391,6 +392,7 @@ struct TileMerge : Tile {
     return addMerge( t1->distillLayer(layerid), t2->distillLayer(layerid), over);
     }
   void draw(Image *dest, drawmatrix& M) override { t1->draw(dest, M); t2->draw(dest, M); }
+  Tile *optimize_merge(int ph) override { return ph == 0 ? t1 : t2; }
   };
 
 extern "C" { Tile *addRecolor(Tile *t1, noteyecolor color, int mode); }
