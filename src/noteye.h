@@ -306,6 +306,8 @@ struct Image : Object {
   virtual void inform() { inform_base("image"); printf("  surface = %p, title = %s\n", s, title.c_str()); }
   };
 
+struct Font;
+
 // tile
 struct Tile : Object {
   virtual void preprocess() {}
@@ -315,6 +317,14 @@ struct Tile : Object {
   virtual void debug() { printf("Tile\n"); }
   virtual void inform() { inform_base("tile"); 
     printf("  name of class is: %s\n", typeid(*this).name());
+    }
+  virtual noteyecolor getCol() { return 0; }
+  virtual Image *getImage() { return nullptr; }
+  virtual int getChar() { return 0; }
+  virtual noteyecolor getBak() { return noteyecolor(-1); }
+  virtual Tile *setFont(Font *f) { return this; }
+  virtual Tile *distillLayer(int layerid) {
+    return (layerid == 0) ? this : nullptr;
     }
   };
 
@@ -346,7 +356,13 @@ struct TileImage : Tile {
     for(auto& c: caches) printf("  transcache %p\n", c.base);
 #endif
     }
+  noteyecolor getCol() override { return noteyecolor(-1); }
+  Image *getImage() override { return i.base; }
+  int getChar() override { return chid; }
+  Tile *setFont(Font *f) override;
   };
+
+extern "C" { Tile* addMerge(Tile *t1, Tile *t2, bool over); }
 
 struct TileMerge : Tile {
   tileptr t1, t2;
@@ -356,7 +372,23 @@ struct TileMerge : Tile {
   virtual void inform() { 
     inform_base("merge"); printf("  merge of %p %p (%d)\n", t1.base, t2.base, over);
     }
+  noteyecolor getCol() override { return (over ? t1 : t2)->getCol(); }
+  Image *getImage() override {
+    Image *u = t2->getImage();
+    if(u) return u;
+    return t1->getImage();
+    }
+  int getChar() override { return (over ? t1 : t2)->getChar(); }
+  noteyecolor getBak() override { return t1->getBak(); }
+  Tile *setFont(Font *f) override {
+    return addMerge(t1->setFont(f), t2->setFont(f), over);
+    }
+  Tile *distillLayer(int layerid) override {
+    return addMerge( t1->distillLayer(layerid), t2->distillLayer(layerid), over);
+    }
   };
+
+extern "C" { Tile *addRecolor(Tile *t1, noteyecolor color, int mode); }
 
 struct TileRecolor : Tile {
   tileptr t1;
@@ -369,13 +401,27 @@ struct TileRecolor : Tile {
   virtual void recache(); // redraw the cache
   virtual void debug();
   ~TileRecolor();
+  noteyecolor getCol() override { return color; }
+  Image *getImage() override { return t1->getImage(); }
+  virtual int getChar() { return t1->getChar(); }
+  Tile *setFont(Font *f) override {
+    return addRecolor(t1->setFont(f), color, mode);
+    }
+  Tile *distillLayer(int layerid) override {
+    return addRecolor( t1->distillLayer(layerid), color, mode);
+    }
   };
+
+extern "C" { struct TileSpatial* addSpatial(Tile *t1, int sf); }
 
 struct TileSpatial : Tile {
   tileptr t1;
   int sf;
   virtual int hash() const;
   virtual void debug();
+  Tile *distillLayer(int layerid) override {
+    return addSpatial(t1->distillLayer(layerid), sf);
+    }
   };
 
 struct TileLayer : Tile {
@@ -383,13 +429,21 @@ struct TileLayer : Tile {
   int layerid;
   virtual int hash() const;
   virtual void debug();
+  Tile *distillLayer(int _layerid) override {
+    return layerid == _layerid ? t1 : nullptr;
+    }
   };
+
+extern "C" { struct TileTransform* cloneTransform(Tile *t1, struct TileTransform *example); }
 
 struct TileTransform : Tile {
   tileptr t1;
   double dx, dy, sx, sy, dz, rot;
   virtual int hash() const;
   virtual void debug();
+  Tile *distillLayer(int layerid) override {
+    return cloneTransform(t1->distillLayer(layerid), this);
+    }
   };
 
 struct FreeFormParam : Object {
@@ -428,11 +482,16 @@ struct drawmatrix {
   int x, y, tx, ty, txy, tyx, tzx, tzy;
   };
 
+extern "C" { struct TileFreeform* addFreeform(Tile *t1, FreeFormParam *p); }
+
 struct TileFreeform : Tile {
   tileptr t1;
   smartptr<FreeFormParam> par;
   virtual int hash() const;
   virtual void debug();
+  Tile *distillLayer(int layerid) override {
+    return addFreeform(t1->distillLayer(layerid), par);
+    }
   };
 
 struct TileFill : Tile {
@@ -441,6 +500,7 @@ struct TileFill : Tile {
   virtual void debug();
   smartptr<TileImage> cache;
   ~TileFill();
+  noteyecolor getBak() override { return color; }
   };
 
 // font

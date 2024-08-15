@@ -352,64 +352,24 @@ Tile *addRecolor(Tile *t1, noteyecolor color, int mode) {
 
 noteyecolor getCol(Tile *x) {
   if(!x) return noteyecolor(-1);
-  
-  Get(TileImage, TI, x);
-  if(TI) return noteyecolor(-1);
-
-  Get(TileRecolor, TR, x);
-  if(TR) return TR->color;
-  
-  Get(TileMerge, TM, x);
-  if(TM) return getCol(TM->over ? TM->t1 : TM->t2);
-  
-  return 0;
+  return x->getCol();
   }
 
 Image *getImage(Tile *x) {
   if(!x) return NULL;
-  
-  Get(TileImage, TI, x);
-  if(TI) return TI->i.base;
-
-  Get(TileRecolor, TR, x);
-  if(TR) return getImage(TR->t1.base);
-  
-  Get(TileMerge, TM, x);
-  if(TM) {
-    Image *u = getImage(TM->t2.base);
-    if(u) return u;
-    return getImage(TM->t1.base);
-    }
-  
-  return 0;
+  return x->getImage();
   }
 
 int getChar(Tile *x) {
   if(!x) return -1;
-  
-  Get(TileImage, TI, x);
-  if(TI) return TI->chid;
-
-  Get(TileRecolor, TR, x);
-  if(TR) return getChar(TR->t1.base);
-  
-  Get(TileMerge, TM, x);
-  if(TM) return getChar(TM->over ? TM->t1.base : TM->t2.base);
-  
-  return 0;
+  return x->getChar();
   }
 
 noteyecolor getBak(Tile *x) {
   //Get(TileRecolor, TR, x);
   //if(TR) return TR->color;
-  
-  Get(TileFill, TF, x);
-  if(TF) return TF->color;
-  
-  Get(TileMerge, TM, x);
-  if(TM) return getBak(TM->t1.base);
-  
-  return noteyecolor(-1);
+  if(!x) return -1;
+  return x->getBak();
   }
 
 void tileSetChid(Tile *x, int chid) {
@@ -418,42 +378,18 @@ void tileSetChid(Tile *x, int chid) {
   }
 
 Tile *tileSetFont(Tile *x, Font *f) {
-  Get(TileImage, TI, x);
-  if(TI && TI->chid >= 0 && TI->chid < 256) return f->gettile(TI->chid);
+  if(!x) return x;
+  return x->setFont(f);
+  }
 
-  Get(TileRecolor, TR, x);
-  if(TR) return addRecolor(tileSetFont(TR->t1.base, f), TR->color, TR->mode);
-  
-  Get(TileMerge, TM, x);
-  if(TM) return addMerge(tileSetFont(TM->t1.base, f), tileSetFont(TM->t2.base, f), TM->over);
-  
-  return x;
+Tile *TileImage::setFont(Font *f) {
+  if(chid >= 0 && chid < 256) return f->gettile(chid);
+  return this;
   }
 
 Tile *distillLayer(Tile *x, int layerid) {
-  Get(TileMerge, TM, x);
-  if(TM) return 
-    addMerge( distillLayer(TM->t1, layerid), distillLayer(TM->t2, layerid), TM->over);
-
-  Get(TileLayer, TL, x);
-  if(TL) { if(TL->layerid == layerid) return TL->t1; else return 0; }
-  
-  Get(TileRecolor, TR, x);
-  if(TR) return addRecolor( distillLayer(TR->t1, layerid), TR->color, TR->mode);
-  
-  Get(TileTransform, TT, x);
-  if(TT) 
-    return cloneTransform(distillLayer(TT->t1, layerid), TT);
-  
-  Get(TileFreeform, TFF, x);
-  if(TFF)
-    return addFreeform(distillLayer(TFF->t1, layerid), TFF->par);
-  
-  Get(TileSpatial, TS, x);
-  if(TS) return addSpatial(distillLayer(TS->t1, layerid), TS->sf);
-  
-  if(layerid == 0) return x;
-  return 0;
+  if(!x) return x;
+  return x->distillLayer(layerid);
   }
 
 Tile *distill(Tile *x, int sp) {
