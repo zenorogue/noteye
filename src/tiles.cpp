@@ -88,7 +88,13 @@ void TileFreeform::debug() {
   t1->debug();
   }
 
-Tile *hashtab[HASHMAX+1];
+#define SEPARATE_HASH 1 // needs C++14
+
+#if SEPARATE_HASH
+template<class T> T* hashtab_of[HASHMAX+1];
+#else
+Tile* hashtab[HASHMAX+1];
+#endif
 
 //--
 
@@ -138,31 +144,42 @@ Tile::~Tile() {
 
 template<class T> T* registerTile(const T& x) {
 
+  #if SEPARATE_HASH
+  using Tred = T;
+  auto& hashtab = hashtab_of<T>;
+  #else
+  using Tred = Tile;
+  #endif
+
   int hsh = x.hash();
   
-  Tile** hso (&(hashtab[hsh]));
-  Tile** hs = hso;
+  auto hso (&(hashtab[hsh]));
+  auto hs = hso;
   while(*hs) {
-    if((*hs)->previnhash != hs) printf("hashtable error!\n");
+    if((*hs)->previnhash != (Tile**) hs) printf("hashtable error!\n");
+    #if SEPARATE_HASH
+    auto y = *hs;
+    #else
     T* y = dynamic_cast<T*> (*hs);
+    #endif
     if(y && eq(x,*y)) { 
       hashok++; 
       if(hs != hso) {
         // move to the front
         Tile *nih = (*hs)->nextinhash;
-        if(nih) nih->previnhash = hs; // (*hs)->previnhash;
-        *hs = nih;
+        if(nih) nih->previnhash = (Tile**) hs; // (*hs)->previnhash;
+        *hs = (Tred*) nih;
 
         (*hso)->previnhash = &(y->nextinhash);
-        y->nextinhash = *hso;
-        y->previnhash = hso;
+        y->nextinhash = (Tile*) *hso;
+        y->previnhash = (Tile**) hso;
         *hso = y;
         }
       return y; 
       }
     else {
       hashcol++;
-      hs = &(*hs)->nextinhash;
+      hs = (Tred**) &(*hs)->nextinhash;
       }
     }
     
@@ -171,7 +188,7 @@ template<class T> T* registerTile(const T& x) {
   if(xc->refcount || xc->next_to_delete) printf("bad copy\n");
   xc->nextinhash = *hso;
   if(*hso) (*hso)->previnhash = &(xc->nextinhash);
-  xc->previnhash = hso;
+  xc->previnhash = (Tile**) hso;
   *hso = xc;
   registerObject(xc);
   xc->preprocess();
