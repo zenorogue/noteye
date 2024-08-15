@@ -563,7 +563,7 @@ bool checkEventSDL(lua_State *L, int timeout) {
 
 void *getNoteyeWindowHWND(int window_id) {
 
-  Window *win = dynamic_cast<Window*> (noteye_by_handle(window_id));
+  auto win = as_window(noteye_by_handle(window_id));
   if(!win) return NULL;
 
   SDL_Window *sdl_window = win->win;
@@ -582,7 +582,7 @@ void *getNoteyeWindowHWND(int window_id) {
 
 extern "C" {
 int noteye_messagebox(Uint32 flags, const char* title, const char* message, int window_id) {
-  Window *win = dynamic_cast<Window*> (noteye_by_handle(window_id));
+  auto win = as_window(noteye_by_handle(window_id));
   SDL_Window *sdl_window = win ? win->win : NULL;
   return SDL_ShowSimpleMessageBox(flags, title, message, sdl_window);
   }

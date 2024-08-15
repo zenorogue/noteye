@@ -7,7 +7,7 @@ namespace noteye {
 // on some machines you need to use texture sizes which are powers of 2
 
 Window* useSDL(Image *i) {
-  Window *w = dynamic_cast<Window*> (i);
+  Window *w = as_window(i);
   if(!w) return NULL;
   if(w->flags & SDL_WINDOW_OPENGL) return NULL;
   if(!w->usetex) return NULL;

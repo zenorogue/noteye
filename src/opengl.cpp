@@ -26,7 +26,7 @@ extern std::set<TileImage*> all_images;
 #define POWEROFTWO
 
 Window* useGL(Image *i) {
-  Window *w = dynamic_cast<Window*> (i);
+  Window *w = as_window(i);
   if(!w) return NULL;
   if(w->flags & SDL_WINDOW_OPENGL) return w;
   return NULL;

@@ -234,6 +234,7 @@ struct Object {
     inform_base("object"); 
     printf("  name of class is: %s\n", typeid(*this).name());
     }
+  virtual struct Window *as_window() { return nullptr; }
   };
 
 extern Object *first_to_delete;
@@ -602,6 +603,7 @@ struct Window : Image {
   void close();
   ~Window() { close(); }
   smartptr<Image> icon;
+  Window *as_window() override { return this; }
 
   // create the surface (s) and texture (tex) of given sizse
   // (it need not be equal to sx,sy -- it might be an auxiliary surface for FPP)
@@ -795,6 +797,8 @@ template<class T> T* unbase(T* x) { return x; }
 template<class T> T* unbase(const smartptr<T>& x) { return x.base; }
 #define Get(Type, x, ofwhat) auto x = dynamic_cast<Type*> (unbase(ofwhat))
 #define StaticGet(Type, x, ofwhat) auto x = (Type*) (unbase(ofwhat));
+
+inline Window* as_window(Object *o) { if(!o) return nullptr; return  o->as_window(); }
 
 #endif
 
