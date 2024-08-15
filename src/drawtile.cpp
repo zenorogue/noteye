@@ -319,38 +319,37 @@ TileImage *getFillCache(TileFill *TF) {
   return TF->cache;
   }
 
-void drawFill(Image *dest, drawmatrix &M, TileFill *TF) {
-  int col = TF->color;
+void TileFill::draw(Image *dest, drawmatrix& M) {
   
   #ifdef OPENGL
   if(useGL(dest)) {
-    drawFillGL(useGL(dest), M, TF);
+    drawFillGL(useGL(dest), M, this);
     }
   else if(useSDL(dest) && matrixIsStraight(M)) {
-    drawFillSDL(useSDL(dest), M, TF);
+    drawFillSDL(useSDL(dest), M, this);
     }
 
   else
   #endif
 
   if(M.txy || M.tyx) {
-    drawTileImage(dest, M, getFillCache(TF));
+    drawTileImage(dest, M, getFillCache(this));
     }
   
-  else if(TF->alpha == 0xffffff) {
+  else if(alpha == 0xffffff) {
     SDL_Rect dstrect;
     dstrect.x = M.x; dstrect.y = M.y; dstrect.w = M.tx; dstrect.h = M.ty;
-    SDL_FillRect(dest->s, &dstrect, col);
+    SDL_FillRect(dest->s, &dstrect, color);
     }
-  else if(TF->alpha == 0x808080) {
+  else if(alpha == 0x808080) {
     dest->setLock(true);
     for(int ax=0; ax<M.tx; ax++) for(int ay=0; ay<M.ty; ay++) 
-      mixcolor(qpixel(dest->s, M.x+ax, M.y+ay), col);
+      mixcolor(qpixel(dest->s, M.x+ax, M.y+ay), color);
     }
   else {
     dest->setLock(true);
     for(int ax=0; ax<M.tx; ax++) for(int ay=0; ay<M.ty; ay++) 
-      mixcolorAt(qpixel(dest->s, M.x+ax, M.y+ay), col, TF->alpha);
+      mixcolorAt(qpixel(dest->s, M.x+ax, M.y+ay), color, alpha);
     }
   }
 
@@ -400,7 +399,5 @@ void TileFreeform::draw(Image *dest, drawmatrix& M) {
   M2.tzy = int(M.txy * D[3][1] + M.ty  * D[3][2] + M.tzy * D[3][3]);
   drawTile(dest, M2, t1);
   }
-
-void TileFill::draw(Image *dest, drawmatrix& M) { drawFill(dest, M, this); }
 
 }
