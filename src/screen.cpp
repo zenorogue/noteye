@@ -319,8 +319,9 @@ TileMapping::~TileMapping() {
   }
 
 Tile *TileMapping::apply(Tile *t) {
-  if(cache.count(t)) {
-    auto res = cache[t];
+  auto aon = at_or_null(cache, t);
+  if(aon) {
+    auto res = *aon;
     if(res == cache_identity) return t;
     return res;
     }
