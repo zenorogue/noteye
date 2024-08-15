@@ -435,15 +435,16 @@ void remove_tilemapcaches() {
   
 }
 
-map<Object*, int> object_to_handle;
-map<int, pair<smartptr<Object>, int> > handle_to_object;
+unordered_map<Object*, int> object_to_handle;
+unordered_map<int, pair<smartptr<Object>, int> > handle_to_object;
 
 int next_noteye_handle = 1;
 
 int noteye_assign_handle(Object *o) {
   if(!o) return 0;
-  if(object_to_handle.count(o)) {
-    int handle = object_to_handle[o];
+  auto aon = at_or_null(object_to_handle, o);
+  if(aon) {
+    int handle = *aon;
     handle_to_object[handle].second++;
     return handle;
     }
@@ -455,25 +456,27 @@ int noteye_assign_handle(Object *o) {
   }
 
 Object *noteye_by_handle(int handle) {
-  if(!handle_to_object.count(handle)) return NULL;
-  return handle_to_object[handle].first;
+  auto aon = at_or_null(handle_to_object, handle);
+  if(!aon) return NULL;
+  return aon->first;
   }
 
 int noteye_get_handle(Object *o) {
-  if(object_to_handle.count(o)) 
-    return object_to_handle[o];
+  auto aon = at_or_null(object_to_handle, o);
+  if(aon) return *aon;
   return 0;
   }
 
 void noteye_free_handle(Object *o) {
   if(!o) return;
-  if(object_to_handle.count(o)) {
-    int handle = object_to_handle[o];
-    handle_to_object[handle].second--;
-    if(handle_to_object[handle].second == 0) {
-      handle_to_object.erase(handle);
-      object_to_handle.erase(o);
-      }
+  auto aon = at_or_null(object_to_handle, o);
+  if(!aon) return;
+  int handle = *aon;
+  auto &h = handle_to_object[handle];
+  h.second--;
+  if(h.second == 0) {
+    handle_to_object.erase(handle);
+    object_to_handle.erase(o);
     }
   }
 
