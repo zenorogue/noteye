@@ -286,7 +286,7 @@ void TileRecolor::recache() {
   for(int y=0; y<sy; y++) for(int x=0; x<sx; x++) {
     noteyecolor pix = qpixel(TIC->i->s, TIC->ox+x, TIC->oy+y);
     if(istrans(pix, TIC->trans)) continue;
-    recolor(pix, color, mode);
+    noteye::recolor(pix, color, mode);
     qpixel(i->s, x, y) = pix;
     }
   }
@@ -334,15 +334,14 @@ Tile *addRecolor(Tile *t1, noteyecolor color, int mode) {
   // optimizations first
   if(color == noteyecolor(-1)) return t1;
   if(t1 == NULL) return NULL;
-  
-  auto TR = dynamic_cast<TileRecolor*> (t1);
-  if(TR && TR->mode == mode) return addRecolor(TR->t1.base, color, mode);
 
-  auto TF = dynamic_cast<TileFill*> (t1);
-  if(TF) return addFill(color, TF->alpha);
+  return t1->recolor(color, mode);
+  }
 
+Tile *Tile::recolor(noteyecolor color, int mode) {
+  if(color == noteyecolor(-1)) return this;
   TileRecolor T;
-  T.t1 = t1;
+  T.t1 = this;
   T.color = color;
   T.mode = mode;
   T.cache = 0;

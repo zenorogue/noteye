@@ -332,6 +332,7 @@ struct Tile : Object {
   virtual void draw(Image *dest, drawmatrix& M) {}
   virtual Tile *optimize_merge(int ph) { return ph == 1 ? this : nullptr; }
   virtual struct TileImage* asImage() { return nullptr; }
+  virtual Tile *recolor(noteyecolor color, int mode);
   };
 
 extern std::set<struct TileImage*> all_images;
@@ -420,6 +421,10 @@ struct TileRecolor : Tile {
   Tile *distillLayer(int layerid) override {
     return addRecolor( t1->distillLayer(layerid), color, mode);
     }
+  virtual Tile *recolor(noteyecolor color, int _mode) {
+    if(mode == _mode) return t1->recolor(color, mode);
+    return Tile::recolor(color, _mode);
+    }
   };
 
 extern "C" { struct TileSpatial* addSpatial(Tile *t1, int sf); }
@@ -506,6 +511,8 @@ struct TileFreeform : Tile {
   void draw(Image *dest, drawmatrix& M) override;
   };
 
+extern "C" { struct TileFill *addFill(noteyecolor color, noteyecolor alpha); }
+
 struct TileFill : Tile {
   noteyecolor color, alpha;
   virtual int hash() const;
@@ -514,6 +521,9 @@ struct TileFill : Tile {
   ~TileFill();
   noteyecolor getBak() override { return color; }
   void draw(Image *dest, drawmatrix& M) override;
+  virtual Tile *recolor(noteyecolor color, int _mode) {
+    return addFill(color, alpha);
+    }
   };
 
 // font
