@@ -390,7 +390,7 @@ struct TileMerge : Tile {
   Tile *distillLayer(int layerid) override {
     return addMerge( t1->distillLayer(layerid), t2->distillLayer(layerid), over);
     }
-  void draw(Image *dest, drawmatrix& M) override;
+  void draw(Image *dest, drawmatrix& M) override { t1->draw(dest, M); t2->draw(dest, M); }
   };
 
 extern "C" { Tile *addRecolor(Tile *t1, noteyecolor color, int mode); }

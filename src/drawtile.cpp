@@ -363,8 +363,6 @@ void drawTile(Image *dest, drawmatrix& M, Tile *c) {
   if(c) c->draw(dest, M);
   }
 
-void TileMerge::draw(Image *dest, drawmatrix& M) { t1->draw(dest, M); t2->draw(dest, M); }
-
 void TileTransform::draw(Image *dest, drawmatrix& M) {
   drawmatrix M2;
   M2.x  = M.x + roundint(M.tx * dx + M.tyx * dy + M.tzx * dz);
