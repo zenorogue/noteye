@@ -280,7 +280,7 @@ TileTransform* cloneTransform(Tile *t1, TileTransform *example) {
 
 void TileRecolor::recache() {
   if(!cache) return;
-  Get(TileImage, TIC, t1);
+  StaticGet(TileImage, TIC, t1);
   int sx = TIC->sx, sy = TIC->sy;
   Image *i = cache->i.base;
   for(int y=0; y<sy; y++) for(int x=0; x<sx; x++) {
@@ -293,14 +293,14 @@ void TileRecolor::recache() {
 
 TileRecolor::~TileRecolor() {
   if(cache) {
-    Get(TileImage, TIC, t1);
+    StaticGet(TileImage, TIC, t1);
     totalimagecache -= TIC->sx * TIC->sy;
     IMGOBSERVE ( printf("... DEL tilerecolor cache %p %s\n", TIC->i.base, TIC->i->title.c_str()); )
     }
   }
   
 void TileRecolor::preprocess() {
-  Get(TileImage, TIC, t1);
+  auto TIC = t1->asImage();
   if(TIC) {
     int sx = TIC->sx, sy = TIC->sy;
     Image *i = new Image(sx, sy, TIC->trans == transAlpha ? 0 : rectrans);

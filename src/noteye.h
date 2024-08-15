@@ -330,6 +330,7 @@ struct Tile : Object {
     }
   virtual void draw(Image *dest, drawmatrix& M) {}
   virtual Tile *optimize_merge(int ph) { return ph == 1 ? this : nullptr; }
+  virtual struct TileImage* asImage() { return nullptr; }
   };
 
 extern std::set<struct TileImage*> all_images;
@@ -365,6 +366,7 @@ struct TileImage : Tile {
   int getChar() override { return chid; }
   Tile *setFont(Font *f) override;
   void draw(Image *dest, drawmatrix& M) override;
+  virtual struct TileImage* asImage() { return this; }
   };
 
 extern "C" { Tile* addMerge(Tile *t1, Tile *t2, bool over); }
@@ -792,6 +794,7 @@ struct Music : Object {
 template<class T> T* unbase(T* x) { return x; }
 template<class T> T* unbase(const smartptr<T>& x) { return x.base; }
 #define Get(Type, x, ofwhat) auto x = dynamic_cast<Type*> (unbase(ofwhat))
+#define StaticGet(Type, x, ofwhat) auto x = (Type*) (unbase(ofwhat));
 
 #endif
 

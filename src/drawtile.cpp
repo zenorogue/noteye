@@ -241,7 +241,7 @@ void TileImage::draw(Image *dest, drawmatrix& M) {
     tc.orig = this;
     tc.tx = M.tx; tc.ty = M.ty; tc.txy = M.txy; tc.tyx = M.tyx;
     tc.cache = NULL; Tile *rt = registerTile(tc);
-    Get(TransCache, TC, rt);
+    StaticGet(TransCache, TC, rt);
 
     if(!TC->cache) {
       caches.push_back(TC);
