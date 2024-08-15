@@ -307,6 +307,7 @@ struct Image : Object {
   };
 
 struct Font;
+struct drawmatrix;
 
 // tile
 struct Tile : Object {
@@ -327,6 +328,7 @@ struct Tile : Object {
   virtual Tile *distillLayer(int layerid) {
     return (layerid == 0) ? this : nullptr;
     }
+  virtual void draw(Image *dest, drawmatrix& M) {}
   };
 
 extern std::set<struct TileImage*> all_images;
@@ -361,6 +363,7 @@ struct TileImage : Tile {
   Image *getImage() override { return i.base; }
   int getChar() override { return chid; }
   Tile *setFont(Font *f) override;
+  void draw(Image *dest, drawmatrix& M) override;
   };
 
 extern "C" { Tile* addMerge(Tile *t1, Tile *t2, bool over); }
@@ -387,6 +390,7 @@ struct TileMerge : Tile {
   Tile *distillLayer(int layerid) override {
     return addMerge( t1->distillLayer(layerid), t2->distillLayer(layerid), over);
     }
+  void draw(Image *dest, drawmatrix& M) override;
   };
 
 extern "C" { Tile *addRecolor(Tile *t1, noteyecolor color, int mode); }
@@ -445,6 +449,7 @@ struct TileTransform : Tile {
   Tile *distillLayer(int layerid) override {
     return cloneTransform(t1->distillLayer(layerid), this);
     }
+  void draw(Image *dest, drawmatrix& M) override;
   };
 
 struct FreeFormParam : Object {
@@ -493,6 +498,7 @@ struct TileFreeform : Tile {
   Tile *distillLayer(int layerid) override {
     return addFreeform(t1->distillLayer(layerid), par);
     }
+  void draw(Image *dest, drawmatrix& M) override;
   };
 
 struct TileFill : Tile {
@@ -502,6 +508,7 @@ struct TileFill : Tile {
   smartptr<TileImage> cache;
   ~TileFill();
   noteyecolor getBak() override { return color; }
+  void draw(Image *dest, drawmatrix& M) override;
   };
 
 // font

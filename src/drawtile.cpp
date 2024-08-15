@@ -361,65 +361,46 @@ int roundint(long double d) {
   }
 
 void drawTile(Image *dest, drawmatrix& M, Tile *c) {
-  if(c == 0) return;
-
-  Get(TileImage, TI, c);
-  if(TI) drawTileImage(dest, M, TI);
-
-  Get(TileMerge, TM, c);
-  if(TM) {
-    drawTile(dest, M, TM->t1);
-    drawTile(dest, M, TM->t2);
-    }
-
-  Get(TileTransform, TT, c);
-  if(TT) {
-    drawmatrix M2;
-    M2.x  = M.x + roundint(M.tx * TT->dx + M.tyx * TT->dy + M.tzx * TT->dz);
-    M2.y  = M.y + roundint(M.ty * TT->dy + M.txy * TT->dx + M.tzy * TT->dz);
-
-    double C = TT->sx * +cos(TT->rot*M_PI/180);
-    double S = TT->sx * -sin(TT->rot*M_PI/180);
-
-    M2.ty  = roundint(M.ty  * TT->sy);
-    M2.tyx = roundint(M.tyx * TT->sy);
-
-    M2.tx  = roundint(M.tx  * C - M.tzx * S);
-    M2.txy = roundint(M.txy * C - M.tzy * S);
-    M2.tzx = roundint(M.tx  * S + M.tzx * C);
-    M2.tzy = roundint(M.txy * S + M.tzy * C);
-    
-/*    if(TT->rot) {
-      double dtx = M2.tx, dtz = M2.tzx;
-      M2.tx = C*dtx-S*dtz;
-      M2.tzx = S*dtx+C*dtz;
-      dtx = M2.txy, dtz = M2.tzy;
-      M2.txy = C*dtx-S*dtz;
-      M2.tzy = S*dtx+C*dtz;
-      } */
-
-    drawTile(dest, M2, TT->t1);
-    return;
-    }
-
-  Get(TileFreeform, TFF, c);
-  if(TFF) {
-    drawmatrix M2;
-    #define D TFF->par->d
-    M2.x = int(M.x * D[0][0] + M.tx  * D[0][1] + M.tyx * D[0][2] + M.tzx * D[0][3]);
-    M2.y = int(M.y * D[0][0] + M.txy * D[0][1] + M.ty  * D[0][2] + M.tzy * D[0][3]);
-    M2.tx  = int(M.tx  * D[1][1] + M.tyx * D[1][2] + M.tzx * D[1][3]);
-    M2.txy = int(M.txy * D[1][1] + M.ty  * D[1][2] + M.tzy * D[1][3]);
-    M2.tyx = int(M.tx  * D[2][1] + M.tyx * D[2][2] + M.tzx * D[2][3]);
-    M2.ty  = int(M.txy * D[2][1] + M.ty  * D[2][2] + M.tzy * D[2][3]);
-    M2.tzx = int(M.tx  * D[3][1] + M.tyx * D[3][2] + M.tzx * D[3][3]);
-    M2.tzy = int(M.txy * D[3][1] + M.ty  * D[3][2] + M.tzy * D[3][3]);
-    drawTile(dest, M2, TFF->t1);
-    #undef D
-    }
-
-  Get(TileFill, TF, c);
-  if(TF) drawFill(dest, M, TF);
+  if(c) c->draw(dest, M);
   }
+
+void TileImage::draw(Image *dest, drawmatrix& M) { drawTileImage(dest, M, this); }
+
+void TileMerge::draw(Image *dest, drawmatrix& M) { t1->draw(dest, M); t2->draw(dest, M); }
+
+void TileTransform::draw(Image *dest, drawmatrix& M) {
+  drawmatrix M2;
+  M2.x  = M.x + roundint(M.tx * dx + M.tyx * dy + M.tzx * dz);
+  M2.y  = M.y + roundint(M.ty * dy + M.txy * dx + M.tzy * dz);
+
+  double C = sx * +cos(rot*M_PI/180);
+  double S = sx * -sin(rot*M_PI/180);
+
+  M2.ty  = roundint(M.ty  * sy);
+  M2.tyx = roundint(M.tyx * sy);
+
+  M2.tx  = roundint(M.tx  * C - M.tzx * S);
+  M2.txy = roundint(M.txy * C - M.tzy * S);
+  M2.tzx = roundint(M.tx  * S + M.tzx * C);
+  M2.tzy = roundint(M.txy * S + M.tzy * C);
+  
+  drawTile(dest, M2, t1);
+  }
+
+void TileFreeform::draw(Image *dest, drawmatrix& M) {
+  drawmatrix M2;
+  auto& D = par->d;
+  M2.x = int(M.x * D[0][0] + M.tx  * D[0][1] + M.tyx * D[0][2] + M.tzx * D[0][3]);
+  M2.y = int(M.y * D[0][0] + M.txy * D[0][1] + M.ty  * D[0][2] + M.tzy * D[0][3]);
+  M2.tx  = int(M.tx  * D[1][1] + M.tyx * D[1][2] + M.tzx * D[1][3]);
+  M2.txy = int(M.txy * D[1][1] + M.ty  * D[1][2] + M.tzy * D[1][3]);
+  M2.tyx = int(M.tx  * D[2][1] + M.tyx * D[2][2] + M.tzx * D[2][3]);
+  M2.ty  = int(M.txy * D[2][1] + M.ty  * D[2][2] + M.tzy * D[2][3]);
+  M2.tzx = int(M.tx  * D[3][1] + M.tyx * D[3][2] + M.tzx * D[3][3]);
+  M2.tzy = int(M.txy * D[3][1] + M.ty  * D[3][2] + M.tzy * D[3][3]);
+  drawTile(dest, M2, t1);
+  }
+
+void TileFill::draw(Image *dest, drawmatrix& M) { drawFill(dest, M, this); }
 
 }
