@@ -743,6 +743,8 @@ function handlespecialkeys(ev)
 
 function handlekeyevent(ev)
 
+  resetsleep()
+
   -- print(addindent().."currentmodal")
   if currentmodal and currentmodal.handlekey and currentmodal.handlekey(ev) then
     return
