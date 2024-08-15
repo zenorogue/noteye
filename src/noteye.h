@@ -246,6 +246,12 @@ template<class T> T* registerObject(T* o) {
   return o;
   }
 
+template<class Map, class Key>
+const typename Map::mapped_type *at_or_null(const Map& map, const Key& key) {
+  auto it = map.find(key);
+  return (it == map.end()) ? nullptr : &it->second;
+  }
+
 extern "C" {
   void increase_refcount(Object *o);
   void decrease_refcount(Object *o);
