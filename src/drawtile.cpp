@@ -216,43 +216,43 @@ void scaleImage(Image *dest, drawmatrix &M, TileImage *TI, bool cache) {
     }
   }
 
-void drawTileImage(Image *dest, drawmatrix &M, TileImage *TI) {
+void TileImage::draw(Image *dest, drawmatrix& M) { 
 //  printf("trans = %08x\n", TI->trans);
   #ifdef OPENGL
   if(useGL(dest)) {
-    drawTileImageGL(useGL(dest), M, TI);
+    drawTileImageGL(useGL(dest), M, this);
     return;
     }
   if(useSDL(dest) && matrixIsStraight(M)) {
-    drawTileImageSDL(useSDL(dest), M, TI);
+    drawTileImageSDL(useSDL(dest), M, this);
     return;
     }
   #endif
 
   #ifdef USEBLITS
-  if(M.tx == TI->sx && M.ty == TI->sy && M.txy == 0 && M.tyx == 0) {
-    blitImage(dest, M.x, M.y, TI);
+  if(M.tx == sx && M.ty == sy && M.txy == 0 && M.tyx == 0) {
+    blitImage(dest, M.x, M.y, this);
     return;
     }
   #endif
 
   if((abs(M.tx)+abs(M.tyx))*(abs(M.ty)+abs(M.txy)) <= 128*128 || useSDL(dest)) {  
     TransCache tc;
-    tc.orig = TI;
+    tc.orig = this;
     tc.tx = M.tx; tc.ty = M.ty; tc.txy = M.txy; tc.tyx = M.tyx;
     tc.cache = NULL; Tile *rt = registerTile(tc);
     Get(TransCache, TC, rt);
 
     if(!TC->cache) {
-      TI->caches.push_back(TC);
-      int col = TI->trans == transAlpha ? 0 : TI->trans;
+      caches.push_back(TC);
+      int col = trans == transAlpha ? 0 : trans;
       int atx = abs(M.tx)+abs(M.tyx);
       int aty = abs(M.ty)+abs(M.txy);
       Image *I = new Image(atx, aty, col);
       totalimagecache += atx * aty;
       TC->cache = new TileImage(atx, aty);
       TC->cache->i = I;
-      TC->cache->trans = TI->trans;
+      TC->cache->trans = trans;
       TC->cachechg = -5;
       registerObject(TC->cache);
       }
@@ -260,12 +260,12 @@ void drawTileImage(Image *dest, drawmatrix &M, TileImage *TI) {
     int nx = neg(M.tx)+neg(M.tyx);
     int ny = neg(M.ty)+neg(M.txy);
     
-    if(TC->cachechg != TI->i->changes) {
+    if(TC->cachechg != i->changes) {
       drawmatrix M2 = M;
       M2.x = -nx;
       M2.y = -ny;
-      scaleImage(TC->cache->i, M2, TI, true);
-      TC->cachechg = TI->i->changes;
+      scaleImage(TC->cache->i, M2, this, true);
+      TC->cachechg = i->changes;
       }
     
     if(useSDL(dest))
@@ -275,7 +275,7 @@ void drawTileImage(Image *dest, drawmatrix &M, TileImage *TI) {
     return;
     }
   
-  scaleImage(dest, M, TI, false);
+  scaleImage(dest, M, this, false);
   }
 
 TileImage::~TileImage() {
@@ -333,7 +333,7 @@ void TileFill::draw(Image *dest, drawmatrix& M) {
   #endif
 
   if(M.txy || M.tyx) {
-    drawTileImage(dest, M, getFillCache(this));
+    getFillCache(this)->draw(dest, M);
     }
   
   else if(alpha == 0xffffff) {
@@ -362,8 +362,6 @@ int roundint(long double d) {
 void drawTile(Image *dest, drawmatrix& M, Tile *c) {
   if(c) c->draw(dest, M);
   }
-
-void TileImage::draw(Image *dest, drawmatrix& M) { drawTileImage(dest, M, this); }
 
 void TileMerge::draw(Image *dest, drawmatrix& M) { t1->draw(dest, M); t2->draw(dest, M); }
 
