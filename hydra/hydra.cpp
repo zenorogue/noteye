@@ -14,13 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifdef ANDROID
-#define VER "16.1"
-#define VERSION 1600
-#else
-#define VER "18.1"
-#define VERSION 1810
-#endif
+#define VER "18.2"
+#define VERSION 1820
 
 #include "utils.cpp"
 #include "data.cpp"
