@@ -1959,7 +1959,7 @@ void mainloop(continuation vcon) {
       return;
       }
 
-    if(wasDead && !isDead) achievement("RESURRECTIONX");
+    if(wasDead && !isDead && P.race != R_TWIN) achievement("RESURRECTIONX");
     
     los();
     createTargetLines();
