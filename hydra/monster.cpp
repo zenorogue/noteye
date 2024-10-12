@@ -238,6 +238,7 @@ void cell::hydraDead(hydra *killer) {
       if(P.race == R_CENTAUR) achievement("BRONZECEN");
       if(P.race == R_TROLL) achievement("BRONZETROLL");
       if(P.race == R_TWIN) achievement("BRONZETWIN");
+      if(P.race == R_ATLANTEAAN) achievement("BRONZEATLAS");
       
       if(stats.maxoftype[MOT_DIV] == 0) achievement("NODIVISOR");
       
@@ -276,6 +277,7 @@ void cell::hydraDead(hydra *killer) {
       if(P.race == R_CENTAUR) achievement("SILVERCEN");
       if(P.race == R_TROLL) achievement("SILVERTROLL");
       if(P.race == R_TWIN) achievement("SILVERTWIN");
+      if(P.race == R_ATLANTEAAN) achievement("SILVERATLAS");
       
       if(stats.usedup[IT_PLIFE] < 2) {
         if(P.race == R_NAGA) achievement("GOLDNAGA");
@@ -284,6 +286,7 @@ void cell::hydraDead(hydra *killer) {
         if(P.race == R_CENTAUR) achievement("GOLDCEN");
         if(P.race == R_TROLL) achievement("GOLDTROLL");
         if(P.race == R_TWIN) achievement("GOLDTWIN");
+        if(P.race == R_ATLANTEAAN) achievement("GOLDENATLAS");
         }
       
       if(stats.usedup[IT_PLIFE] == 0) achievement("PLATINUM");
