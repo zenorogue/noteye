@@ -1872,8 +1872,13 @@ void pickupItemAt(cell *c, void_continuation vcon) {
       // Trolls get speed twice, because they use up one
       if(it->type == IT_PFAST)
         P.active[IT_PFAST]++;
+      delete it;
+      if(c->it == it)
+        c->it = NULL;
+      cancelspeed();
       vcon();
       });
+    return;
     }
   else {
     P.inv[it->type]++;
