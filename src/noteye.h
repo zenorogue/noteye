@@ -25,7 +25,7 @@
 #define NOTEYEVERSION "9.0"
 #define NOTEYEVER 0x900
 #define NOTEYEPATCH 0
-#define NOTEYEPATCHSTR "P1"
+#define NOTEYEPATCHSTR "P2"
 
 #define _USE_MATH_DEFINES
 #include <stdio.h>

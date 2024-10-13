@@ -7,6 +7,10 @@
 #define USEGFXBUFFER
 #endif
 
+#if WINDOWS
+#include <SDL2/SDL_syswm.h>
+#endif
+
 namespace noteye {
 
 static SDL_Surface *exsurface;
@@ -43,6 +47,24 @@ void initJoysticks(bool joyon) {
   }
 
 #ifndef LIBTCOD
+
+void get_origs() {
+#ifdef SDL2
+  int displays = SDL_GetNumVideoDisplays();
+  for(int i=0; i<displays; i++) {
+    SDL_DisplayMode curr;
+    SDL_GetCurrentDisplayMode(i, &curr);
+    point p = {curr.w, curr.h};
+    origs.push_back(p);
+    }
+
+#else
+  const SDL_VideoInfo *inf = SDL_GetVideoInfo();
+  point p = {inf->current_w, inf->current_h};
+  origs.push_back(p);
+#endif
+  }
+
 void initMode() {
 
   if(sdlerror) return;
@@ -58,23 +80,36 @@ void initMode() {
   // IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 
   origs.clear();
-  
-#ifdef SDL2
-  int displays = SDL_GetNumVideoDisplays();
-  for(int i=0; i<displays; i++) {
-    SDL_DisplayMode curr;
-    SDL_GetCurrentDisplayMode(i, &curr);
-    point p = {curr.w, curr.h};
-    origs.push_back(p);
+
+#ifdef WINDOWS
+  static bool set_awareness = true;
+  if(set_awareness) {
+    set_awareness = false;
+    HMODULE user32_dll = LoadLibraryA("User32.dll");
+    if (user32_dll) {
+
+      BOOL (WINAPI * Loaded_SetProcessDpiAwarenessContext) (DPI_AWARENESS_CONTEXT) =
+        (BOOL (WINAPI *) (DPI_AWARENESS_CONTEXT)) (void*)
+        GetProcAddress(user32_dll, "SetProcessDpiAwarenessContext");
+      if(Loaded_SetProcessDpiAwarenessContext) {
+        bool res = Loaded_SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+        }
+
+      else {
+        HRESULT (WINAPI * Loaded_SetProcessDpiAwareness) (DPI_AWARENESS) =
+          (HRESULT (WINAPI *) (DPI_AWARENESS)) (void*)
+          GetProcAddress(user32_dll, "SetProcessDpiAwareness");
+        if(Loaded_SetProcessDpiAwareness) {
+          HRESULT res = Loaded_SetProcessDpiAwareness((DPI_AWARENESS) 2 /* PROCESS_PER_MONITOR_DPI_AWARE */);
+          }
+        }
+
+      FreeLibrary(user32_dll);
+      }
     }
-
-#else
-  const SDL_VideoInfo *inf = SDL_GetVideoInfo();
-  point p = {inf->current_w, inf->current_h};
-  origs.push_back(p);
-
 #endif
 
+  get_origs();
 
 #ifndef SDL2
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
@@ -130,7 +165,38 @@ point origvideomode(Window *w) {
   int displayid = 0;
   
   displayid = w ? SDL_GetWindowDisplayIndex(w->win) : SDL_GetWindowDisplayIndex(NULL);
-  
+
+  int dpi = 0;
+
+  #ifdef WINDOWS
+  HMODULE user32_dll = LoadLibraryA("User32.dll");
+  UINT (WINAPI * Loaded_GetDpiForWindow) (HWND) =
+    (UINT (WINAPI *) (HWND)) (void*)
+    GetProcAddress(user32_dll, "GetDpiForWindow");
+  if(Loaded_GetDpiForWindow) {
+
+    SDL_SysWMinfo wminfo;
+    SDL_VERSION(&wminfo.version);
+
+    if (SDL_GetWindowWMInfo(w->win, &wminfo) != 1) {
+      }
+    else {
+      UINT res = Loaded_GetDpiForWindow(wminfo.info.win.window);
+      dpi = res;
+      }
+    }
+  FreeLibrary(user32_dll);
+  #endif
+
+  if(dpi) {
+    point res = origs[displayid];
+    res.x *= dpi;
+    res.x /= 96;
+    res.y *= dpi;
+    res.y /= 96;
+    return res;
+    }
+
   return origs[displayid];
   }
 }
@@ -204,6 +270,8 @@ bool Window::open(int x, int y, int newflags, int newrenflags, int px, int py) {
   if(win && (px != SDL_WINDOWPOS_UNDEFINED || py != SDL_WINDOWPOS_UNDEFINED)) {
     SDL_SetWindowPosition(win, px, py); // to do check
     }
+
+  get_origs();
 
   if(!win) {
     flags = newflags; sx = x; sy = y;
