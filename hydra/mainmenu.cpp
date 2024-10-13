@@ -738,8 +738,7 @@ void clearGame() {
   bool simp = P.simplehydras;
   int gs = P.gameseed;
   
-  void *ptr = &stats; /* not sure why warning on memset stats */
-  memset(ptr, 0, sizeof(stats));
+  memset(&stats, 0, sizeof(stats));
   memset(&P, 0, sizeof(P)); 
   memset(&pinfo.cdata, 0, sizeof(pinfo.cdata));
   
