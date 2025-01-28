@@ -1891,6 +1891,11 @@ void pickupItemAt(cell *c, void_continuation vcon) {
 bool inWaitMode;
 int waitsteps = 0;
 
+weapon*& weapon_ref(sclass*& it) {
+  // doing (weapon*&) directly causes C++ to emit a warning but it seems it can be safely ignored
+  return (weapon*&) it;
+  }
+
 void waitmode() {
   
   if(noEnemies()) {
@@ -1901,7 +1906,7 @@ void waitmode() {
       if(P.race != R_TROLL && c.it && c.it->sct() == SCT_ITEM)
         pickupItemAt(&c, [] {});
       if(P.race == R_TROLL && c.it && c.it->sct() == SCT_WPN)
-        quickGet((weapon*&) c.it);
+        quickGet(weapon_ref(c.it));
       
       for(int i=0; i<DIRS; i++)
         if(M[v+dirs[i]].type != CT_WALL)
@@ -2307,7 +2312,7 @@ void mainloop(continuation vcon) {
           addMessage("Nothing to get or use here.");
           }
         else if(M[playerpos].it && M[playerpos].it->sct() == SCT_WPN) {
-          weapon*& w ((weapon*&) M[playerpos].it);
+          weapon*& w (weapon_ref(M[playerpos].it));
           if(w->type == WT_ORB && P.race == R_TROLL) {
             activateOrb(w);
             cancelspeed(); //xyz
