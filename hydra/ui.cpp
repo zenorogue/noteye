@@ -1298,12 +1298,13 @@ void viewHelp(void_continuation vcon, int page) {
       }
         
     int cy = 2; viewMultiLine(pag, cy, 2);
-    
-    int op = page;
+
+    ONEMS(int op = page;)
 
     KH(ch, IC_HELP) {
-      int page = op;
-  
+
+      ONEMS(int page = op;)
+
       if(ch >= 'a' && ch <= 'f') page = ch - 'a';
       
       if(ch == 10  || ch == 13) {
