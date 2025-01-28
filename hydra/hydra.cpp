@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#define VER "18.2"
-#define VERSION 1820
+#define VER "18.3"
+#define VERSION 1830
 
 #include "utils.cpp"
 #include "data.cpp"
