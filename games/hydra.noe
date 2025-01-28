@@ -335,7 +335,7 @@ tm_inventory = newmapping(xinventory)
 function bloody(x)
   if violencelevel >= 75 then return tilemerge(Blood, x)
   elseif violencelevel >= 25 then return x
-  else return 0
+  else return nil
   end end
   
 function xtileobj(C)
@@ -406,7 +406,7 @@ function xtileobj(C)
   elseif ch == ("r") then return rec(Erado)
   elseif ch == ("y") then return rec(Pickaxe)
   elseif ch == ("o") then return rec(bgo(Disk,Stone,Disk))
-  else return 0
+  else return nil
   end
   end
 
