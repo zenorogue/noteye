@@ -737,8 +737,12 @@ void clearGame() {
   bool squi = P.quickmode;
   bool simp = P.simplehydras;
   int gs = P.gameseed;
-  
-  memset(&stats, 0, sizeof(stats));
+
+  // we need to do it like this to silence warning
+  // because stats is considered non-trivial
+  void *v = &stats;
+  memset(v, 0, sizeof(stats));
+
   memset(&P, 0, sizeof(P)); 
   memset(&pinfo.cdata, 0, sizeof(pinfo.cdata));
   
