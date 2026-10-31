@@ -1809,10 +1809,8 @@ struct hydraAnalyzer {
       int wap = wwnd[wc];     
       while(wap >= 0) {
         int pos = wrec[wap].code;
+        if(wnd[pos] == wc) fromWhereTo(pos);
         wap = wrec[wap].next;
-
-        if(wnd[pos] != wc) continue;
-        fromWhereTo(pos);
         }
       }
     }
